@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Content-Security-Policy: OWASP-aligned baseline. Each loosening is tied to a
+      concrete template dependency — see AGENTS.md → Security for rationale.
+        script-src 'wasm-unsafe-eval' — WebAssembly compilation only (e.g. Parquet
+                                        readers); deliberately NOT 'unsafe-eval'.
+        style-src 'unsafe-inline'     — Tailwind v4 + Vite HMR inject inline styles.
+        img-src   data: blob:         — Vite inlines small assets as data: URIs;
+                                        blob: covers URL.createObjectURL previews.
+        worker-src blob:              — libraries that spawn workers from inline
+                                        Blob (e.g. hyparquet/hysnappy).
+      frame-ancestors / Strict-Transport-Security / X-Content-Type-Options must
+      be set as production server headers — see AGENTS.md → Production server headers.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'self' https://*.bentley.com https://*.seequent.com https://*.seequent.net https://*.seequentapis.com; object-src 'none'; base-uri 'self'; form-action 'self';"
+    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <title>Seequent Labs Vibe Aid</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

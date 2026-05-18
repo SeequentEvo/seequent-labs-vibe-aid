@@ -1,0 +1,16 @@
+{
+    "lspServers": {
+        "typescript": {
+            "command": "npx",
+            "args": [
+                "--no-install",
+                "typescript-language-server",
+                "--stdio"
+            ],
+            "fileExtensions": {
+                ".ts": "typescript",
+                ".tsx": "typescriptreact"
+            }
+        }
+    }
+}

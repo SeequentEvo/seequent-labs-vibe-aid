@@ -1,0 +1,5205 @@
+openapi: 3.1.0
+info:
+  title: Geoscience Object API
+  description: '
+
+    The Geoscience Object API enables technological integrations at the object level.
+    It enables users to access and utilise their data across all products through
+    a common and accessible data structure.
+
+
+    A Geoscience Object is a data structure that represents a concrete geological,
+    geotechnical, or geophysical concept. Geoscience Objects can be referenced by
+    their UUID or by a user-defined object path.
+
+
+    For more information on using the Geoscience Object API, see the [Geoscience Object
+    API overview](/docs/guides/objects), or the API references here.
+
+    '
+  version: 1.21.4
+paths:
+  /geoscience-object/orgs/{org_id}/objects:
+    get:
+      tags:
+      - Objects
+      summary: List geoscience objects by org
+      description: The response will list geoscience objects for the provided organisation
+        ID.
+      operationId: listObjectsByOrg
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID
+          examples:
+          - b208a6c9-6881-4b97-b02d-acb5d81299bb
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Org Id
+        description: The customer's organisation ID
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          description: Number of results to skip before returning `limit` number of
+            results.
+          default: 0
+          title: Offset
+        description: Number of results to skip before returning `limit` number of
+          results.
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 5000
+          minimum: 1
+          description: Max number of results per page.
+          examples:
+          - 10
+          default: 5000
+          title: Limit
+        description: Max number of results per page.
+      - name: deleted
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          description: When true, only objects that have been deleted will be returned
+          title: Deleted
+        description: When true, only objects that have been deleted will be returned
+      - name: permitted_workspaces_only
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          description: Only return objects in workspaces the user is permitted to
+            access.
+          x-api-preview: true
+          title: Permitted Workspaces Only
+        description: Only return objects in workspaces the user is permitted to access.
+      - name: order_by
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order By
+          description: 'A comma separated list of fields to order by, where the default
+            sort order is ascending. To specify the sort order, prefix the field name
+            with either `asc:` or `desc:` for ascending or descending respectively.
+            Field names can either be arbitrary, representing a field nested inside
+            the data, or one of the following known sort fields: `created_at`, `created_by`,
+            `modified_at`, `modified_by`, `object_name`, `deleted_at`'
+          examples:
+          - object_name,desc:created_by,asc:object.a.b.c
+        description: 'A comma separated list of fields to order by, where the default
+          sort order is ascending. To specify the sort order, prefix the field name
+          with either `asc:` or `desc:` for ascending or descending respectively.
+          Field names can either be arbitrary, representing a field nested inside
+          the data, or one of the following known sort fields: `created_at`, `created_by`,
+          `modified_at`, `modified_by`, `object_name`, `deleted_at`'
+      - name: created_by
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            anyOf:
+            - type: string
+              format: uuid
+            - type: string
+          description: The UUID of the user that created an object
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          title: Created By
+        description: The UUID of the user that created an object
+      - name: created_at
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+          description: '
+
+            A date or dates (max 2) to filter objects by. Dates may contain operator
+            prefixes,
+
+            in the form `<operator>:<datetime>`. The following operators are available
+
+            (`lt`=less than, `lte`=less than or equal to, `gt`=greater than, `gte`=greater
+            than or equal to).
+
+            If you omit the operator, then it is assumed the operator is ''equal to''.
+
+            In this case you may only supply one date. The dates must also be in a
+            valid ISO 8601 format.
+
+            Dates may include a UTC offset. If the offset is omitted, the timezone
+            is assumed to be UTC.
+
+            '
+          examples:
+          - gte:2023-03-10T22:56:53Z
+          title: Created At
+        description: '
+
+          A date or dates (max 2) to filter objects by. Dates may contain operator
+          prefixes,
+
+          in the form `<operator>:<datetime>`. The following operators are available
+
+          (`lt`=less than, `lte`=less than or equal to, `gt`=greater than, `gte`=greater
+          than or equal to).
+
+          If you omit the operator, then it is assumed the operator is ''equal to''.
+
+          In this case you may only supply one date. The dates must also be in a valid
+          ISO 8601 format.
+
+          Dates may include a UTC offset. If the offset is omitted, the timezone is
+          assumed to be UTC.
+
+          '
+      - name: modified_by
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            anyOf:
+            - type: string
+              format: uuid
+            - type: string
+          description: The UUID of the user that modified an object
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          title: Modified By
+        description: The UUID of the user that modified an object
+      - name: modified_at
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+          description: '
+
+            A date or dates (max 2) to filter objects by. Dates may contain operator
+            prefixes,
+
+            in the form `<operator>:<datetime>`. The following operators are available
+
+            (`lt`=less than, `lte`=less than or equal to, `gt`=greater than, `gte`=greater
+            than or equal to).
+
+            If you omit the operator, then it is assumed the operator is ''equal to''.
+
+            In this case you may only supply one date. The dates must also be in a
+            valid ISO 8601 format.
+
+            Dates may include a UTC offset. If the offset is omitted, the timezone
+            is assumed to be UTC.
+
+            '
+          examples:
+          - gte:2023-03-10T22:56:53Z
+          title: Modified At
+        description: '
+
+          A date or dates (max 2) to filter objects by. Dates may contain operator
+          prefixes,
+
+          in the form `<operator>:<datetime>`. The following operators are available
+
+          (`lt`=less than, `lte`=less than or equal to, `gt`=greater than, `gte`=greater
+          than or equal to).
+
+          If you omit the operator, then it is assumed the operator is ''equal to''.
+
+          In this case you may only supply one date. The dates must also be in a valid
+          ISO 8601 format.
+
+          Dates may include a UTC offset. If the offset is omitted, the timezone is
+          assumed to be UTC.
+
+          '
+      - name: object_name
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            minLength: 1
+          description: The name of the object to filter on. For backwards compatibility,
+            when no operators are supplied, this will perform a case sensitive prefix
+            match of the object file name. The query `object_name=gold` will match
+            an object with the name `goldcolumns.json`. Providing an operator will
+            query over the entire path to and including the file name.
+          examples:
+          - object.json
+          - eq:path/to/object.json
+          title: Object Name
+        description: The name of the object to filter on. For backwards compatibility,
+          when no operators are supplied, this will perform a case sensitive prefix
+          match of the object file name. The query `object_name=gold` will match an
+          object with the name `goldcolumns.json`. Providing an operator will query
+          over the entire path to and including the file name.
+      - name: schema_id
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+          description: The type of schema you want to filter by.
+          examples:
+          - /objects/variogram/0.1.0/variogram.schema.json
+          - like:*variogram*
+          title: Schema Id
+        description: The type of schema you want to filter by.
+      - name: geojson_bounding_box
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+          title: GeoJSON Bounding Box
+          description: The coordinates of the data to spatially search on. The value
+            may optionally include one of two spatial operators, `geowithin` or `geointersects`.
+            If an operator is not defined, then `geointersects` will be used by default.
+            The coordinates must be 5 pairs of longitude and latitude, representing
+            a closed polygon. The first and last coordinates must be the same to close
+            the polygon.
+          examples:
+          - geointersects:(171.6,-44.5),(173.7,-44.5),(173.7,-42.9),(171.6,-42.9),(171.6,-44.5)
+        description: The coordinates of the data to spatially search on. The value
+          may optionally include one of two spatial operators, `geowithin` or `geointersects`.
+          If an operator is not defined, then `geointersects` will be used by default.
+          The coordinates must be 5 pairs of longitude and latitude, representing
+          a closed polygon. The first and last coordinates must be the same to close
+          the polygon.
+      - name: deleted_by
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            anyOf:
+            - type: string
+              format: uuid
+            - type: string
+          description: The UUID of the user that deleted an object
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          title: Deleted By
+        description: The UUID of the user that deleted an object
+      - name: deleted_at
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+          description: '
+
+            A date or dates (max 2) to filter objects by. Dates may contain operator
+            prefixes,
+
+            in the form `<operator>:<datetime>`. The following operators are available
+
+            (`lt`=less than, `lte`=less than or equal to, `gt`=greater than, `gte`=greater
+            than or equal to).
+
+            If you omit the operator, then it is assumed the operator is ''equal to''.
+
+            In this case you may only supply one date. The dates must also be in a
+            valid ISO 8601 format.
+
+            Dates may include a UTC offset. If the offset is omitted, the timezone
+            is assumed to be UTC.
+
+            '
+          examples:
+          - gte:2023-03-10T22:56:53Z
+          title: Deleted At
+        description: '
+
+          A date or dates (max 2) to filter objects by. Dates may contain operator
+          prefixes,
+
+          in the form `<operator>:<datetime>`. The following operators are available
+
+          (`lt`=less than, `lte`=less than or equal to, `gt`=greater than, `gte`=greater
+          than or equal to).
+
+          If you omit the operator, then it is assumed the operator is ''equal to''.
+
+          In this case you may only supply one date. The dates must also be in a valid
+          ISO 8601 format.
+
+          Dates may include a UTC offset. If the offset is omitted, the timezone is
+          assumed to be UTC.
+
+          '
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOrgObjectsResponse'
+        '502':
+          description: '
+
+            #### /geoscienceobject/objects/storage
+
+
+            Attempting an operation within the object store caused an upstream error.
+
+
+
+            #### /geoscienceobject/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/storage:
+                  value:
+                    status: 502
+                    title: Geoscience Object Storage Operation Failed.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/storage
+                  summary: /geoscienceobject/objects/storage
+                /geoscienceobject/bad-gateway:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-gateway
+                  summary: /geoscienceobject/bad-gateway
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/ObjectStoreError'
+                - $ref: '#/components/schemas/BadGateway'
+                title: Response 502 Listobjectsbyorg
+        '422':
+          description: '
+
+            #### /geoscienceobject/filtering/invalid-params
+
+
+            The provided filter parameters are invalid.
+
+
+
+            #### /geoscienceobject/sorting/invalid-params
+
+
+            The provided sort parameters are invalid.
+
+
+
+            #### /geoscienceobject/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/filtering/invalid-params:
+                  value:
+                    status: 422
+                    title: Invalid Filter Params.
+                    type: https://seequent.com/error-codes/geoscienceobject/filtering/invalid-params
+                  summary: /geoscienceobject/filtering/invalid-params
+                /geoscienceobject/sorting/invalid-params:
+                  value:
+                    status: 422
+                    title: Invalid Sorting Parameters
+                    type: https://seequent.com/error-codes/geoscienceobject/sorting/invalid-params
+                  summary: /geoscienceobject/sorting/invalid-params
+                /geoscienceobject/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/geoscienceobject/validation
+                  summary: /geoscienceobject/validation
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InvalidFilterParams'
+                - $ref: '#/components/schemas/InvalidSortParams'
+                - $ref: '#/components/schemas/EvoRequestValidationError'
+                title: Response 422 Listobjectsbyorg
+        '400':
+          description: '
+
+            #### /geoscienceobject/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-request:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-request
+                  summary: /geoscienceobject/bad-request
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: '
+
+            #### /geoscienceobject/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /geoscienceobject/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
+                  summary: /geoscienceobject/auth/missing-token
+                /geoscienceobject/auth/invalid-token:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/invalid-token
+                  summary: /geoscienceobject/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Listobjectsbyorg
+        '500':
+          description: '
+
+            #### /geoscienceobject/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/geoscienceobject/api-errors
+                  summary: /geoscienceobject/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-api-preview: true
+  /geoscience-object/orgs/{org_id}/stages:
+    get:
+      tags:
+      - Stages
+      summary: Get the list of available stages
+      description: The response will list available stages for the provided organisation.
+      operationId: listStages
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID
+          examples:
+          - b208a6c9-6881-4b97-b02d-acb5d81299bb
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Org Id
+        description: The customer's organisation ID
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListStagesResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /geoscience-object/orgs/{org_id}/workspaces/{workspace_id}/data:
+    put:
+      tags:
+      - Data
+      summary: Upload geoscience data
+      description: 'Request to upload geoscience data.
+
+
+        The client provides names for the data they intend to upload and receives
+        upload URLs for those that have not already
+
+        been uploaded. This data `name` must a valid SHA256 hash or UUID. Calculating
+        the SHA256 hash is recommended as it
+
+        enables clients to avoid re-uploading duplicate data.
+
+
+        Each upload URL is secured with a SAS token and is valid for a limited time.
+        If a URL has expired before the data upload
+
+        is complete, simply repeat this request to obtain a new URL.
+
+        Clients can use the new URL to continue uploading where they left off.
+
+
+        Multiple data names can be provided, with an upload URL generated for each
+        data digest individually
+
+        (up to a maximum of 32).'
+      operationId: putDataInWorkspace
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID
+          examples:
+          - b208a6c9-6881-4b97-b02d-acb5d81299bb
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Org Id
+        description: The customer's organisation ID
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: The customer's workspace ID
+          examples:
+          - 032806a8-dcd7-11ed-8d5c-00155d8f28b5
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/DataUploadRequestBody'
+              minItems: 1
+              maxItems: 32
+              description: SHA256 digests or UUID of the data file(s) to be uploaded.
+              examples:
+              - - name: 22f97e9a-22c1-11ef-b851-00155d18c5d4
+                - name: 1d264de18d43ebeacc3592f072020e36236d14a727197e7e8d3508d785583319
+              title: Upload Body
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataUploadResponseBody'
+                title: Response Putdatainworkspace
+        '502':
+          description: '
+
+            #### /geoscienceobject/data/data-upstream
+
+
+            An upstream error occurred
+
+
+
+            #### /geoscienceobject/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/data/data-upstream:
+                  value:
+                    status: 502
+                    title: Data Error.
+                    type: https://seequent.com/error-codes/geoscienceobject/data/data-upstream
+                  summary: /geoscienceobject/data/data-upstream
+                /geoscienceobject/bad-gateway:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-gateway
+                  summary: /geoscienceobject/bad-gateway
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/DataUpstreamError'
+                - $ref: '#/components/schemas/BadGateway'
+                title: Response 502 Putdatainworkspace
+        '404':
+          description: '
+
+            #### /geoscienceobject/data/not-found
+
+
+            The requested data cannot be found. This may be caused by an incorrect
+            workspace ID
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/data/not-found:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 404
+                    title: Data Upload Error.
+                    type: https://seequent.com/error-codes/geoscienceobject/data/not-found
+                  summary: /geoscienceobject/data/not-found
+              schema:
+                $ref: '#/components/schemas/DataWorkspaceNotFoundError'
+        '410':
+          description: '
+
+            #### /geoscienceobject/data/gone
+
+
+            The requested data has been deleted. This may be caused by a soft-deleted
+            workspace
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/data/gone:
+                  value:
+                    upstream_type: /workspace/gone
+                    status: 410
+                    title: Data Upload Error.
+                    type: https://seequent.com/error-codes/geoscienceobject/data/gone
+                  summary: /geoscienceobject/data/gone
+              schema:
+                $ref: '#/components/schemas/DataWorkspaceGoneError'
+        '403':
+          description: '
+
+            #### /geoscienceobject/auth/insufficient-role
+
+
+            The user lacks the required role to access this endpoint.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/insufficient-role
+                  summary: /geoscienceobject/auth/insufficient-role
+              schema:
+                $ref: '#/components/schemas/InsufficientRoleError'
+        '400':
+          description: '
+
+            #### /geoscienceobject/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-request:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-request
+                  summary: /geoscienceobject/bad-request
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: '
+
+            #### /geoscienceobject/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /geoscienceobject/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
+                  summary: /geoscienceobject/auth/missing-token
+                /geoscienceobject/auth/invalid-token:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/invalid-token
+                  summary: /geoscienceobject/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Putdatainworkspace
+        '500':
+          description: '
+
+            #### /geoscienceobject/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/geoscienceobject/api-errors
+                  summary: /geoscienceobject/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: '
+
+            #### /geoscienceobject/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/geoscienceobject/validation
+                  summary: /geoscienceobject/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+  /geoscience-object/orgs/{org_id}/workspaces/{workspace_id}/objects/{object_id}:
+    post:
+      tags:
+      - Objects
+      summary: Update a geoscience object
+      description: 'Update or restore a geoscience object by UUID.
+
+        Uploading an object to this endpoint will update (replace, i.e. no partial
+        updates) the existing object with a corresponding UUID.
+
+        If the object was previously deleted, and the `deleted` parameter is set to
+        `false`, this operation will attempt to restore the object. You cannot provide
+        an object body when attempting to restore an object.
+
+        Note that the value of the `uuid` field in the object must match the value
+        in the URL path.
+
+        New objects must be uploaded by path.'
+      operationId: updateObjectsById
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: object_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: UUID of a geoscience object.
+          examples:
+          - 355fa5a6-f37d-11ed-93c1-00155d19a71b
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Object Id
+        description: UUID of a geoscience object.
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID
+          examples:
+          - b208a6c9-6881-4b97-b02d-acb5d81299bb
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Org Id
+        description: The customer's organisation ID
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: The customer's workspace ID
+          examples:
+          - 032806a8-dcd7-11ed-8d5c-00155d8f28b5
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      - name: deleted
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          description: When set to false, the operation will attempt to restore the
+            object.
+          title: Deleted
+        description: When set to false, the operation will attempt to restore the
+          object.
+      - name: If-Match
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Optional header to apply an update _only if_ the specified
+            object version is the most recent available on the server.
+          examples:
+          - '1706583776404684724'
+          title: If-Match
+        description: Optional header to apply an update _only if_ the specified object
+          version is the most recent available on the server.
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              anyOf:
+              - $ref: '#/components/schemas/UpdateGeoscienceObject'
+              - type: 'null'
+              title: Geoscience Object
+      responses:
+        '201':
+          description: The geoscience object version has been created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostObjectResponse'
+        '400':
+          description: '
+
+            #### /geoscienceobject/schemas/invalid-object
+
+
+            Invalid geoscience object. The contents of the object failed to validate
+            with the schema referenced in its `schema` property. Check the request
+            contents and try again.
+
+
+
+            #### /geoscienceobject/data/invalid-key
+
+
+            The object contains data references that are invalid. These must be SHA256
+            digests or UUIDs.
+
+
+
+            #### /geoscienceobject/objects/data-key-not-found
+
+
+            The object contains references to data blobs that do not exist. Upload
+            them and try again.
+
+
+
+            #### /geoscienceobject/objects/data-key-not-found
+
+
+            Data blobs referenced in the object were not moved to their intended destination
+            in storage.
+
+
+
+            #### /geoscienceobject/objects/invalid-object
+
+
+            The uploaded object must be of the same schema type as the existing object.
+            Additionally, the object filename must have a `.json` extension.
+
+
+
+            #### /geoscienceobject/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/schemas/invalid-object:
+                  value:
+                    json_path: $.structures[0]
+                    schema_path:
+                    - properties
+                    - structures
+                    - items
+                    - anyOf
+                    status: 400
+                    title: The Geoscience Object Is Invalid.
+                    type: https://seequent.com/error-codes/geoscienceobject/schemas/invalid-object
+                  summary: /geoscienceobject/schemas/invalid-object
+                /geoscienceobject/data/invalid-key:
+                  value:
+                    upstream_type: /workspace/not-found
+                    invalid:
+                    - abc
+                    status: 400
+                    title: Data Key Not Valid.
+                    type: https://seequent.com/error-codes/geoscienceobject/data/invalid-key
+                  summary: /geoscienceobject/data/invalid-key
+                /geoscienceobject/objects/data-key-not-found:
+                  value:
+                    status: 400
+                    title: Data Key Not Moved.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/data-key-not-found
+                  summary: /geoscienceobject/objects/data-key-not-found
+                /geoscienceobject/objects/invalid-object:
+                  value:
+                    expected: triangle-mesh.schema.json
+                    actual: variogram.schema.json
+                    status: 400
+                    title: Object Error.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/invalid-object
+                  summary: /geoscienceobject/objects/invalid-object
+                /geoscienceobject/bad-request:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-request
+                  summary: /geoscienceobject/bad-request
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InvalidGeoscienceObject'
+                - $ref: '#/components/schemas/ObjectDataRefInvalid'
+                - $ref: '#/components/schemas/ObjectDataRefNotFound'
+                - $ref: '#/components/schemas/ObjectDataRefNotMovedError'
+                - $ref: '#/components/schemas/InvalidObjectError'
+                - $ref: '#/components/schemas/BadRequestError'
+                title: Response 400 Updateobjectsbyid
+        '404':
+          description: '
+
+            #### /geoscienceobject/objects/not-found
+
+
+            An object by the requested UUID does not exist.
+
+
+
+            #### /geoscienceobject/schemas/not-found
+
+
+            Attempting to request an object schema caused an upstream error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/not-found:
+                  value:
+                    upstream_type: /workspace/not-found
+                    object_id: 00000000-0000-0000-0000-000000000000
+                    status: 404
+                    title: Object Not Found.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/not-found
+                  summary: /geoscienceobject/objects/not-found
+                /geoscienceobject/schemas/not-found:
+                  value:
+                    status: 404
+                    title: Failed To Request Geoscience Object Schema.
+                    type: https://seequent.com/error-codes/geoscienceobject/schemas/not-found
+                  summary: /geoscienceobject/schemas/not-found
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/ObjectNotFound'
+                - $ref: '#/components/schemas/SchemaRequestFailed'
+                title: Response 404 Updateobjectsbyid
+        '409':
+          description: '
+
+            #### /geoscienceobject/objects/already-exists
+
+
+            An object already exists by this path/UUID.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/already-exists:
+                  value:
+                    object_path: /a/b/c.json
+                    existing_id: 00000000-0000-0000-0000-000000000000
+                    status: 409
+                    title: Geoscience Object Already Exists.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/already-exists
+                  summary: /geoscienceobject/objects/already-exists
+              schema:
+                $ref: '#/components/schemas/ObjectAlreadyExistsError'
+        '412':
+          description: '
+
+            #### /geoscienceobject/objects/modified
+
+
+            The object has been modified, making these changes stale.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/modified:
+                  value:
+                    status: 412
+                    title: Object Modified.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/modified
+                  summary: /geoscienceobject/objects/modified
+              schema:
+                $ref: '#/components/schemas/ObjectModified'
+        '403':
+          description: '
+
+            #### /geoscienceobject/auth/insufficient-role
+
+
+            The user lacks the required role to access this endpoint.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/insufficient-role
+                  summary: /geoscienceobject/auth/insufficient-role
+              schema:
+                $ref: '#/components/schemas/InsufficientRoleError'
+        '401':
+          description: '
+
+            #### /geoscienceobject/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /geoscienceobject/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
+                  summary: /geoscienceobject/auth/missing-token
+                /geoscienceobject/auth/invalid-token:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/invalid-token
+                  summary: /geoscienceobject/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Updateobjectsbyid
+        '500':
+          description: '
+
+            #### /geoscienceobject/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/geoscienceobject/api-errors
+                  summary: /geoscienceobject/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '502':
+          description: '
+
+            #### /geoscienceobject/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-gateway:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-gateway
+                  summary: /geoscienceobject/bad-gateway
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '422':
+          description: '
+
+            #### /geoscienceobject/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/geoscienceobject/validation
+                  summary: /geoscienceobject/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+        '204':
+          description: The geoscience object has been restored. Location of the resource
+            has not changed.
+        '303':
+          description: The geoscience object has been restored. Location of the resource
+            has changed (e.g., rename on restore).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostObjectResponse'
+      x-api-preview: true
+    get:
+      tags:
+      - Objects
+      summary: Download a geoscience object by UUID
+      description: 'Download a geoscience object with the provided UUID. If required,
+        the object can be compressed, currently gzip compression is supported. To
+        receive a compressed payload set header `Accept-Encoding: gzip`.'
+      operationId: getObjectById
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: object_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: UUID of a geoscience object.
+          examples:
+          - 355fa5a6-f37d-11ed-93c1-00155d19a71b
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Object Id
+        description: UUID of a geoscience object.
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID
+          examples:
+          - b208a6c9-6881-4b97-b02d-acb5d81299bb
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Org Id
+        description: The customer's organisation ID
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: The customer's workspace ID
+          examples:
+          - 032806a8-dcd7-11ed-8d5c-00155d8f28b5
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      - name: version
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: The (timestamp) version of the object to retrieve. Defaults
+            to the latest version if not specified.
+          examples:
+          - '1746593470905878783'
+          title: Version
+        description: The (timestamp) version of the object to retrieve. Defaults to
+          the latest version if not specified.
+      - name: include_versions
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: Whether to return all versions of the object
+          default: false
+          title: Include Versions
+        description: Whether to return all versions of the object
+      - name: deleted
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          description: When true, only objects that have been deleted will be returned
+          title: Deleted
+        description: When true, only objects that have been deleted will be returned
+      - name: If-None-Match
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Optional header used to check if there are any more recent
+            versions of an object than the one specified. Returns 304 (Not Modified)
+            if there are no newer versions.
+          examples:
+          - '1706583776404684724'
+          title: If-None-Match
+        description: Optional header used to check if there are any more recent versions
+          of an object than the one specified. Returns 304 (Not Modified) if there
+          are no newer versions.
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '200':
+          description: The requested geoscience object and metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetObjectResponse'
+        '404':
+          description: '
+
+            #### /geoscienceobject/objects/not-found
+
+
+            No object exists in the workspace by the requested UUID.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/not-found:
+                  value:
+                    upstream_type: /workspace/not-found
+                    object_id: 00000000-0000-0000-0000-000000000000
+                    status: 404
+                    title: Object Not Found.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/not-found
+                  summary: /geoscienceobject/objects/not-found
+              schema:
+                $ref: '#/components/schemas/ObjectNotFound'
+        '400':
+          description: '
+
+            #### /geoscienceobject/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-request:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-request
+                  summary: /geoscienceobject/bad-request
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: '
+
+            #### /geoscienceobject/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /geoscienceobject/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
+                  summary: /geoscienceobject/auth/missing-token
+                /geoscienceobject/auth/invalid-token:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/invalid-token
+                  summary: /geoscienceobject/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Getobjectbyid
+        '500':
+          description: '
+
+            #### /geoscienceobject/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/geoscienceobject/api-errors
+                  summary: /geoscienceobject/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '502':
+          description: '
+
+            #### /geoscienceobject/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-gateway:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-gateway
+                  summary: /geoscienceobject/bad-gateway
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '422':
+          description: '
+
+            #### /geoscienceobject/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/geoscienceobject/validation
+                  summary: /geoscienceobject/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+        '304':
+          description: Not Modified. The requested object version ID matches the latest
+            version of the object.
+    delete:
+      tags:
+      - Objects
+      summary: Soft delete a geoscience object
+      description: 'Delete a geoscience object by UUID.
+
+        Deleting an object to this endpoint will soft delete the existing object with
+        a
+
+        corresponding UUID.
+
+        Note that the value of the `uuid` field in the object must match the value
+        in the URL path.'
+      operationId: deleteObjectsById
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: object_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: UUID of a geoscience object.
+          examples:
+          - 355fa5a6-f37d-11ed-93c1-00155d19a71b
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Object Id
+        description: UUID of a geoscience object.
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID
+          examples:
+          - b208a6c9-6881-4b97-b02d-acb5d81299bb
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Org Id
+        description: The customer's organisation ID
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: The customer's workspace ID
+          examples:
+          - 032806a8-dcd7-11ed-8d5c-00155d8f28b5
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '204':
+          description: The geoscience object version has been deleted.
+        '404':
+          description: '
+
+            #### /geoscienceobject/objects/not-found
+
+
+            An object by the requested UUID does not exist.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/not-found:
+                  value:
+                    upstream_type: /workspace/not-found
+                    object_id: 00000000-0000-0000-0000-000000000000
+                    status: 404
+                    title: Object Not Found.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/not-found
+                  summary: /geoscienceobject/objects/not-found
+              schema:
+                $ref: '#/components/schemas/ObjectNotFound'
+        '403':
+          description: '
+
+            #### /geoscienceobject/auth/insufficient-role
+
+
+            The user lacks the required role to access this endpoint.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/insufficient-role
+                  summary: /geoscienceobject/auth/insufficient-role
+              schema:
+                $ref: '#/components/schemas/InsufficientRoleError'
+        '400':
+          description: '
+
+            #### /geoscienceobject/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-request:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-request
+                  summary: /geoscienceobject/bad-request
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: '
+
+            #### /geoscienceobject/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /geoscienceobject/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
+                  summary: /geoscienceobject/auth/missing-token
+                /geoscienceobject/auth/invalid-token:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/invalid-token
+                  summary: /geoscienceobject/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Deleteobjectsbyid
+        '500':
+          description: '
+
+            #### /geoscienceobject/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/geoscienceobject/api-errors
+                  summary: /geoscienceobject/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '502':
+          description: '
+
+            #### /geoscienceobject/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-gateway:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-gateway
+                  summary: /geoscienceobject/bad-gateway
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '422':
+          description: '
+
+            #### /geoscienceobject/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/geoscienceobject/validation
+                  summary: /geoscienceobject/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+  /geoscience-object/orgs/{org_id}/workspaces/{workspace_id}/objects/path/*:
+    post:
+      tags:
+      - Objects
+      summary: Create a geoscience object
+      description: "Create or update a geoscience object.\n\nUpload a geoscience object\
+        \ based on the schema element. Geoscience objects can be stored hierarchically,\
+        \ \nby providing the path to the object, including the object name, in the\
+        \ request URL. \nA detailed list of the available object schemas can be found\
+        \ in \nSeequent's [evo-schemas](https://github.com/seequentevo/evo-schemas)\
+        \ repository. \n\nThe submitted properties will be validated against the specified\
+        \ schema properties.\n\nTo create a new object, upload it to a unique path\
+        \ with the UUID field set to `null`.\nThe response will contain a reflection\
+        \ of the uploaded object with a newly assigned object ID.\nThis can be used\
+        \ for future requests to update the object.\n\nIf a version of the geoscience\
+        \ object already exists at the specified path a new version will be created.\n\
+        To move or rename an existing object, simply upload a new version of it (with\
+        \ the same UUID) to a new, unique path or\nfile name.\n\nNote that every upload\
+        \ of an object is considered a new version, even if no changes have been made.\n\
+        \nIf required, the object should be compressed, currently gzip compression\
+        \ is supported.\nSet header `Content-Encoding: gzip` if the content is compressed\
+        \ and `Accept-Encoding: gzip` to receive\ncompressed content."
+      operationId: postObjects
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID
+          examples:
+          - b208a6c9-6881-4b97-b02d-acb5d81299bb
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Org Id
+        description: The customer's organisation ID
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: The customer's workspace ID
+          examples:
+          - 032806a8-dcd7-11ed-8d5c-00155d8f28b5
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      - name: If-Match
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Optional header to apply an update _only if_ the specified
+            object version is the most recent available on the server.
+          examples:
+          - '1706583776404684724'
+          title: If-Match
+        description: Optional header to apply an update _only if_ the specified object
+          version is the most recent available on the server.
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeoscienceObject'
+      responses:
+        '201':
+          description: The geoscience object version has been created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostObjectResponse'
+        '400':
+          description: '
+
+            #### /geoscienceobject/schemas/invalid-object
+
+
+            Invalid geoscience object. The contents of the object failed to validate
+            with the schema referenced in its `schema` property. Check the request
+            contents and try again.
+
+
+
+            #### /geoscienceobject/data/invalid-key
+
+
+            The object contains data references that are invalid. These must be SHA256
+            digests or UUIDs.
+
+
+
+            #### /geoscienceobject/objects/data-key-not-found
+
+
+            The object contains references to data blobs that do not exist. Upload
+            them and try again.
+
+
+
+            #### /geoscienceobject/objects/data-key-not-found
+
+
+            Data blobs referenced in the object were not moved to their intended destination
+            in storage.
+
+
+
+            #### /geoscienceobject/objects/invalid-object
+
+
+            The uploaded object must be of the same schema type as the existing object.
+            Additionally, the object filename must have a `.json` extension.
+
+
+
+            #### /geoscienceobject/invalid-path
+
+
+            The object path contains invalid symbols.
+
+
+
+            #### /geoscienceobject/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/schemas/invalid-object:
+                  value:
+                    json_path: $.structures[0]
+                    schema_path:
+                    - properties
+                    - structures
+                    - items
+                    - anyOf
+                    status: 400
+                    title: The Geoscience Object Is Invalid.
+                    type: https://seequent.com/error-codes/geoscienceobject/schemas/invalid-object
+                  summary: /geoscienceobject/schemas/invalid-object
+                /geoscienceobject/data/invalid-key:
+                  value:
+                    upstream_type: /workspace/not-found
+                    invalid:
+                    - abc
+                    status: 400
+                    title: Data Key Not Valid.
+                    type: https://seequent.com/error-codes/geoscienceobject/data/invalid-key
+                  summary: /geoscienceobject/data/invalid-key
+                /geoscienceobject/objects/data-key-not-found:
+                  value:
+                    status: 400
+                    title: Data Key Not Moved.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/data-key-not-found
+                  summary: /geoscienceobject/objects/data-key-not-found
+                /geoscienceobject/objects/invalid-object:
+                  value:
+                    expected: triangle-mesh.schema.json
+                    actual: variogram.schema.json
+                    status: 400
+                    title: Object Error.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/invalid-object
+                  summary: /geoscienceobject/objects/invalid-object
+                /geoscienceobject/invalid-path:
+                  value:
+                    status: 400
+                    title: Invalid Path.
+                    type: https://seequent.com/error-codes/geoscienceobject/invalid-path
+                  summary: /geoscienceobject/invalid-path
+                /geoscienceobject/bad-request:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-request
+                  summary: /geoscienceobject/bad-request
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InvalidGeoscienceObject'
+                - $ref: '#/components/schemas/ObjectDataRefInvalid'
+                - $ref: '#/components/schemas/ObjectDataRefNotFound'
+                - $ref: '#/components/schemas/ObjectDataRefNotMovedError'
+                - $ref: '#/components/schemas/InvalidObjectError'
+                - $ref: '#/components/schemas/InvalidPathError'
+                - $ref: '#/components/schemas/BadRequestError'
+                title: Response 400 Postobjects
+        '404':
+          description: '
+
+            #### /geoscienceobject/objects/not-found
+
+
+            An object by the requested UUID does not exist.
+
+
+
+            #### /geoscienceobject/schemas/not-found
+
+
+            Attempting to request an object schema caused an upstream error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/not-found:
+                  value:
+                    upstream_type: /workspace/not-found
+                    object_id: 00000000-0000-0000-0000-000000000000
+                    status: 404
+                    title: Object Not Found.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/not-found
+                  summary: /geoscienceobject/objects/not-found
+                /geoscienceobject/schemas/not-found:
+                  value:
+                    status: 404
+                    title: Failed To Request Geoscience Object Schema.
+                    type: https://seequent.com/error-codes/geoscienceobject/schemas/not-found
+                  summary: /geoscienceobject/schemas/not-found
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/ObjectNotFound'
+                - $ref: '#/components/schemas/SchemaRequestFailed'
+                title: Response 404 Postobjects
+        '409':
+          description: '
+
+            #### /geoscienceobject/objects/already-exists
+
+
+            An object already exists by this path/UUID.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/already-exists:
+                  value:
+                    object_path: /a/b/c.json
+                    existing_id: 00000000-0000-0000-0000-000000000000
+                    status: 409
+                    title: Geoscience Object Already Exists.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/already-exists
+                  summary: /geoscienceobject/objects/already-exists
+              schema:
+                $ref: '#/components/schemas/ObjectAlreadyExistsError'
+        '412':
+          description: '
+
+            #### /geoscienceobject/objects/modified
+
+
+            The object has been modified, making these changes stale.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/modified:
+                  value:
+                    status: 412
+                    title: Object Modified.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/modified
+                  summary: /geoscienceobject/objects/modified
+              schema:
+                $ref: '#/components/schemas/ObjectModified'
+        '403':
+          description: '
+
+            #### /geoscienceobject/auth/insufficient-role
+
+
+            The user lacks the required role to access this endpoint.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/insufficient-role
+                  summary: /geoscienceobject/auth/insufficient-role
+              schema:
+                $ref: '#/components/schemas/InsufficientRoleError'
+        '401':
+          description: '
+
+            #### /geoscienceobject/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /geoscienceobject/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
+                  summary: /geoscienceobject/auth/missing-token
+                /geoscienceobject/auth/invalid-token:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/invalid-token
+                  summary: /geoscienceobject/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Postobjects
+        '500':
+          description: '
+
+            #### /geoscienceobject/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/geoscienceobject/api-errors
+                  summary: /geoscienceobject/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '502':
+          description: '
+
+            #### /geoscienceobject/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-gateway:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-gateway
+                  summary: /geoscienceobject/bad-gateway
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '422':
+          description: '
+
+            #### /geoscienceobject/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/geoscienceobject/validation
+                  summary: /geoscienceobject/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+      x-api-preview: true
+    get:
+      tags:
+      - Objects
+      summary: Download a geoscience object
+      description: 'Download a geoscience object from the provided path. If required,
+        the object can be compressed, currently gzip compression is supported. To
+        receive a compressed payload set header `Accept-Encoding: gzip`.'
+      operationId: getObject
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID
+          examples:
+          - b208a6c9-6881-4b97-b02d-acb5d81299bb
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Org Id
+        description: The customer's organisation ID
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: The customer's workspace ID
+          examples:
+          - 032806a8-dcd7-11ed-8d5c-00155d8f28b5
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      - name: version
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: The (timestamp) version of the object to retrieve. Defaults
+            to the latest version if not specified.
+          examples:
+          - '1746593470905878783'
+          title: Version
+        description: The (timestamp) version of the object to retrieve. Defaults to
+          the latest version if not specified.
+      - name: include_versions
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: Whether to return all versions of the object
+          default: false
+          title: Include Versions
+        description: Whether to return all versions of the object
+      - name: If-None-Match
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Optional header used to check if there are any more recent
+            versions of an object than the one specified. Returns 304 (Not Modified)
+            if there are no newer versions.
+          examples:
+          - '1706583776404684724'
+          title: If-None-Match
+        description: Optional header used to check if there are any more recent versions
+          of an object than the one specified. Returns 304 (Not Modified) if there
+          are no newer versions.
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '200':
+          description: The requested geoscience object and metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetObjectResponse'
+        '404':
+          description: '
+
+            #### /geoscienceobject/objects/not-found
+
+
+            No object exists in the workspace by the requested UUID.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/not-found:
+                  value:
+                    upstream_type: /workspace/not-found
+                    object_id: 00000000-0000-0000-0000-000000000000
+                    status: 404
+                    title: Object Not Found.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/not-found
+                  summary: /geoscienceobject/objects/not-found
+              schema:
+                $ref: '#/components/schemas/ObjectNotFound'
+        '400':
+          description: '
+
+            #### /geoscienceobject/invalid-path
+
+
+            The object path contains invalid symbols.
+
+
+
+            #### /geoscienceobject/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/invalid-path:
+                  value:
+                    status: 400
+                    title: Invalid Path.
+                    type: https://seequent.com/error-codes/geoscienceobject/invalid-path
+                  summary: /geoscienceobject/invalid-path
+                /geoscienceobject/bad-request:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-request
+                  summary: /geoscienceobject/bad-request
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InvalidPathError'
+                - $ref: '#/components/schemas/BadRequestError'
+                title: Response 400 Getobject
+        '401':
+          description: '
+
+            #### /geoscienceobject/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /geoscienceobject/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
+                  summary: /geoscienceobject/auth/missing-token
+                /geoscienceobject/auth/invalid-token:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/invalid-token
+                  summary: /geoscienceobject/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Getobject
+        '500':
+          description: '
+
+            #### /geoscienceobject/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/geoscienceobject/api-errors
+                  summary: /geoscienceobject/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '502':
+          description: '
+
+            #### /geoscienceobject/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-gateway:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-gateway
+                  summary: /geoscienceobject/bad-gateway
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '422':
+          description: '
+
+            #### /geoscienceobject/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/geoscienceobject/validation
+                  summary: /geoscienceobject/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+        '304':
+          description: Not Modified. The requested object version ID matches the latest
+            version of the object.
+    delete:
+      tags:
+      - Objects
+      summary: Soft delete a geoscience object by path
+      description: 'Soft delete a geoscience object by path.
+
+        This endpoint will mark the object as deleted but won''t actually remove it
+        from the database.'
+      operationId: deleteObjectByPath
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID
+          examples:
+          - b208a6c9-6881-4b97-b02d-acb5d81299bb
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Org Id
+        description: The customer's organisation ID
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: The customer's workspace ID
+          examples:
+          - 032806a8-dcd7-11ed-8d5c-00155d8f28b5
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '204':
+          description: The geoscience object has been soft deleted.
+        '404':
+          description: '
+
+            #### /geoscienceobject/objects/not-found
+
+
+            An object by the requested path does not exist.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/not-found:
+                  value:
+                    upstream_type: /workspace/not-found
+                    object_id: 00000000-0000-0000-0000-000000000000
+                    status: 404
+                    title: Object Not Found.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/not-found
+                  summary: /geoscienceobject/objects/not-found
+              schema:
+                $ref: '#/components/schemas/ObjectNotFound'
+        '403':
+          description: '
+
+            #### /geoscienceobject/auth/insufficient-role
+
+
+            The user lacks the required role to access this endpoint.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/insufficient-role
+                  summary: /geoscienceobject/auth/insufficient-role
+              schema:
+                $ref: '#/components/schemas/InsufficientRoleError'
+        '400':
+          description: '
+
+            #### /geoscienceobject/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-request:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-request
+                  summary: /geoscienceobject/bad-request
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: '
+
+            #### /geoscienceobject/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /geoscienceobject/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
+                  summary: /geoscienceobject/auth/missing-token
+                /geoscienceobject/auth/invalid-token:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/invalid-token
+                  summary: /geoscienceobject/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Deleteobjectbypath
+        '500':
+          description: '
+
+            #### /geoscienceobject/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/geoscienceobject/api-errors
+                  summary: /geoscienceobject/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '502':
+          description: '
+
+            #### /geoscienceobject/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-gateway:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-gateway
+                  summary: /geoscienceobject/bad-gateway
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '422':
+          description: '
+
+            #### /geoscienceobject/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/geoscienceobject/validation
+                  summary: /geoscienceobject/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+  /geoscience-object/orgs/{org_id}/workspaces/{workspace_id}/objects:
+    get:
+      tags:
+      - Objects
+      summary: List geoscience objects
+      description: List geoscience objects. The response will include all geoscience
+        objects matching the given filters.The geoscience objects will be the latest
+        version of the object. If there are no objects matching the given filters,
+        an empty list is returned.
+      operationId: listObjects
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID
+          examples:
+          - b208a6c9-6881-4b97-b02d-acb5d81299bb
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Org Id
+        description: The customer's organisation ID
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: The customer's workspace ID
+          examples:
+          - 032806a8-dcd7-11ed-8d5c-00155d8f28b5
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 5000
+          minimum: 1
+          description: Max number of results per page.
+          examples:
+          - 10
+          default: 5000
+          title: Limit
+        description: Max number of results per page.
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          description: Number of results to skip before returning `limit` number of
+            results.
+          default: 0
+          title: Offset
+        description: Number of results to skip before returning `limit` number of
+          results.
+      - name: deleted
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          description: When true, only objects that have been deleted will be returned
+          title: Deleted
+        description: When true, only objects that have been deleted will be returned
+      - name: order_by
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order By
+          description: 'A comma separated list of fields to order by, where the default
+            sort order is ascending. To specify the sort order, prefix the field name
+            with either `asc:` or `desc:` for ascending or descending respectively.
+            Field names can either be arbitrary, representing a field nested inside
+            the data, or one of the following known sort fields: `author`, `created_at`,
+            `created_by`, `deleted_at`, `modified_at`, `modified_by`, `object_name`'
+          examples:
+          - object_name,desc:created_by,asc:object.a.b.c
+        description: 'A comma separated list of fields to order by, where the default
+          sort order is ascending. To specify the sort order, prefix the field name
+          with either `asc:` or `desc:` for ascending or descending respectively.
+          Field names can either be arbitrary, representing a field nested inside
+          the data, or one of the following known sort fields: `author`, `created_at`,
+          `created_by`, `deleted_at`, `modified_at`, `modified_by`, `object_name`'
+      - name: author
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            anyOf:
+            - type: string
+              format: uuid
+            - type: string
+          description: (deprecated, use `created_by`) The profile ID that you want
+            to filter by
+          deprecated: true
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          title: Author
+        description: (deprecated, use `created_by`) The profile ID that you want to
+          filter by
+        deprecated: true
+      - name: created_by
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            anyOf:
+            - type: string
+              format: uuid
+            - type: string
+          description: The UUID of the user that created an object
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          title: Created By
+        description: The UUID of the user that created an object
+      - name: created_at
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+          description: '
+
+            A date or dates (max 2) to filter objects by. Dates may contain operator
+            prefixes,
+
+            in the form `<operator>:<datetime>`. The following operators are available
+
+            (`lt`=less than, `lte`=less than or equal to, `gt`=greater than, `gte`=greater
+            than or equal to).
+
+            If you omit the operator, then it is assumed the operator is ''equal to''.
+
+            In this case you may only supply one date. The dates must also be in a
+            valid ISO 8601 format.
+
+            Dates may include a UTC offset. If the offset is omitted, the timezone
+            is assumed to be UTC.
+
+            '
+          examples:
+          - gte:2023-03-10T22:56:53Z
+          title: Created At
+        description: '
+
+          A date or dates (max 2) to filter objects by. Dates may contain operator
+          prefixes,
+
+          in the form `<operator>:<datetime>`. The following operators are available
+
+          (`lt`=less than, `lte`=less than or equal to, `gt`=greater than, `gte`=greater
+          than or equal to).
+
+          If you omit the operator, then it is assumed the operator is ''equal to''.
+
+          In this case you may only supply one date. The dates must also be in a valid
+          ISO 8601 format.
+
+          Dates may include a UTC offset. If the offset is omitted, the timezone is
+          assumed to be UTC.
+
+          '
+      - name: modified_by
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            anyOf:
+            - type: string
+              format: uuid
+            - type: string
+          description: The UUID of the user that modified an object
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          title: Modified By
+        description: The UUID of the user that modified an object
+      - name: modified_at
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+          description: '
+
+            A date or dates (max 2) to filter objects by. Dates may contain operator
+            prefixes,
+
+            in the form `<operator>:<datetime>`. The following operators are available
+
+            (`lt`=less than, `lte`=less than or equal to, `gt`=greater than, `gte`=greater
+            than or equal to).
+
+            If you omit the operator, then it is assumed the operator is ''equal to''.
+
+            In this case you may only supply one date. The dates must also be in a
+            valid ISO 8601 format.
+
+            Dates may include a UTC offset. If the offset is omitted, the timezone
+            is assumed to be UTC.
+
+            '
+          examples:
+          - gte:2023-03-10T22:56:53Z
+          title: Modified At
+        description: '
+
+          A date or dates (max 2) to filter objects by. Dates may contain operator
+          prefixes,
+
+          in the form `<operator>:<datetime>`. The following operators are available
+
+          (`lt`=less than, `lte`=less than or equal to, `gt`=greater than, `gte`=greater
+          than or equal to).
+
+          If you omit the operator, then it is assumed the operator is ''equal to''.
+
+          In this case you may only supply one date. The dates must also be in a valid
+          ISO 8601 format.
+
+          Dates may include a UTC offset. If the offset is omitted, the timezone is
+          assumed to be UTC.
+
+          '
+      - name: object_name
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            minLength: 1
+          description: The name of the object to filter on. For backwards compatibility,
+            when no operators are supplied, this will perform a case sensitive prefix
+            match of the object file name. The query `object_name=gold` will match
+            an object with the name `goldcolumns.json`. Providing an operator will
+            query over the entire path to and including the file name.
+          examples:
+          - object.json
+          - eq:path/to/object.json
+          title: Object Name
+        description: The name of the object to filter on. For backwards compatibility,
+          when no operators are supplied, this will perform a case sensitive prefix
+          match of the object file name. The query `object_name=gold` will match an
+          object with the name `goldcolumns.json`. Providing an operator will query
+          over the entire path to and including the file name.
+      - name: schema_id
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+          description: The type of schema you want to filter by.
+          examples:
+          - /objects/variogram/0.1.0/variogram.schema.json
+          - like:*variogram*
+          title: Schema Id
+        description: The type of schema you want to filter by.
+      - name: deleted_by
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            anyOf:
+            - type: string
+              format: uuid
+            - type: string
+          description: The UUID of the user that deleted an object
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          title: Deleted By
+        description: The UUID of the user that deleted an object
+      - name: deleted_at
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+          description: '
+
+            A date or dates (max 2) to filter objects by. Dates may contain operator
+            prefixes,
+
+            in the form `<operator>:<datetime>`. The following operators are available
+
+            (`lt`=less than, `lte`=less than or equal to, `gt`=greater than, `gte`=greater
+            than or equal to).
+
+            If you omit the operator, then it is assumed the operator is ''equal to''.
+
+            In this case you may only supply one date. The dates must also be in a
+            valid ISO 8601 format.
+
+            Dates may include a UTC offset. If the offset is omitted, the timezone
+            is assumed to be UTC.
+
+            '
+          examples:
+          - gte:2023-03-10T22:56:53Z
+          title: Deleted At
+        description: '
+
+          A date or dates (max 2) to filter objects by. Dates may contain operator
+          prefixes,
+
+          in the form `<operator>:<datetime>`. The following operators are available
+
+          (`lt`=less than, `lte`=less than or equal to, `gt`=greater than, `gte`=greater
+          than or equal to).
+
+          If you omit the operator, then it is assumed the operator is ''equal to''.
+
+          In this case you may only supply one date. The dates must also be in a valid
+          ISO 8601 format.
+
+          Dates may include a UTC offset. If the offset is omitted, the timezone is
+          assumed to be UTC.
+
+          '
+      - name: geojson_bounding_box
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+          title: GeoJSON Bounding Box
+          description: The coordinates of the data to spatially search on. The value
+            may optionally include one of two spatial operators, `geowithin` or `geointersects`.
+            If an operator is not defined, then `geointersects` will be used by default.
+            The coordinates must be 5 pairs of longitude and latitude, representing
+            a closed polygon. The first and last coordinates must be the same to close
+            the polygon.
+          examples:
+          - geointersects:(171.6,-44.5),(173.7,-44.5),(173.7,-42.9),(171.6,-42.9),(171.6,-44.5)
+        description: The coordinates of the data to spatially search on. The value
+          may optionally include one of two spatial operators, `geowithin` or `geointersects`.
+          If an operator is not defined, then `geointersects` will be used by default.
+          The coordinates must be 5 pairs of longitude and latitude, representing
+          a closed polygon. The first and last coordinates must be the same to close
+          the polygon.
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListObjectsResponse'
+        '502':
+          description: '
+
+            #### /geoscienceobject/objects/storage
+
+
+            Attempting an operation within the object store caused an upstream error.
+
+
+
+            #### /geoscienceobject/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/storage:
+                  value:
+                    status: 502
+                    title: Geoscience Object Storage Operation Failed.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/storage
+                  summary: /geoscienceobject/objects/storage
+                /geoscienceobject/bad-gateway:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-gateway
+                  summary: /geoscienceobject/bad-gateway
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/ObjectStoreError'
+                - $ref: '#/components/schemas/BadGateway'
+                title: Response 502 Listobjects
+        '422':
+          description: '
+
+            #### /geoscienceobject/filtering/invalid-params
+
+
+            The provided filter parameters are invalid.
+
+
+
+            #### /geoscienceobject/sorting/invalid-params
+
+
+            The provided sort parameters are invalid.
+
+
+
+            #### /geoscienceobject/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/filtering/invalid-params:
+                  value:
+                    status: 422
+                    title: Invalid Filter Params.
+                    type: https://seequent.com/error-codes/geoscienceobject/filtering/invalid-params
+                  summary: /geoscienceobject/filtering/invalid-params
+                /geoscienceobject/sorting/invalid-params:
+                  value:
+                    status: 422
+                    title: Invalid Sorting Parameters
+                    type: https://seequent.com/error-codes/geoscienceobject/sorting/invalid-params
+                  summary: /geoscienceobject/sorting/invalid-params
+                /geoscienceobject/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/geoscienceobject/validation
+                  summary: /geoscienceobject/validation
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InvalidFilterParams'
+                - $ref: '#/components/schemas/InvalidSortParams'
+                - $ref: '#/components/schemas/EvoRequestValidationError'
+                title: Response 422 Listobjects
+        '400':
+          description: '
+
+            #### /geoscienceobject/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-request:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-request
+                  summary: /geoscienceobject/bad-request
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: '
+
+            #### /geoscienceobject/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /geoscienceobject/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
+                  summary: /geoscienceobject/auth/missing-token
+                /geoscienceobject/auth/invalid-token:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/invalid-token
+                  summary: /geoscienceobject/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Listobjects
+        '500':
+          description: '
+
+            #### /geoscienceobject/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/geoscienceobject/api-errors
+                  summary: /geoscienceobject/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    patch:
+      tags:
+      - Objects
+      summary: List the latest version IDs for geoscience objects
+      description: Request to fetch the latest version IDs for a collection of geoscience
+        objects (maximum of 500). The request body must only contain a list of UUIDs
+        of the objects to check. The response will contain a list of objects with
+        their UUIDs and the latest version ID. If the object from a given UUID does
+        not exist or has been deleted, the request will be successful, but the version
+        ID will be `null`.
+      operationId: listObjectVersionIDs
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID
+          examples:
+          - b208a6c9-6881-4b97-b02d-acb5d81299bb
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Org Id
+        description: The customer's organisation ID
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: The customer's workspace ID
+          examples:
+          - 032806a8-dcd7-11ed-8d5c-00155d8f28b5
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+              minItems: 1
+              maxItems: 500
+              description: List of object UUIDs to fetch the current version IDs for.
+              examples:
+              - - 8f55a9c9-7d2d-4a12-8352-17b30c2313ae
+                - 9f55a9c9-7d2d-4a12-8352-17b30c2313ad
+              title: Object Id List
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LatestObjectVersionIdResponse'
+                title: Response Listobjectversionids
+        '502':
+          description: '
+
+            #### /geoscienceobject/objects/storage
+
+
+            Attempting an operation within the object store caused an upstream error.
+
+
+
+            #### /geoscienceobject/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/storage:
+                  value:
+                    status: 502
+                    title: Geoscience Object Storage Operation Failed.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/storage
+                  summary: /geoscienceobject/objects/storage
+                /geoscienceobject/bad-gateway:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-gateway
+                  summary: /geoscienceobject/bad-gateway
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/ObjectStoreError'
+                - $ref: '#/components/schemas/BadGateway'
+                title: Response 502 Listobjectversionids
+        '400':
+          description: '
+
+            #### /geoscienceobject/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-request:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-request
+                  summary: /geoscienceobject/bad-request
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: '
+
+            #### /geoscienceobject/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /geoscienceobject/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
+                  summary: /geoscienceobject/auth/missing-token
+                /geoscienceobject/auth/invalid-token:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/invalid-token
+                  summary: /geoscienceobject/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Listobjectversionids
+        '500':
+          description: '
+
+            #### /geoscienceobject/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/geoscienceobject/api-errors
+                  summary: /geoscienceobject/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: '
+
+            #### /geoscienceobject/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/geoscienceobject/validation
+                  summary: /geoscienceobject/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+  /geoscience-object/orgs/{org_id}/workspaces/{workspace_id}/objects/{object_id}/metadata:
+    patch:
+      tags:
+      - Metadata
+      summary: Update metadata for an Object
+      description: Update metadata for a geoscience object version. If a version is
+        not specified, the latest version of the object will be used. Setting the
+        metadata property to `null` will remove the metadata from the object version.
+      operationId: updateMetadata
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: object_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: UUID of a geoscience object.
+          examples:
+          - 355fa5a6-f37d-11ed-93c1-00155d19a71b
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Object Id
+        description: UUID of a geoscience object.
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID
+          examples:
+          - b208a6c9-6881-4b97-b02d-acb5d81299bb
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Org Id
+        description: The customer's organisation ID
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: The customer's workspace ID
+          examples:
+          - 032806a8-dcd7-11ed-8d5c-00155d8f28b5
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      - name: version_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          description: The version of the object to retrieve. Defaults to the latest
+            version if not specified.
+          examples:
+          - '1706583776404684724'
+          title: Version Id
+        description: The version of the object to retrieve. Defaults to the latest
+          version if not specified.
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetadataUpdateBody'
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /geoscience-object/orgs/{org_id}/workspaces/{workspace_id}/objects/{object_id}/versions:
+    post:
+      tags:
+      - Objects
+      summary: Gets specified versions of a Geoscience Object.
+      description: List specific versions of a Geoscience Object. The response will
+        include all the versions specified in `version_ids` field of the request body.
+        If one or more of the version ids are not found for the geoscience object
+        a 404 error will be returned.
+      operationId: listObjectVersions
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: object_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: UUID of a geoscience object.
+          examples:
+          - 355fa5a6-f37d-11ed-93c1-00155d19a71b
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Object Id
+        description: UUID of a geoscience object.
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID
+          examples:
+          - b208a6c9-6881-4b97-b02d-acb5d81299bb
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Org Id
+        description: The customer's organisation ID
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: The customer's workspace ID
+          examples:
+          - 032806a8-dcd7-11ed-8d5c-00155d8f28b5
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListVersionsBody'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListVersionsResponse'
+        '404':
+          description: '
+
+            #### /geoscienceobject/objects/not-found
+
+
+            No object exists in the workspace by the requested UUID.
+
+
+
+            #### /geoscienceobject/versions/not-found
+
+
+            One or more versions do not exist for the object.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/not-found:
+                  value:
+                    upstream_type: /workspace/not-found
+                    object_id: 00000000-0000-0000-0000-000000000000
+                    status: 404
+                    title: Object Not Found.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/not-found
+                  summary: /geoscienceobject/objects/not-found
+                /geoscienceobject/versions/not-found:
+                  value:
+                    status: 404
+                    title: Version Not Found.
+                    type: https://seequent.com/error-codes/geoscienceobject/versions/not-found
+                  summary: /geoscienceobject/versions/not-found
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/ObjectNotFound'
+                - $ref: '#/components/schemas/VersionNotFound'
+                title: Response 404 Listobjectversions
+        '400':
+          description: '
+
+            #### /geoscienceobject/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-request:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-request
+                  summary: /geoscienceobject/bad-request
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: '
+
+            #### /geoscienceobject/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /geoscienceobject/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
+                  summary: /geoscienceobject/auth/missing-token
+                /geoscienceobject/auth/invalid-token:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/invalid-token
+                  summary: /geoscienceobject/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Listobjectversions
+        '500':
+          description: '
+
+            #### /geoscienceobject/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/geoscienceobject/api-errors
+                  summary: /geoscienceobject/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '502':
+          description: '
+
+            #### /geoscienceobject/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-gateway:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-gateway
+                  summary: /geoscienceobject/bad-gateway
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '422':
+          description: '
+
+            #### /geoscienceobject/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/geoscienceobject/validation
+                  summary: /geoscienceobject/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+components:
+  schemas:
+    ApiError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 500
+        title:
+          type: string
+          title: Title
+          default: An Error Occurred.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/api-errors
+      type: object
+      title: ApiError
+    BadGateway:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 502
+        title:
+          type: string
+          title: Title
+          default: Bad Gateway.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/bad-gateway
+        upstream_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Type
+      type: object
+      title: BadGateway
+    BadRequestError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 400
+        title:
+          type: string
+          title: Title
+          default: Bad Request.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/bad-request
+        upstream_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Type
+      type: object
+      title: BadRequestError
+    BoundingBox:
+      properties:
+        coordinates:
+          items:
+            items:
+              items:
+                type: number
+              type: array
+              maxItems: 2
+              minItems: 2
+              title: GeoJSON Point
+              description: A WGS84 coordinate pair [longitude, latitude]. The longitude
+                must come before the latitude, in order to be considered a valid GeoJSON
+                Point
+            type: array
+            maxItems: 5
+            minItems: 5
+            title: GeoJSON LinearRing
+            description: A list of GeoJSON points defining a closed linear ring. In
+              order for the ring to be closed, the last point must be the same as
+              the first point. Only a rectangle is supported, so the ring must be
+              defined by 5 points.
+          type: array
+          maxItems: 1
+          minItems: 1
+          title: GeoJSON Polygon Coordinates
+          description: A list containing one exterior ring of a GeoJSON polygon
+        type:
+          $ref: '#/components/schemas/GeoJSONType'
+          default: Polygon
+      type: object
+      required:
+      - coordinates
+      title: BoundingBox
+      description: The bounding box for a geoscience object, represented by a GeoJSON
+        polygon.
+    DataDownloadUrl:
+      properties:
+        download_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Download Url
+        id:
+          type: string
+          format: uuid
+          title: Id
+        name:
+          type: string
+          title: Name
+      type: object
+      required:
+      - id
+      - name
+      title: DataDownloadUrl
+    DataUploadRequestBody:
+      properties:
+        name:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$|^[A-Fa-f0-9]{64}$
+          title: Name
+          description: SHA256 or UUID "name" for the data blob. SHA256 is preferred
+            as it allows other clients to deduplicate data.
+      type: object
+      required:
+      - name
+      title: DataUploadRequestBody
+    DataUploadResponseBody:
+      properties:
+        exists:
+          type: boolean
+          title: Exists
+        id:
+          type: string
+          format: uuid
+          title: Id
+          description: Server-generated unique identifier for the data
+        name:
+          type: string
+          title: Name
+          description: client-provided name for the data (SHA256 or UUID)
+        upload_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upload Url
+      type: object
+      required:
+      - exists
+      - id
+      - name
+      title: DataUploadResponseBody
+    DataUpstreamError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 502
+        title:
+          type: string
+          title: Title
+          default: Data Error.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/data/data-upstream
+      type: object
+      title: DataUpstreamError
+    DataWorkspaceGoneError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 410
+        title:
+          type: string
+          title: Title
+          default: Data Upload Error.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/data/gone
+        upstream_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Type
+      type: object
+      title: DataWorkspaceGoneError
+    DataWorkspaceNotFoundError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 404
+        title:
+          type: string
+          title: Title
+          default: Data Upload Error.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/data/not-found
+        upstream_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Type
+      type: object
+      title: DataWorkspaceNotFoundError
+    EvoRequestValidationError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 422
+        title:
+          type: string
+          title: Title
+          default: Validation Error.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/validation
+      type: object
+      title: EvoRequestValidationError
+    GeoJSONType:
+      type: string
+      enum:
+      - Polygon
+      title: GeoJSONType
+    GeoscienceObject:
+      properties:
+        schema:
+          type: string
+          title: Schema
+          description: The geoscience object schema.
+        uuid:
+          anyOf:
+          - type: string
+            pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          - type: 'null'
+          format: uuid
+          title: Uuid
+          description: Unique object UUID.
+      additionalProperties: true
+      type: object
+      required:
+      - schema
+      title: GeoscienceObject
+      description: 'The geoscience object with the additional required schema properties.
+
+
+        This object is largely defined by the schemas in the geoscience-object-schemas
+        repository.
+
+        There are some default, required values listed here explicitly.'
+    GeoscienceObjectVersion:
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        created_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        etag:
+          type: string
+          title: Etag
+        links:
+          $ref: '#/components/schemas/ObjectVersionResponseLinks'
+        stage:
+          anyOf:
+          - $ref: '#/components/schemas/StageResponse'
+          - type: 'null'
+        version_id:
+          type: string
+          title: Version Id
+      additionalProperties: false
+      type: object
+      required:
+      - created_at
+      - etag
+      - links
+      - version_id
+      title: GeoscienceObjectVersion
+      description: Geoscience object version.
+    GetObjectResponse:
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        created_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        deleted_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deleted At
+        deleted_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        etag:
+          type: string
+          title: Etag
+        geojson_bounding_box:
+          anyOf:
+          - $ref: '#/components/schemas/BoundingBox'
+          - type: 'null'
+        geojson_bounding_box_from_workspace_crs:
+          type: boolean
+          title: Geojson Bounding Box From Workspace Crs
+          description: True if the bounding box was calculated using the workspace
+            CRS, else False.
+        links:
+          $ref: '#/components/schemas/ObjectResponseLinks'
+        modified_at:
+          type: string
+          format: date-time
+          title: Modified At
+        modified_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        object:
+          $ref: '#/components/schemas/GeoscienceObject'
+        object_id:
+          type: string
+          format: uuid
+          title: Object Id
+        object_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Object Path
+        stage:
+          anyOf:
+          - $ref: '#/components/schemas/StageResponse'
+          - type: 'null'
+        version_id:
+          type: string
+          title: Version Id
+        versions:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/GeoscienceObjectVersion'
+            type: array
+          - type: 'null'
+          title: Versions
+      additionalProperties: false
+      type: object
+      required:
+      - created_at
+      - etag
+      - geojson_bounding_box_from_workspace_crs
+      - links
+      - modified_at
+      - object
+      - object_id
+      - version_id
+      title: GetObjectResponse
+    HTTPStatus:
+      type: integer
+      enum:
+      - 100
+      - 101
+      - 102
+      - 103
+      - 200
+      - 201
+      - 202
+      - 203
+      - 204
+      - 205
+      - 206
+      - 207
+      - 208
+      - 226
+      - 300
+      - 301
+      - 302
+      - 303
+      - 304
+      - 305
+      - 307
+      - 308
+      - 400
+      - 401
+      - 402
+      - 403
+      - 404
+      - 405
+      - 406
+      - 407
+      - 408
+      - 409
+      - 410
+      - 411
+      - 412
+      - 413
+      - 413
+      - 414
+      - 414
+      - 415
+      - 416
+      - 416
+      - 417
+      - 418
+      - 421
+      - 422
+      - 422
+      - 423
+      - 424
+      - 425
+      - 426
+      - 428
+      - 429
+      - 431
+      - 451
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+      - 505
+      - 506
+      - 507
+      - 508
+      - 510
+      - 511
+      title: HTTPStatus
+      description: "HTTP status codes and reason phrases\n\nStatus codes from the\
+        \ following RFCs are all observed:\n\n    * RFC 9110: HTTP Semantics, obsoletes\
+        \ 7231, which obsoleted 2616\n    * RFC 6585: Additional HTTP Status Codes\n\
+        \    * RFC 3229: Delta encoding in HTTP\n    * RFC 4918: HTTP Extensions for\
+        \ WebDAV, obsoletes 2518\n    * RFC 5842: Binding Extensions to WebDAV\n \
+        \   * RFC 7238: Permanent Redirect\n    * RFC 2295: Transparent Content Negotiation\
+        \ in HTTP\n    * RFC 2774: An HTTP Extension Framework\n    * RFC 7725: An\
+        \ HTTP Status Code to Report Legal Obstacles\n    * RFC 7540: Hypertext Transfer\
+        \ Protocol Version 2 (HTTP/2)\n    * RFC 2324: Hyper Text Coffee Pot Control\
+        \ Protocol (HTCPCP/1.0)\n    * RFC 8297: An HTTP Status Code for Indicating\
+        \ Hints\n    * RFC 8470: Using Early Data in HTTP"
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    InsufficientRoleError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        permitted_roles:
+          anyOf:
+          - items: {}
+            type: array
+          - type: 'null'
+          title: Permitted Roles
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 403
+        title:
+          type: string
+          title: Title
+          default: Insufficient Role.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/auth/insufficient-role
+        your_role:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Your Role
+      type: object
+      title: InsufficientRoleError
+    InvalidFilterParams:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 422
+        title:
+          type: string
+          title: Title
+          default: Invalid Filter Params.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/filtering/invalid-params
+      type: object
+      title: InvalidFilterParams
+    InvalidGeoscienceObject:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        json_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Json Path
+        schema_path:
+          anyOf:
+          - items: {}
+            type: array
+          - type: 'null'
+          title: Schema Path
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 400
+        title:
+          type: string
+          title: Title
+          default: The Geoscience Object Is Invalid.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/schemas/invalid-object
+      type: object
+      title: InvalidGeoscienceObject
+    InvalidObjectError:
+      properties:
+        actual:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Actual
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        expected:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Expected
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 400
+        title:
+          type: string
+          title: Title
+          default: Object Error.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/objects/invalid-object
+      type: object
+      title: InvalidObjectError
+    InvalidPathError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 400
+        title:
+          type: string
+          title: Title
+          default: Invalid Path.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/invalid-path
+      type: object
+      title: InvalidPathError
+    InvalidSortParams:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 422
+        title:
+          type: string
+          title: Title
+          default: Invalid Sorting Parameters
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/sorting/invalid-params
+      type: object
+      title: InvalidSortParams
+    InvalidTokenError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 401
+        title:
+          type: string
+          title: Title
+          default: Access Denied.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/auth/invalid-token
+        upstream_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Type
+      type: object
+      title: InvalidTokenError
+    LatestObjectVersionIdResponse:
+      properties:
+        object_id:
+          type: string
+          title: Object Id
+        version_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Version Id
+      additionalProperties: false
+      type: object
+      required:
+      - object_id
+      title: LatestObjectVersionIdResponse
+    ListObjectsResponse:
+      properties:
+        count:
+          type: integer
+          title: Count
+          default: 0
+        limit:
+          type: integer
+          title: Limit
+          default: 0
+        links:
+          $ref: '#/components/schemas/ListObjectsResponseLinks'
+        objects:
+          items:
+            $ref: '#/components/schemas/ListedObject'
+          type: array
+          title: Objects
+        offset:
+          type: integer
+          title: Offset
+          default: 0
+        total:
+          type: integer
+          title: Total
+          default: 0
+      additionalProperties: false
+      type: object
+      required:
+      - links
+      - objects
+      title: ListObjectsResponse
+    ListObjectsResponseLinks:
+      properties:
+        next:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Next
+        prev:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Prev
+      additionalProperties: false
+      type: object
+      title: ListObjectsResponseLinks
+    ListOrgObjectsResponse:
+      properties:
+        count:
+          type: integer
+          title: Count
+          default: 0
+        limit:
+          type: integer
+          title: Limit
+          default: 0
+        links:
+          $ref: '#/components/schemas/ListObjectsResponseLinks'
+        objects:
+          items:
+            $ref: '#/components/schemas/OrgListedObject'
+          type: array
+          title: Objects
+        offset:
+          type: integer
+          title: Offset
+          default: 0
+        total:
+          type: integer
+          title: Total
+          default: 0
+      additionalProperties: false
+      type: object
+      required:
+      - links
+      - objects
+      title: ListOrgObjectsResponse
+    ListStagesResponse:
+      properties:
+        stages:
+          items:
+            $ref: '#/components/schemas/StageListItem'
+          type: array
+          title: Stages
+      additionalProperties: false
+      type: object
+      required:
+      - stages
+      title: ListStagesResponse
+    ListVersionsBody:
+      properties:
+        version_ids:
+          items:
+            type: string
+          type: array
+          maxItems: 100
+          minItems: 1
+          title: Version Ids
+      additionalProperties: false
+      type: object
+      required:
+      - version_ids
+      title: ListVersionsBody
+    ListVersionsResponse:
+      properties:
+        versions:
+          items:
+            $ref: '#/components/schemas/GeoscienceObjectVersion'
+          type: array
+          title: Versions
+      additionalProperties: false
+      type: object
+      required:
+      - versions
+      title: ListVersionsResponse
+    ListedObject:
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        created_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        deleted_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deleted At
+        deleted_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        etag:
+          type: string
+          title: Etag
+        geojson_bounding_box:
+          anyOf:
+          - $ref: '#/components/schemas/BoundingBox'
+          - type: 'null'
+        geojson_bounding_box_from_workspace_crs:
+          type: boolean
+          title: Geojson Bounding Box From Workspace Crs
+          description: True if the bounding box was calculated using the workspace
+            CRS, else False.
+        links:
+          $ref: '#/components/schemas/ListedObjectLinks'
+        modified_at:
+          type: string
+          format: date-time
+          title: Modified At
+        modified_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        name:
+          type: string
+          title: Name
+        object_id:
+          type: string
+          format: uuid
+          title: Object Id
+        path:
+          type: string
+          title: Path
+        schema:
+          type: string
+          title: Schema
+          description: The geoscience object schema.
+        stage:
+          anyOf:
+          - $ref: '#/components/schemas/StageResponse'
+          - type: 'null'
+        version_id:
+          type: string
+          title: Version Id
+      additionalProperties: false
+      type: object
+      required:
+      - created_at
+      - etag
+      - geojson_bounding_box_from_workspace_crs
+      - links
+      - modified_at
+      - name
+      - object_id
+      - path
+      - schema
+      - version_id
+      title: ListedObject
+    ListedObjectLinks:
+      properties:
+        download:
+          type: string
+          title: Download
+      additionalProperties: false
+      type: object
+      required:
+      - download
+      title: ListedObjectLinks
+    MetadataUpdateBody:
+      properties:
+        stage_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Stage Id
+      additionalProperties: false
+      type: object
+      title: MetadataUpdateBody
+    MissingTokenError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 401
+        title:
+          type: string
+          title: Title
+          default: Access Denied.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
+      type: object
+      title: MissingTokenError
+    ObjectAlreadyExistsError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        existing_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Existing Id
+        object_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Object Path
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 409
+        title:
+          type: string
+          title: Title
+          default: Geoscience Object Already Exists.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/objects/already-exists
+      type: object
+      title: ObjectAlreadyExistsError
+    ObjectDataRefInvalid:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        invalid:
+          anyOf:
+          - items: {}
+            type: array
+          - type: 'null'
+          title: Invalid
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 400
+        title:
+          type: string
+          title: Title
+          default: Data Key Not Valid.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/data/invalid-key
+        upstream_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Type
+      type: object
+      title: ObjectDataRefInvalid
+    ObjectDataRefNotFound:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        missing:
+          anyOf:
+          - items: {}
+            type: array
+          - type: 'null'
+          title: Missing
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 400
+        title:
+          type: string
+          title: Title
+          default: Data Key Not Found.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/objects/data-key-not-found
+      type: object
+      title: ObjectDataRefNotFound
+    ObjectDataRefNotMovedError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 400
+        title:
+          type: string
+          title: Title
+          default: Data Key Not Moved.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/objects/data-key-not-found
+      type: object
+      title: ObjectDataRefNotMovedError
+    ObjectModified:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 412
+        title:
+          type: string
+          title: Title
+          default: Object Modified.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/objects/modified
+      type: object
+      title: ObjectModified
+    ObjectNotFound:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        object_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Object Id
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 404
+        title:
+          type: string
+          title: Title
+          default: Object Not Found.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/objects/not-found
+        upstream_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Type
+      type: object
+      title: ObjectNotFound
+    ObjectResponseLinks:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/DataDownloadUrl'
+          type: array
+          title: Data
+        download:
+          type: string
+          title: Download
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - download
+      title: ObjectResponseLinks
+    ObjectStoreError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 502
+        title:
+          type: string
+          title: Title
+          default: Geoscience Object Storage Operation Failed.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/objects/storage
+      type: object
+      title: ObjectStoreError
+    ObjectVersionResponseLinks:
+      properties:
+        download:
+          type: string
+          title: Download
+      additionalProperties: false
+      type: object
+      required:
+      - download
+      title: ObjectVersionResponseLinks
+    OrgListedObject:
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        created_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        deleted_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deleted At
+        deleted_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        geojson_bounding_box:
+          anyOf:
+          - $ref: '#/components/schemas/BoundingBox'
+          - type: 'null'
+        geojson_bounding_box_from_workspace_crs:
+          type: boolean
+          title: Geojson Bounding Box From Workspace Crs
+          description: True if the bounding box was calculated using the workspace
+            CRS, else False.
+        modified_at:
+          type: string
+          format: date-time
+          title: Modified At
+        modified_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        name:
+          type: string
+          title: Name
+        object_id:
+          type: string
+          format: uuid
+          title: Object Id
+        schema:
+          type: string
+          title: Schema
+        stage:
+          anyOf:
+          - $ref: '#/components/schemas/StageResponse'
+          - type: 'null'
+        workspace_access:
+          anyOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          - type: 'null'
+        workspace_id:
+          type: string
+          format: uuid
+          title: Workspace Id
+        workspace_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Workspace Name
+      additionalProperties: false
+      type: object
+      required:
+      - created_at
+      - geojson_bounding_box_from_workspace_crs
+      - modified_at
+      - name
+      - object_id
+      - schema
+      - workspace_id
+      title: OrgListedObject
+    PostObjectResponse:
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        created_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        deleted_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deleted At
+        deleted_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        etag:
+          type: string
+          title: Etag
+        geojson_bounding_box:
+          anyOf:
+          - $ref: '#/components/schemas/BoundingBox'
+          - type: 'null'
+        geojson_bounding_box_from_workspace_crs:
+          type: boolean
+          title: Geojson Bounding Box From Workspace Crs
+          description: True if the bounding box was calculated using the workspace
+            CRS, else False.
+        links:
+          $ref: '#/components/schemas/ObjectResponseLinks'
+        modified_at:
+          type: string
+          format: date-time
+          title: Modified At
+        modified_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        object:
+          $ref: '#/components/schemas/GeoscienceObject'
+        object_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Object Id
+        object_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Object Path
+        stage:
+          anyOf:
+          - $ref: '#/components/schemas/StageResponse'
+          - type: 'null'
+        version_id:
+          type: string
+          title: Version Id
+      additionalProperties: false
+      type: object
+      required:
+      - created_at
+      - etag
+      - geojson_bounding_box_from_workspace_crs
+      - links
+      - modified_at
+      - object
+      - version_id
+      title: PostObjectResponse
+    RoleEnum:
+      type: string
+      enum:
+      - owner
+      - editor
+      - viewer
+      title: RoleEnum
+    SchemaRequestFailed:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 404
+        title:
+          type: string
+          title: Title
+          default: Failed To Request Geoscience Object Schema.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/schemas/not-found
+      type: object
+      title: SchemaRequestFailed
+    StageListItem:
+      properties:
+        name:
+          type: string
+          title: Name
+        stage_id:
+          type: string
+          format: uuid
+          title: Stage Id
+      additionalProperties: false
+      type: object
+      required:
+      - name
+      - stage_id
+      title: StageListItem
+    StageResponse:
+      properties:
+        name:
+          type: string
+          title: Name
+        stage_id:
+          type: string
+          format: uuid
+          title: Stage Id
+      additionalProperties: false
+      type: object
+      required:
+      - name
+      - stage_id
+      title: StageResponse
+    UpdateGeoscienceObject:
+      properties:
+        schema:
+          type: string
+          title: Schema
+          description: The geoscience object schema.
+        uuid:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          format: uuid
+          title: Uuid
+          description: Unique object UUID.
+      additionalProperties: true
+      type: object
+      required:
+      - schema
+      - uuid
+      title: UpdateGeoscienceObject
+      description: 'The geoscience object with the additional required schema properties.
+
+
+        The uuid field must be set when updating a geoscience object.
+
+        This object is largely defined by the schemas in the geoscience-object-schemas
+        repository.
+
+        There are some default, required values listed here explicitly.'
+    User:
+      properties:
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+        id:
+          type: string
+          format: uuid
+          title: Id
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+      additionalProperties: false
+      type: object
+      required:
+      - id
+      title: User
+      description: User details.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    VersionNotFound:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 404
+        title:
+          type: string
+          title: Title
+          default: Version Not Found.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/versions/not-found
+      type: object
+      title: VersionNotFound
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+- name: Objects
+  description: Endpoints for updating and maintaining geoscience objects
+- name: Data
+  description: Endpoints for managing geoscience object data

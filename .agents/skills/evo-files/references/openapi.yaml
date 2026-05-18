@@ -1,0 +1,2717 @@
+openapi: 3.1.0
+info:
+  title: File API
+  description: "The File API provides the ability to manage files of any type or size,\
+    \ associated with\nyour Evo workspace. Enable your product with Evo connected\
+    \ workflows by integrating with the Seequent Evo\nFile API. Most file formats\
+    \ and sizes are accepted.\n\nFiles can be referenced by their UUID, or by a user-defined\
+    \ file path. Files are versioned, so updating or\nreplacing them will create a\
+    \ new version of the file. The latest version of the file is always returned\n\
+    unless a specific version is requested.\n\nFor more information on using the File\
+    \ API, see [Overview](https://developer.seequent.com/docs/guides/file/), or the\
+    \ API references here.\n        "
+  version: 2.11.5
+paths:
+  /file/v2/orgs/{organisation_id}/workspaces/{workspace_id}/files/{file_id}:
+    delete:
+      tags:
+      - file:v2
+      summary: Delete a file by ID
+      description: Request to delete a file. This will delete the file and all historic
+        versions.
+      operationId: deleteFileByID
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: file_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: UUID of a file.
+          examples:
+          - 355fa5a6-f37d-11ed-93c1-00155d19a71b
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: File Id
+        description: UUID of a file.
+      - name: organisation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Organisation Id
+        description: The customer's organisation ID.
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The ID of the workspace in the organization.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Workspace Id
+        description: The ID of the workspace in the organization.
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '204':
+          description: The file has been deleted.
+        '502':
+          description: '
+
+            #### /file-api/metadata/store-error
+
+
+            A database error occurred when deleting the specified file.
+
+
+
+            #### /file-api/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/metadata/store-error:
+                  value:
+                    status: 502
+                    title: File Metadata Storage Operation Failed.
+                    type: https://seequent.com/error-codes/file-api/metadata/store-error
+                  summary: /file-api/metadata/store-error
+                /file-api/bad-gateway:
+                  value:
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/file-api/bad-gateway
+                  summary: /file-api/bad-gateway
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MetadataStoreError'
+                - $ref: '#/components/schemas/BadGateway'
+                title: Response 502 Deletefilebyid
+        '400':
+          description: '
+
+            #### /file-api/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/bad-request:
+                  value:
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/file-api/bad-request
+                  summary: /file-api/bad-request
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: '
+
+            #### /file-api/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /file-api/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/missing-token
+                  summary: /file-api/auth/missing-token
+                /file-api/auth/invalid-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/invalid-token
+                  summary: /file-api/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Deletefilebyid
+        '403':
+          description: '
+
+            #### /file-api/auth/insufficient-role
+
+
+            Forbidden. The client credentials are valid but the client does not have
+            a sufficient role to access to this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    - owner
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/file-api/auth/insufficient-role
+                  summary: /file-api/auth/insufficient-role
+              schema:
+                $ref: '#/components/schemas/InsufficientRoleError'
+        '500':
+          description: '
+
+            #### /file-api/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/file-api/api-errors
+                  summary: /file-api/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: '
+
+            #### /file-api/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/file-api/validation
+                  summary: /file-api/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+    get:
+      tags:
+      - file:v2
+      summary: Download a file by ID
+      description: Request file metadata and a delegated download link for a specified
+        file by ID. The `download` link should be followed to download the file contents
+        from blob storage. This link is pre-signed and will expire after 30 minutes.
+        Set the `include_versions` query parameter to `true` to get the complete list
+        of available versions. Set the `version` query parameter to request a download
+        link for that specific version of the specified file. If `version` is not
+        set, the latest version of the file will be returned.
+      operationId: getFileByID
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: file_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: UUID of a file.
+          examples:
+          - 355fa5a6-f37d-11ed-93c1-00155d19a71b
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: File Id
+        description: UUID of a file.
+      - name: organisation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Organisation Id
+        description: The customer's organisation ID.
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The ID of the workspace in the organization.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Workspace Id
+        description: The ID of the workspace in the organization.
+      - name: version_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: int64
+          - type: 'null'
+          description: Optional version ID for the desired file version. By default,
+            the response will return the _latest_ version.
+          examples:
+          - '1223372036854775807'
+          title: Version Id
+        description: Optional version ID for the desired file version. By default,
+          the response will return the _latest_ version.
+      - name: include_versions
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: Optional inclusion of the `DownloadFile.versions`. By default,
+            the response will return `versions` as `null`.
+          default: false
+          title: Include Versions
+        description: Optional inclusion of the `DownloadFile.versions`. By default,
+          the response will return `versions` as `null`.
+      - name: deleted
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: Optional flag to include deleted files. By default, the response
+            will not include deleted files.
+          title: Deleted
+        description: Optional flag to include deleted files. By default, the response
+          will not include deleted files.
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '200':
+          description: An object containing file metadata and at least one download
+            link. Optionally, the object will also contain a link for each file version.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadFileResponse'
+        '404':
+          description: '
+
+            #### /file-api/files/not-found
+
+
+            File or version not found.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/not-found:
+                  value:
+                    status: 404
+                    title: File Not Found.
+                    type: https://seequent.com/error-codes/file-api/files/not-found
+                  summary: /file-api/files/not-found
+              schema:
+                $ref: '#/components/schemas/FileNotFoundError'
+        '410':
+          description: '
+
+            #### /file-api/files/gone
+
+
+            File has been deleted.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/gone:
+                  value:
+                    status: 410
+                    title: The file has been deleted
+                    detail: The requested file has been deleted.
+                    type: https://seequent.com/error-codes/file-api/files/gone
+                  summary: /file-api/files/gone
+              schema:
+                $ref: '#/components/schemas/FileDeletedError'
+        '400':
+          description: '
+
+            #### /file-api/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/bad-request:
+                  value:
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/file-api/bad-request
+                  summary: /file-api/bad-request
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: '
+
+            #### /file-api/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /file-api/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/missing-token
+                  summary: /file-api/auth/missing-token
+                /file-api/auth/invalid-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/invalid-token
+                  summary: /file-api/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Getfilebyid
+        '403':
+          description: '
+
+            #### /file-api/auth/insufficient-role
+
+
+            Forbidden. The client credentials are valid but the client does not have
+            a sufficient role to access to this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    - owner
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/file-api/auth/insufficient-role
+                  summary: /file-api/auth/insufficient-role
+              schema:
+                $ref: '#/components/schemas/InsufficientRoleError'
+        '500':
+          description: '
+
+            #### /file-api/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/file-api/api-errors
+                  summary: /file-api/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '502':
+          description: '
+
+            #### /file-api/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/bad-gateway:
+                  value:
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/file-api/bad-gateway
+                  summary: /file-api/bad-gateway
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '422':
+          description: '
+
+            #### /file-api/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/file-api/validation
+                  summary: /file-api/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+    put:
+      tags:
+      - file:v2
+      summary: Update a file
+      description: 'Request an upload link for a new version of the specified file.
+
+        If the file does not exist an error will be returned.
+
+        Follow up a successful request with a call to the returned pre-signed upload
+        link.
+
+        Specify a binary body containing the file to upload, with the addition of
+        header key-value pair
+
+        `x-ms-blob-type: BlockBlob`.
+
+        The upload link is pre-signed and will expire after 30 minutes.
+
+
+        Including a `version_id` parameter allows creating a link to a blob with uncommitted
+        blocks, i.e. the upload has not
+
+        been completed properly, or the original pre-signed link has expired.
+
+        Uncommitted blocks are valid for up to one week, after which they are automatically
+        deleted.
+
+
+        Including a `deleted` parameter with a value of `false` will restore a deleted
+        file.'
+      operationId: updateFileByID
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: file_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: UUID of a file.
+          examples:
+          - 355fa5a6-f37d-11ed-93c1-00155d19a71b
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: File Id
+        description: UUID of a file.
+      - name: organisation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Organisation Id
+        description: The customer's organisation ID.
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The ID of the workspace in the organization.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Workspace Id
+        description: The ID of the workspace in the organization.
+      - name: version_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: int64
+          - type: 'null'
+          description: (Optional) version ID to fetch a link for.
+          examples:
+          - '1223372036854775807'
+          title: Version Id
+        description: (Optional) version ID to fetch a link for.
+      - name: deleted
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: When set to false, the operation will attempt to restore a
+            deleted file.
+          title: Deleted
+        description: When set to false, the operation will attempt to restore a deleted
+          file.
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '200':
+          description: An object containing a pre-signed upload link. Submit the file
+            content to the link.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadFileResponse'
+        '404':
+          description: '
+
+            #### /file-api/files/not-found
+
+
+            File does not exist.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/not-found:
+                  value:
+                    status: 404
+                    title: File Not Found.
+                    type: https://seequent.com/error-codes/file-api/files/not-found
+                  summary: /file-api/files/not-found
+              schema:
+                $ref: '#/components/schemas/FileNotFoundError'
+        '410':
+          description: '
+
+            #### /file-api/files/gone
+
+
+            File has been deleted.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/gone:
+                  value:
+                    status: 410
+                    title: The file has been deleted
+                    detail: The requested file has been deleted.
+                    type: https://seequent.com/error-codes/file-api/files/gone
+                  summary: /file-api/files/gone
+              schema:
+                $ref: '#/components/schemas/FileDeletedError'
+        '502':
+          description: '
+
+            #### /file-api/metadata/store-error
+
+
+            A database error occurred when updating a file.
+
+
+
+            #### /file-api/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/metadata/store-error:
+                  value:
+                    status: 502
+                    title: File Metadata Storage Operation Failed.
+                    type: https://seequent.com/error-codes/file-api/metadata/store-error
+                  summary: /file-api/metadata/store-error
+                /file-api/bad-gateway:
+                  value:
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/file-api/bad-gateway
+                  summary: /file-api/bad-gateway
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MetadataStoreError'
+                - $ref: '#/components/schemas/BadGateway'
+                title: Response 502 Updatefilebyid
+        '409':
+          description: '
+
+            #### /file-api/files/already-exists
+
+
+            Another file already exists at this path.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/already-exists:
+                  value:
+                    status: 409
+                    title: Invalid Request.
+                    type: https://seequent.com/error-codes/file-api/files/already-exists
+                  summary: /file-api/files/already-exists
+              schema:
+                $ref: '#/components/schemas/FileAlreadyExistsError'
+        '400':
+          description: '
+
+            #### /file-api/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/bad-request:
+                  value:
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/file-api/bad-request
+                  summary: /file-api/bad-request
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: '
+
+            #### /file-api/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /file-api/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/missing-token
+                  summary: /file-api/auth/missing-token
+                /file-api/auth/invalid-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/invalid-token
+                  summary: /file-api/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Updatefilebyid
+        '403':
+          description: '
+
+            #### /file-api/auth/insufficient-role
+
+
+            Forbidden. The client credentials are valid but the client does not have
+            a sufficient role to access to this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    - owner
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/file-api/auth/insufficient-role
+                  summary: /file-api/auth/insufficient-role
+              schema:
+                $ref: '#/components/schemas/InsufficientRoleError'
+        '500':
+          description: '
+
+            #### /file-api/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/file-api/api-errors
+                  summary: /file-api/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: '
+
+            #### /file-api/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/file-api/validation
+                  summary: /file-api/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+        '204':
+          description: The file has been restored. The location of the resource has
+            not changed.
+        '303':
+          description: The file has been restored. Location of the resource has changed
+            (e.g., rename on restore).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadFileResponse'
+      x-api-preview: true
+  /file/v2/orgs/{organisation_id}/workspaces/{workspace_id}/files/path/{file_path}:
+    delete:
+      tags:
+      - file:v2
+      summary: Delete a file by path
+      description: Request to delete a file. This will delete the file and all historic
+        versions.
+      operationId: deleteFileByPath
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: file_path
+        in: path
+        required: true
+        schema:
+          type: string
+          description: Path to the file.
+          examples:
+          - a/b/file.txt
+          - a/new%20file.txt
+          title: File Path
+        description: Path to the file.
+      - name: organisation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Organisation Id
+        description: The customer's organisation ID.
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The ID of the workspace in the organization.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Workspace Id
+        description: The ID of the workspace in the organization.
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '204':
+          description: The file has been deleted.
+        '502':
+          description: '
+
+            #### /file-api/metadata/store-error
+
+
+            A database error occurred when deleting the specified file.
+
+
+
+            #### /file-api/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/metadata/store-error:
+                  value:
+                    status: 502
+                    title: File Metadata Storage Operation Failed.
+                    type: https://seequent.com/error-codes/file-api/metadata/store-error
+                  summary: /file-api/metadata/store-error
+                /file-api/bad-gateway:
+                  value:
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/file-api/bad-gateway
+                  summary: /file-api/bad-gateway
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MetadataStoreError'
+                - $ref: '#/components/schemas/BadGateway'
+                title: Response 502 Deletefilebypath
+        '400':
+          description: '
+
+            #### /file-api/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/bad-request:
+                  value:
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/file-api/bad-request
+                  summary: /file-api/bad-request
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: '
+
+            #### /file-api/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /file-api/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/missing-token
+                  summary: /file-api/auth/missing-token
+                /file-api/auth/invalid-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/invalid-token
+                  summary: /file-api/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Deletefilebypath
+        '403':
+          description: '
+
+            #### /file-api/auth/insufficient-role
+
+
+            Forbidden. The client credentials are valid but the client does not have
+            a sufficient role to access to this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    - owner
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/file-api/auth/insufficient-role
+                  summary: /file-api/auth/insufficient-role
+              schema:
+                $ref: '#/components/schemas/InsufficientRoleError'
+        '500':
+          description: '
+
+            #### /file-api/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/file-api/api-errors
+                  summary: /file-api/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: '
+
+            #### /file-api/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/file-api/validation
+                  summary: /file-api/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+    get:
+      tags:
+      - file:v2
+      summary: Download a file by path
+      description: Request file metadata and a delegated download link for a specified
+        file by path. The `download` link should be followed to download the file
+        contents. This link is pre-signed and will expire after 30 minutes. Set the
+        `include_versions` query parameter to `true` to get the complete list of available
+        versions. Set the `version` query parameter to request a download link for
+        that specific version of the specified file. If `version` is not set, the
+        latest version of the file will be returned.
+      operationId: getFileByPath
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: file_path
+        in: path
+        required: true
+        schema:
+          type: string
+          description: Path to the file.
+          examples:
+          - a/b/file.txt
+          - a/new%20file.txt
+          title: File Path
+        description: Path to the file.
+      - name: organisation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Organisation Id
+        description: The customer's organisation ID.
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The ID of the workspace in the organization.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Workspace Id
+        description: The ID of the workspace in the organization.
+      - name: version_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: int64
+          - type: 'null'
+          description: Optional version ID for the desired file version. By default,
+            the response will return the _latest_ version.
+          examples:
+          - '1223372036854775807'
+          title: Version Id
+        description: Optional version ID for the desired file version. By default,
+          the response will return the _latest_ version.
+      - name: include_versions
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: Optional inclusion of the `DownloadFile.versions`. By default,
+            the response will return `versions` as `null`.
+          default: false
+          title: Include Versions
+        description: Optional inclusion of the `DownloadFile.versions`. By default,
+          the response will return `versions` as `null`.
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '200':
+          description: An object containing file metadata and at least one download
+            link. Optionally, the object will also contain a link for each file version.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadFileResponse'
+        '400':
+          description: '
+
+            #### /file-api/files/invalid-path
+
+
+            Invalid request path.
+
+
+
+            #### /file-api/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/invalid-path:
+                  value:
+                    status: 400
+                    title: Invalid Path.
+                    type: https://seequent.com/error-codes/file-api/files/invalid-path
+                  summary: /file-api/files/invalid-path
+                /file-api/bad-request:
+                  value:
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/file-api/bad-request
+                  summary: /file-api/bad-request
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InvalidPathError'
+                - $ref: '#/components/schemas/BadRequestError'
+                title: Response 400 Getfilebypath
+        '404':
+          description: '
+
+            #### /file-api/files/not-found
+
+
+            File or version not found.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/not-found:
+                  value:
+                    status: 404
+                    title: File Not Found.
+                    type: https://seequent.com/error-codes/file-api/files/not-found
+                  summary: /file-api/files/not-found
+              schema:
+                $ref: '#/components/schemas/FileNotFoundError'
+        '410':
+          description: '
+
+            #### /file-api/files/gone
+
+
+            File has been deleted.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/gone:
+                  value:
+                    status: 410
+                    title: The file has been deleted
+                    detail: The requested file has been deleted.
+                    type: https://seequent.com/error-codes/file-api/files/gone
+                  summary: /file-api/files/gone
+              schema:
+                $ref: '#/components/schemas/FileDeletedError'
+        '401':
+          description: '
+
+            #### /file-api/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /file-api/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/missing-token
+                  summary: /file-api/auth/missing-token
+                /file-api/auth/invalid-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/invalid-token
+                  summary: /file-api/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Getfilebypath
+        '403':
+          description: '
+
+            #### /file-api/auth/insufficient-role
+
+
+            Forbidden. The client credentials are valid but the client does not have
+            a sufficient role to access to this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    - owner
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/file-api/auth/insufficient-role
+                  summary: /file-api/auth/insufficient-role
+              schema:
+                $ref: '#/components/schemas/InsufficientRoleError'
+        '500':
+          description: '
+
+            #### /file-api/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/file-api/api-errors
+                  summary: /file-api/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '502':
+          description: '
+
+            #### /file-api/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/bad-gateway:
+                  value:
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/file-api/bad-gateway
+                  summary: /file-api/bad-gateway
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '422':
+          description: '
+
+            #### /file-api/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/file-api/validation
+                  summary: /file-api/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+    put:
+      tags:
+      - file:v2
+      summary: Upload a file
+      description: 'Request an upload link for a new version of the specified file.
+
+        If the folders in the file path do not exist, they will be created.
+
+        If the file already exists, a new version will be created with the updated
+        file content.
+
+        Follow up a successful request with a call to the returned pre-signed upload
+        link.
+
+        Specify a binary body containing the file to upload, with the addition of
+        header key-value pair
+
+        `x-ms-blob-type: BlockBlob`.
+
+        The upload link is pre-signed and will expire after 30 minutes.
+
+
+        Including a `version_id` parameter allows creating a link to data with uncommitted
+        blocks, i.e. the upload has not
+
+        been completed properly, or the original pre-signed link has expired.
+
+        Uncommitted blocks are valid for up to one week, after which they are automatically
+        deleted.'
+      operationId: upsertFileByPath
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: file_path
+        in: path
+        required: true
+        schema:
+          type: string
+          description: Path to the file.
+          examples:
+          - a/b/file.txt
+          - a/new%20file.txt
+          title: File Path
+        description: Path to the file.
+      - name: organisation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Organisation Id
+        description: The customer's organisation ID.
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The ID of the workspace in the organization.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Workspace Id
+        description: The ID of the workspace in the organization.
+      - name: version_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: int64
+          - type: 'null'
+          description: (Optional) version ID to fetch a link for.
+          examples:
+          - '1223372036854775807'
+          title: Version Id
+        description: (Optional) version ID to fetch a link for.
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '200':
+          description: An object containing a pre-signed upload link. Submit the file
+            content to the link.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadFileResponse'
+        '502':
+          description: '
+
+            #### /file-api/metadata/store-error
+
+
+            A database error occurred when uploading a file.
+
+
+
+            #### /file-api/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/metadata/store-error:
+                  value:
+                    status: 502
+                    title: File Metadata Storage Operation Failed.
+                    type: https://seequent.com/error-codes/file-api/metadata/store-error
+                  summary: /file-api/metadata/store-error
+                /file-api/bad-gateway:
+                  value:
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/file-api/bad-gateway
+                  summary: /file-api/bad-gateway
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MetadataStoreError'
+                - $ref: '#/components/schemas/BadGateway'
+                title: Response 502 Upsertfilebypath
+        '404':
+          description: '
+
+            #### /file-api/files/not-found
+
+
+            Unable to complete partial upload. No file exists by this name.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/not-found:
+                  value:
+                    status: 404
+                    title: File Not Found.
+                    type: https://seequent.com/error-codes/file-api/files/not-found
+                  summary: /file-api/files/not-found
+              schema:
+                $ref: '#/components/schemas/FileNotFoundError'
+        '400':
+          description: '
+
+            #### /file-api/files/no-file-upload-in-progress
+
+
+            Unable to complete partial upload. The upload has already been completed.
+
+
+
+            #### /file-api/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/no-file-upload-in-progress:
+                  value:
+                    status: 400
+                    title: No file upload in progress
+                    type: https://seequent.com/error-codes/file-api/files/no-file-upload-in-progress
+                  summary: /file-api/files/no-file-upload-in-progress
+                /file-api/bad-request:
+                  value:
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/file-api/bad-request
+                  summary: /file-api/bad-request
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/FileUploadCompleteError'
+                - $ref: '#/components/schemas/BadRequestError'
+                title: Response 400 Upsertfilebypath
+        '401':
+          description: '
+
+            #### /file-api/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /file-api/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/missing-token
+                  summary: /file-api/auth/missing-token
+                /file-api/auth/invalid-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/invalid-token
+                  summary: /file-api/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Upsertfilebypath
+        '403':
+          description: '
+
+            #### /file-api/auth/insufficient-role
+
+
+            Forbidden. The client credentials are valid but the client does not have
+            a sufficient role to access to this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    - owner
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/file-api/auth/insufficient-role
+                  summary: /file-api/auth/insufficient-role
+              schema:
+                $ref: '#/components/schemas/InsufficientRoleError'
+        '500':
+          description: '
+
+            #### /file-api/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/file-api/api-errors
+                  summary: /file-api/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: '
+
+            #### /file-api/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/file-api/validation
+                  summary: /file-api/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+      x-api-preview: true
+  /file/v2/orgs/{organisation_id}/workspaces/{workspace_id}/files:
+    get:
+      tags:
+      - file:v2
+      summary: List folder contents
+      description: Request to list files. The maximum number of results returned is
+        limited to 5000.
+      operationId: listFiles
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: organisation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Organisation Id
+        description: The customer's organisation ID.
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The ID of the workspace in the organization.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Workspace Id
+        description: The ID of the workspace in the organization.
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 5000
+          minimum: 1
+          description: The number of results to return.
+          default: 5000
+          title: Limit
+        description: The number of results to return.
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          description: The number of results to skip.
+          default: 0
+          title: Offset
+        description: The number of results to skip.
+      - name: deleted
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: When true, only files that have been deleted will be returned
+          default: false
+          title: Deleted
+        description: When true, only files that have been deleted will be returned
+      - name: author
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              type: string
+              format: uuid
+          - type: 'null'
+          description: The ID of the author to filter on.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          title: Author
+        description: The ID of the author to filter on.
+      - name: file_name
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            minLength: 1
+            pattern: ^[^/]*$
+          - type: 'null'
+          description: The name of the file to filter on. Will perform a case insensitive
+            partial match, so the query `file_name=gold` will match a file with the
+            name `allgoldcolumns.csv`.
+          examples:
+          - drilling_data
+          title: File Name
+        description: The name of the file to filter on. Will perform a case insensitive
+          partial match, so the query `file_name=gold` will match a file with the
+          name `allgoldcolumns.csv`.
+      - name: created_at
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: 'null'
+          description: A date or dates (max 2) to filter files by. Dates may contain
+            operator prefixes, in the form `<operator>:<datetime>`. The following
+            operators are available (`lt`=less than, `lte`=less than or equal to,
+            `gt`=greater than, `gte`=greater than or equal to).If you omit the operator,
+            then it is assumed the operator is 'equal to'. In this case you may only
+            supply one date. The dates must also be in a valid ISO 8601 format.Dates
+            may include a UTC offset. If the offset is omitted, the timezone is assumed
+            to be UTC.
+          examples:
+          - gte:2023-03-10T22:56:53Z
+          title: Created At
+        description: A date or dates (max 2) to filter files by. Dates may contain
+          operator prefixes, in the form `<operator>:<datetime>`. The following operators
+          are available (`lt`=less than, `lte`=less than or equal to, `gt`=greater
+          than, `gte`=greater than or equal to).If you omit the operator, then it
+          is assumed the operator is 'equal to'. In this case you may only supply
+          one date. The dates must also be in a valid ISO 8601 format.Dates may include
+          a UTC offset. If the offset is omitted, the timezone is assumed to be UTC.
+      - name: modified_by
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              type: string
+              format: uuid
+          - type: 'null'
+          description: The ID of the last person to modify the file to filter on.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          title: Modified By
+        description: The ID of the last person to modify the file to filter on.
+      - name: modified_at
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: 'null'
+          description: A date or dates (max 2) to filter files by. Dates may contain
+            operator prefixes, in the form `<operator>:<datetime>`. The following
+            operators are available (`lt`=less than, `lte`=less than or equal to,
+            `gt`=greater than, `gte`=greater than or equal to).If you omit the operator,
+            then it is assumed the operator is 'equal to'. In this case you may only
+            supply one date. The dates must also be in a valid ISO 8601 format.Dates
+            may include a UTC offset. If the offset is omitted, the timezone is assumed
+            to be UTC.
+          examples:
+          - gte:2023-03-10T22:56:53Z
+          title: Modified At
+        description: A date or dates (max 2) to filter files by. Dates may contain
+          operator prefixes, in the form `<operator>:<datetime>`. The following operators
+          are available (`lt`=less than, `lte`=less than or equal to, `gt`=greater
+          than, `gte`=greater than or equal to).If you omit the operator, then it
+          is assumed the operator is 'equal to'. In this case you may only supply
+          one date. The dates must also be in a valid ISO 8601 format.Dates may include
+          a UTC offset. If the offset is omitted, the timezone is assumed to be UTC.
+      - name: deleted_by
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              type: string
+              format: uuid
+          - type: 'null'
+          description: The UUID of the user that deleted a file.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          title: Deleted By
+        description: The UUID of the user that deleted a file.
+      - name: deleted_at
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: 'null'
+          description: A date or dates (max 2) to filter files by. Dates may contain
+            operator prefixes, in the form `<operator>:<datetime>`. The following
+            operators are available (`lt`=less than, `lte`=less than or equal to,
+            `gt`=greater than, `gte`=greater than or equal to).If you omit the operator,
+            then it is assumed the operator is 'equal to'. In this case you may only
+            supply one date. The dates must also be in a valid ISO 8601 format.Dates
+            may include a UTC offset. If the offset is omitted, the timezone is assumed
+            to be UTC.
+          examples:
+          - gte:2023-03-10T22:56:53Z
+          title: Deleted At
+        description: A date or dates (max 2) to filter files by. Dates may contain
+          operator prefixes, in the form `<operator>:<datetime>`. The following operators
+          are available (`lt`=less than, `lte`=less than or equal to, `gt`=greater
+          than, `gte`=greater than or equal to).If you omit the operator, then it
+          is assumed the operator is 'equal to'. In this case you may only supply
+          one date. The dates must also be in a valid ISO 8601 format.Dates may include
+          a UTC offset. If the offset is omitted, the timezone is assumed to be UTC.
+      - name: order_by
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Order By
+          description: 'A comma separated list of fields to order by, where the default
+            sort order is ascending. To specify the sort order, prefix the field name
+            with either `asc:` or `desc:` for ascending or descending respectively.
+            Field names can be one of the following known sort fields: `created_at`,
+            `modified_at`, `deleted_at`'
+          examples:
+          - order_by=modified_at,desc:created_at
+        description: 'A comma separated list of fields to order by, where the default
+          sort order is ascending. To specify the sort order, prefix the field name
+          with either `asc:` or `desc:` for ascending or descending respectively.
+          Field names can be one of the following known sort fields: `created_at`,
+          `modified_at`, `deleted_at`'
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '200':
+          description: A list of files
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFilesResponse'
+        '400':
+          description: '
+
+            #### /file-api/files/invalid-path
+
+
+            Invalid request path.
+
+
+
+            #### /file-api/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/invalid-path:
+                  value:
+                    status: 400
+                    title: Invalid Path.
+                    type: https://seequent.com/error-codes/file-api/files/invalid-path
+                  summary: /file-api/files/invalid-path
+                /file-api/bad-request:
+                  value:
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/file-api/bad-request
+                  summary: /file-api/bad-request
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InvalidPathError'
+                - $ref: '#/components/schemas/BadRequestError'
+                title: Response 400 Listfiles
+        '502':
+          description: '
+
+            #### /file-api/metadata/store-error
+
+
+            A database error occurred when listing files.
+
+
+
+            #### /file-api/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/metadata/store-error:
+                  value:
+                    status: 502
+                    title: File Metadata Storage Operation Failed.
+                    type: https://seequent.com/error-codes/file-api/metadata/store-error
+                  summary: /file-api/metadata/store-error
+                /file-api/bad-gateway:
+                  value:
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/file-api/bad-gateway
+                  summary: /file-api/bad-gateway
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MetadataStoreError'
+                - $ref: '#/components/schemas/BadGateway'
+                title: Response 502 Listfiles
+        '401':
+          description: '
+
+            #### /file-api/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /file-api/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/missing-token
+                  summary: /file-api/auth/missing-token
+                /file-api/auth/invalid-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/invalid-token
+                  summary: /file-api/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Listfiles
+        '403':
+          description: '
+
+            #### /file-api/auth/insufficient-role
+
+
+            Forbidden. The client credentials are valid but the client does not have
+            a sufficient role to access to this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    - owner
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/file-api/auth/insufficient-role
+                  summary: /file-api/auth/insufficient-role
+              schema:
+                $ref: '#/components/schemas/InsufficientRoleError'
+        '500':
+          description: '
+
+            #### /file-api/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/file-api/api-errors
+                  summary: /file-api/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: '
+
+            #### /file-api/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/file-api/validation
+                  summary: /file-api/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+components:
+  schemas:
+    ApiError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 500
+        title:
+          type: string
+          title: Title
+          default: An Error Occurred.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/api-errors
+      type: object
+      title: ApiError
+    BadGateway:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 502
+        title:
+          type: string
+          title: Title
+          default: Bad Gateway.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/bad-gateway
+      type: object
+      title: BadGateway
+    BadRequestError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 400
+        title:
+          type: string
+          title: Title
+          default: Bad Request.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/bad-request
+      type: object
+      title: BadRequestError
+    DownloadFileResponse:
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        created_by:
+          anyOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+        deleted_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deleted At
+        deleted_by:
+          anyOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+        download:
+          type: string
+          title: Download
+        etag:
+          type: string
+          title: Etag
+        file_id:
+          type: string
+          format: uuid
+          title: File Id
+        modified_at:
+          type: string
+          format: date-time
+          title: Modified At
+        modified_by:
+          anyOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+        name:
+          type: string
+          title: Name
+        path:
+          type: string
+          title: Path
+        self:
+          type: string
+          title: Self
+        size:
+          type: integer
+          title: Size
+        version_id:
+          type: string
+          format: int64
+          title: Version Id
+        versions:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/FileVersionResponse'
+            type: array
+          - type: 'null'
+          title: Versions
+      type: object
+      required:
+      - created_at
+      - download
+      - etag
+      - file_id
+      - modified_at
+      - name
+      - path
+      - self
+      - size
+      - version_id
+      title: DownloadFileResponse
+      description: Download file response.
+    EvoRequestValidationError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 422
+        title:
+          type: string
+          title: Title
+          default: Validation Error.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/validation
+      type: object
+      title: EvoRequestValidationError
+    FileAlreadyExistsError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 409
+        title:
+          type: string
+          title: Title
+          default: Invalid Request.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/files/already-exists
+      type: object
+      title: FileAlreadyExistsError
+    FileDeletedError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 410
+        title:
+          type: string
+          title: Title
+          default: The file has been deleted
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/files/gone
+      type: object
+      title: FileDeletedError
+    FileNotFoundError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 404
+        title:
+          type: string
+          title: Title
+          default: File Not Found.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/files/not-found
+      type: object
+      title: FileNotFoundError
+    FileUploadCompleteError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 400
+        title:
+          type: string
+          title: Title
+          default: No file upload in progress
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/files/no-file-upload-in-progress
+      type: object
+      title: FileUploadCompleteError
+    FileVersionResponse:
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        created_by:
+          anyOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+        file_id:
+          type: string
+          format: uuid
+          title: File Id
+        link:
+          type: string
+          title: Link
+        name:
+          type: string
+          title: Name
+        path:
+          type: string
+          title: Path
+        size:
+          type: integer
+          title: Size
+        version_id:
+          type: string
+          format: int64
+          title: Version Id
+      type: object
+      required:
+      - created_at
+      - created_by
+      - file_id
+      - link
+      - name
+      - path
+      - size
+      - version_id
+      title: FileVersionResponse
+      description: Metadata for specific file version
+    InsufficientRoleError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        permitted_roles:
+          items: {}
+          type: array
+          title: Permitted Roles
+          default: []
+        status:
+          type: integer
+          title: Status
+          default: 403
+        title:
+          type: string
+          title: Title
+          default: Insufficient Role.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/auth/insufficient-role
+        your_role:
+          type: string
+          title: Your Role
+          default: ''
+      type: object
+      title: InsufficientRoleError
+    InvalidPathError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 400
+        title:
+          type: string
+          title: Title
+          default: Invalid Path.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/files/invalid-path
+      type: object
+      title: InvalidPathError
+    InvalidTokenError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 401
+        title:
+          type: string
+          title: Title
+          default: Access Denied.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/auth/invalid-token
+      type: object
+      title: InvalidTokenError
+    ListFile:
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        created_by:
+          anyOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+        deleted_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deleted At
+        deleted_by:
+          anyOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+        etag:
+          type: string
+          title: Etag
+        file_id:
+          type: string
+          format: uuid
+          title: File Id
+        links:
+          $ref: '#/components/schemas/ListFileLinks'
+        modified_at:
+          type: string
+          format: date-time
+          title: Modified At
+        modified_by:
+          anyOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+        name:
+          type: string
+          title: Name
+        path:
+          type: string
+          title: Path
+        size:
+          type: integer
+          title: Size
+        version_id:
+          type: string
+          format: int64
+          title: Version Id
+      type: object
+      required:
+      - created_at
+      - created_by
+      - etag
+      - file_id
+      - links
+      - modified_at
+      - modified_by
+      - name
+      - path
+      - size
+      - version_id
+      title: ListFile
+    ListFileLinks:
+      properties:
+        self:
+          type: string
+          title: Self
+      type: object
+      required:
+      - self
+      title: ListFileLinks
+    ListFilesResponse:
+      properties:
+        count:
+          type: integer
+          title: Count
+        files:
+          items:
+            $ref: '#/components/schemas/ListFile'
+          type: array
+          title: Files
+        limit:
+          type: integer
+          title: Limit
+        links:
+          $ref: '#/components/schemas/ListFilesResponseLinks'
+        offset:
+          type: integer
+          title: Offset
+        total:
+          type: integer
+          title: Total
+      type: object
+      required:
+      - count
+      - files
+      - limit
+      - links
+      - offset
+      - total
+      title: ListFilesResponse
+      description: List files.
+    ListFilesResponseLinks:
+      properties:
+        next:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Next
+        prev:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Prev
+        self:
+          type: string
+          title: Self
+      type: object
+      required:
+      - next
+      - prev
+      - self
+      title: ListFilesResponseLinks
+    MetadataStoreError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 502
+        title:
+          type: string
+          title: Title
+          default: File Metadata Storage Operation Failed.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/metadata/store-error
+      type: object
+      title: MetadataStoreError
+    MissingTokenError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 401
+        title:
+          type: string
+          title: Title
+          default: Access Denied.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/auth/missing-token
+      type: object
+      title: MissingTokenError
+    UploadFileResponse:
+      properties:
+        file_id:
+          type: string
+          format: uuid
+          title: File Id
+        upload:
+          type: string
+          title: Upload
+        version_id:
+          type: string
+          format: int64
+          title: Version Id
+      type: object
+      required:
+      - file_id
+      - upload
+      - version_id
+      title: UploadFileResponse
+      description: Upload file response
+    UserInfo:
+      properties:
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email Address
+          description: The primary email address of the user. Can be null if an error
+            occurred while retrieving this information.
+          examples:
+          - kim@example.test
+        id:
+          type: string
+          format: uuid
+          title: User ID
+          description: The ID of the user
+          examples:
+          - 59b73891-5538-4e45-ae67-f8c5b00d7405
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Full Name
+          description: The full name of the user. Can be null if an error occurred
+            while retrieving this information.
+          examples:
+          - Kim Kim
+      additionalProperties: false
+      type: object
+      required:
+      - id
+      title: UserInfo
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,212 @@
+# Representative OpenAPI specification for the Evo Discovery API.
+#
+# Derived from the official Workspaces API reference at:
+#   https://developer.seequent.com/docs/api/workspaces/discovery#v2-discovery
+#
+# Additional context from the Discovery guide at:
+#   https://developer.seequent.com/docs/guides/getting-started/discovery
+#
+# NOTE: The Workspaces API reference documents the path as
+# /workspace/evo/identity/v2/discovery — the /workspace prefix may be an artefact
+# of schema generation. The Discovery guide documents the path as
+# /evo/identity/v2/discovery against the global entrypoint. The path below follows
+# the Discovery guide. Verify against the live API if in doubt.
+#
+# V1 of this endpoint is deprecated — use V2.
+
+openapi: 3.0.3
+info:
+  title: Evo Discovery API
+  description: >
+    The Discovery API is the global entrypoint to the Seequent Evo data platform.
+    It resolves which Evo instances (organisations) a user has access to and the
+    API base URL for each instance.
+  version: "2"
+  contact:
+    name: Seequent Evo Developer Community
+    url: https://community.seequent.com/group/19-evo
+
+servers:
+  - url: https://discover.api.seequent.com
+    description: Global entrypoint (always known, not region-specific)
+
+paths:
+  /evo/identity/v2/discovery:
+    get:
+      operationId: discover
+      summary: Discover Evo instances and resolve hub URLs
+      description: >
+        Returns the Evo instances the authenticated user has access to, the
+        available hubs and their URLs, and the mapping of instances to hubs and
+        services. This is the first API call any Evo-connected app should make.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Bearer token. Format: `Bearer <access_token>`.
+        - name: user-agent
+          in: header
+          required: false
+          schema:
+            type: string
+            nullable: true
+        - name: origin
+          in: header
+          required: false
+          schema:
+            type: string
+            nullable: true
+        - name: service
+          in: query
+          required: false
+          description: >
+            Evo service code(s) to discover. Use `evo` as a catch-all for all
+            services, or specify individual codes. Repeat the parameter to
+            request multiple services (e.g. `?service=file&service=blockmodel`).
+          schema:
+            type: array
+            items:
+              type: string
+            default: []
+          style: form
+          explode: true
+          examples:
+            all:
+              summary: All services (catch-all)
+              value: [evo]
+            specific:
+              summary: Multiple specific services
+              value: [file, blockmodel]
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscoveryResponse"
+              example:
+                discovery:
+                  organizations:
+                    - id: "d0ea331e-814e-4e24-a1b8-cd563c5b1d31"
+                      display_name: "Test organisation"
+                  hubs:
+                    - code: "au"
+                      display_name: "Australia East"
+                      url: "https://au.api.seequent.com"
+                  services:
+                    - code: "blockmodel"
+                      display_name: "Block Model"
+                    - code: "file"
+                      display_name: "File"
+                    - code: "geoscienceobject"
+                      display_name: "Geoscience Object"
+                  service_access:
+                    - hub_code: "au"
+                      org_id: "d0ea331e-814e-4e24-a1b8-cd563c5b1d31"
+                      services:
+                        - "blockmodel"
+                        - "file"
+                        - "geoscienceobject"
+        "401":
+          description: Unauthorized — missing or invalid access token.
+        "403":
+          description: Forbidden.
+        "404":
+          description: Not found.
+        "405":
+          description: Method not allowed.
+        "422":
+          description: Unprocessable entity.
+        "5XX":
+          description: Server error.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        An Evo access token obtained via OAuth PKCE. Requires the
+        `evo.discovery` scope.
+
+  schemas:
+    DiscoveryResponse:
+      type: object
+      properties:
+        discovery:
+          $ref: "#/components/schemas/DiscoveryResponseContent"
+
+    DiscoveryResponseContent:
+      type: object
+      properties:
+        organizations:
+          type: array
+          description: >
+            Evo instances the user belongs to. The field is named
+            "organizations" in the API but represents instances
+            (rename in progress).
+          items:
+            $ref: "#/components/schemas/Organization"
+        hubs:
+          type: array
+          description: >
+            Available hub regions. Each hub has a globally unique code
+            and a URL that serves as the API base URL for instances
+            hosted on that hub.
+          items:
+            $ref: "#/components/schemas/Hub"
+        services:
+          type: array
+          description: Evo services available to the user.
+          items:
+            $ref: "#/components/schemas/Service"
+        service_access:
+          type: array
+          description: >
+            Maps each instance to a hub and the services available on
+            that hub for that instance.
+          items:
+            $ref: "#/components/schemas/ServiceAccess"
+
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+        display_name:
+          type: string
+
+    Hub:
+      type: object
+      properties:
+        code:
+          type: string
+        display_name:
+          type: string
+        url:
+          type: string
+
+    Service:
+      type: object
+      properties:
+        code:
+          type: string
+        display_name:
+          type: string
+
+    ServiceAccess:
+      type: object
+      properties:
+        hub_code:
+          type: string
+        org_id:
+          type: string
+        services:
+          type: array
+          items:
+            type: string
