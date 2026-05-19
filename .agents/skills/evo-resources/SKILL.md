@@ -5,11 +5,14 @@ description: >
   developer users (code). Use this skill when displaying files, geoscience
   objects, block models, or any Evo resource metadata; when deciding which
   fields are user-friendly, which need translation, and which are opaque;
-  when handling resource identifiers in TypeScript; or when constructing,
-  parsing, or copying stable resource URLs. Covers the editorial taxonomy
-  of resource metadata, the typed branded ID layer, and the composite
-  Reference layer with URL round-trip. Also use when another Evo skill
-  references evo-resources for presentation guidance.
+  when determining what name or title to show for an object, file, or
+  workspace (display names, object names, file names); when building UI
+  components that list or show geoscience objects; when handling resource
+  identifiers in TypeScript; or when constructing, parsing, or copying
+  stable resource URLs. Covers the editorial taxonomy of resource metadata,
+  the typed branded ID layer, and the composite Reference layer with URL
+  round-trip. Also use when another Evo skill references evo-resources for
+  presentation guidance.
 ---
 
 # Evo resources

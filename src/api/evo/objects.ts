@@ -102,9 +102,30 @@ export interface ListObjectsFilters {
   deleted?: boolean;
   /** Comma-separated `order_by` clause (e.g. `"object_name,desc:created_at"`). */
   orderBy?: string;
-  /** Schema filters (exact match or `like:` wildcards). */
+  /**
+   * Schema filters (exact match or `like:` wildcards).
+   *
+   * Schema IDs are full paths: `/objects/{type}/{version}/{type}.schema.json`
+   * (e.g. `/objects/pointset/1.3.0/pointset.schema.json`).
+   *
+   * The `like:` operator uses glob-style `*` wildcards.
+   * Using incorrect filters silently returns zero results with no error.
+   *
+   * For family filtering, use segment-anchored patterns:
+   *   ✅ `like:/objects/pointset/*`
+   *   ❌ `like:*pointset*`  — also matches planar-data-pointset, lineations-data-pointset
+   *   ❌ `like:pointset*`   — missing /objects/ prefix, returns nothing
+   *   ❌ `like:/objects/pointset%` — % is not a glob wildcard, returns nothing
+   *
+   * @see evo-objects skill → references/schemas.md for the schema catalogue
+   * @see evo-objects skill → references/object-management.md § "schema_id filter pitfalls"
+   */
   schemaId?: string[];
-  /** Object name filters (prefix match without operator; `eq:` for exact path). */
+  /**
+   * Object name filters.
+   * Without operator: case-sensitive **prefix** match on filename.
+   * With `eq:` operator: exact match on full canonical path (e.g. `eq:path/to/object.json`).
+   */
   objectName?: string[];
   /** Creator profile UUIDs. */
   createdBy?: string[];
@@ -232,6 +253,8 @@ function buildListQuery(filters: ListObjectsFilters | undefined): URLSearchParam
   if (filters.orderBy !== undefined) params.set("order_by", filters.orderBy);
 
   const arrayFilters: Array<[string, string[] | undefined]> = [
+    // schema_id: values are passed verbatim. Use full paths or `like:/objects/{type}/*`.
+    // See ListObjectsFilters.schemaId JSDoc for syntax rules.
     ["schema_id", filters.schemaId],
     ["object_name", filters.objectName],
     ["created_by", filters.createdBy],

@@ -106,11 +106,24 @@ export const dataLinkSchema: z.ZodType<DataLink> = z
 // List entry — what `GET /objects` returns per item
 // ---------------------------------------------------------------------------
 
-/** Lightweight summary for an object list entry. */
+/**
+ * Lightweight summary for an object list entry.
+ *
+ * Display name derivation (see evo-resources skill → references/resource-metadata.md):
+ * - The display path is `path` + `name` with trailing `.json` stripped.
+ *   E.g. path="/geology/surfaces/", name="topo.json" → display "geology/surfaces/topo"
+ * - In summative views (lists, trees, pickers), show the **full path** — not just the basename.
+ * - Never use `object.name` (the body field on the full envelope) as the display name here.
+ * - `schema` is a raw schema ID — translate to a friendly label for UI display
+ *   (e.g. "/objects/pointset/1.3.0/pointset.schema.json" → "Pointset").
+ */
 export interface GeoscienceObjectSummary {
   objectId: ObjectId;
+  /** Filename including `.json` — NOT the body-content name. Combine with `path` for display. */
   name: string;
+  /** Parent directory path. Combine with `name` to get the full canonical path. */
   path: ObjectPath;
+  /** Raw schema ID (full path). Translate to a friendly label before showing to users. */
   schema: string;
   versionId: VersionId;
   etag: string;
@@ -211,13 +224,22 @@ const geoscienceObjectLinksSchema: z.ZodType<GeoscienceObjectLinks> = z
  * Full object envelope returned by `GET /objects/{id}` and
  * `GET /objects/path/{path}`.
  *
+ * Display name derivation (see evo-resources skill → references/resource-metadata.md):
+ * - `path` is the full canonical wire path (e.g. "geology/surfaces/topo.json").
+ *   Strip trailing `.json` for display: "geology/surfaces/topo".
+ * - The body field `(object as any).name` is **body content** (like description),
+ *   NOT the resource's identity. It may be shown in detail views as a title,
+ *   but never in summative views, breadcrumbs, or requests.
+ *
  * The `object` field is intentionally typed as `unknown`: schema-typed
  * parsing is a future iteration. Use the `schema` field as a discriminator
  * and parse with the appropriate evo-schemas type when ready.
  */
 export interface GeoscienceObjectEnvelope {
   objectId: ObjectId;
+  /** Full canonical wire path (includes `.json`). Strip `.json` for display. May be null for UUID-only access. */
   path: ObjectPath | null;
+  /** Raw schema ID (full path). Translate to a friendly label before showing to users. */
   schema: string;
   versionId: VersionId;
   etag: string;
