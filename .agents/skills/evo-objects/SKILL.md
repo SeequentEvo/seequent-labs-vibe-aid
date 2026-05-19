@@ -73,8 +73,9 @@ Read the relevant reference file for domain-specific patterns and guidance:
 - **evo-blob-transfers** — chunked upload/download mechanics (Azure Block Blob, Range
   requests, parallelism). The data-blobs reference above covers the Object API workflow;
   use evo-blob-transfers for the underlying binary transfer patterns.
-- **evo-resources** — common rules for presenting metadata to end users (UUID
-  handling, version labels, date formatting).
+- **evo-resources** — presentation rules for display names, object path/name
+  reconstruction, `.json` stripping, the `object.name` trap, UUID handling,
+  version labels, and date formatting.
 - **evo-pagination** — common `limit`/`offset` pagination patterns for list endpoints.
 - **evo-colormaps** — associating colour mappings with object attributes.
 

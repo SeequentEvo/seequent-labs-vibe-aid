@@ -74,6 +74,8 @@ individual-object detail views as the object's human-readable title. It
 must not substitute for the path in summative views, breadcrumbs, "Copy
 link", or any request — treat it as body content like `description`.
 
+For the complete presentation rules, see the **evo-resources** skill.
+
 ### Path constraints
 
 Object path identifiers must be ASCII: letters, numbers, and `+-.:=_/`,
@@ -210,6 +212,22 @@ repeated to supply multiple values (e.g., `?schema_id=a&schema_id=b`).
 | `modified_at` | string[] | Same syntax as `created_at` |
 | `deleted_at` | string[] | Same syntax as `created_at` |
 | `geojson_bounding_box` | string[] | Spatial filter. 5 coordinate pairs (closed polygon) with optional operator `geowithin:` or `geointersects:` (default). E.g., `geointersects:(171.6,-44.5),(173.7,-44.5),(173.7,-42.9),(171.6,-42.9),(171.6,-44.5)` |
+
+### schema_id filter pitfalls
+
+The `like:` operator on `schema_id` uses **glob-style `*` wildcards**, not SQL-style `%`. Using `%` silently returns zero results (200 OK with an empty `items` array) — there is no validation error.
+
+Schema IDs are **full paths** (e.g. `/objects/pointset/1.3.0/pointset.schema.json`), not short names. A filter must account for the leading path segments.
+
+| Filter | Matches? | Why |
+|--------|----------|-----|
+| `like:*pointset*` | ✅ Yes | Glob wildcards on both sides match the full path |
+| `like:pointset*` | ❌ No | Schema ID starts with `/objects/`, not `pointset` |
+| `like:pointset%` | ❌ No | `%` is not a valid glob wildcard — silently matches nothing |
+| `/objects/pointset/1.3.0/pointset.schema.json` | ✅ Yes | Exact match (no `like:` prefix needed) |
+
+When filtering broadly by schema type across versions, use `like:*{type}*`.
+Use an exact schema ID when the version is known.
 
 ### Sorting
 
