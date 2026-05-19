@@ -35,6 +35,9 @@ function App() {
               </Route>
             </Route>
           </Route>
+
+          {/* Catch-all — redirect unknown paths to root */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </Provider>

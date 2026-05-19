@@ -1,6 +1,21 @@
 import { startLogin } from "@/api/auth";
+import { useAppSelector } from "@/hooks/useStore";
+import { selectAuthStatus } from "@/store/authSlice";
+import { Navigate, useLocation } from "react-router-dom";
 
 export default function Login() {
+  const authStatus = useAppSelector(selectAuthStatus);
+  const location = useLocation();
+
+  if (authStatus === "authenticated") {
+    return (
+      <Navigate
+        to={(location.state as { from?: Location })?.from ?? "/"}
+        replace
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
