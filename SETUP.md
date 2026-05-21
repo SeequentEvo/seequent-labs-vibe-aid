@@ -4,7 +4,7 @@ This guide covers manual environment setup. If you'd prefer to be walked through
 
 ## Prerequisites
 
-- **[Node.js](https://nodejs.org/) 20 or later** — check with `node --version`
+- **[Node.js](https://nodejs.org/) 24 or later** — check with `node --version`
 - **[Git](https://git-scm.com/)** or **[GitHub Desktop](https://desktop.github.com/)**
 - **A Bentley account** — [register here](https://www.bentley.com/register/) if you don't have one
 - **Access to a Seequent Evo organisation** — if login succeeds but you see no instances, your account may not have Evo access yet

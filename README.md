@@ -2,16 +2,19 @@
 
 A starter template for building geoscience web apps connected to the [Seequent Evo](https://evo.seequent.com/) data platform — designed for AI-assisted ("vibe coding") development.
 
-**No deep coding experience required.** Describe what you want to build, and let your AI agent write the code.
+**No deep coding experience required.** Describe what you want to build, and let your AI agent write the code. This is your chance to get creative and build that capability that you have always needed without needing to spend time data import and support. The more context you can provide your agent about the problem you want to solve and the app you want to build the better! 
+
 
 ## Before you start
 
 You'll need:
 
-- **[Node.js](https://nodejs.org/) 20 or later** — the JavaScript runtime
-- **[Git](https://git-scm.com/)** or **[GitHub Desktop](https://desktop.github.com/)** — to clone your project
-- **A Bentley account** — to register your app and authenticate with Evo ([create one here](https://www.bentley.com/register/))
 - **Access to a Seequent Evo instance** — if you can sign in but see no instances, your account may not yet have Evo access
+- **A Bentley account** — to register your app and authenticate with Evo ([create one here](https://www.bentley.com/register/))
+- **[Node.js](https://nodejs.org/) 24 or later** — the JavaScript runtime
+- **[Git](https://git-scm.com/)** or **[GitHub Desktop](https://desktop.github.com/)** — to clone your project
+
+
 
 For AI-assisted development (recommended):
 
@@ -21,7 +24,8 @@ For AI-assisted development (recommended):
 
 ### Option A — AI-assisted setup (recommended for beginners)
 
-1. **Create your project** — on GitHub, click **[Use this template](https://github.com/new?template_name=seequent-labs-vibe-aid&template_owner=SeequentEvo) → Create a new repository**, give it a name, and clone it
+1. **Create your project** — on GitHub, click **[Use this template](https://github.com/new?template_name=seequent-labs-vibe-aid&template_owner=SeequentEvo) → Create a new repository**, give it a name.
+2. **Download your repo** — Navigate to your repository on GitHub, click the green <>Code button. Select "Open with Github Desktop"
 2. **Open the project in your AI coding tool** — load it in VS Code with Copilot, Claude Code, or whichever agent you're using
 3. **Run `/setup`** — type `/setup` in your agent's chat and follow the prompts; it will walk you through registering your IMS app, configuring `.env`, and installing dependencies
 
@@ -55,6 +59,7 @@ Route structure: `/login` → `/` (instance picker) → `/:instanceId/workspaces
 Prompting is a skill. A few things that help:
 
 - **Describe what you want, not how to build it** — say "a dropdown that lists workspaces" rather than "a `<select>` element bound to Redux state"
+- **Ask your Agent** - There will be bugs and your app will likely not work first time. Ask your agent explain the problem and send some screenshots this will all help get your app up and running
 - **Think before you code** — many agents support a planning or reasoning mode; use it before starting a complex feature so the agent thinks it through first, which reduces mistakes
 - **Work in small steps** — one feature at a time is easier to review and fix than a large batch
 - **Commit when it works** — before each new feature, commit your working state so you can roll back if something breaks
@@ -63,19 +68,15 @@ Prompting is a skill. A few things that help:
 ### Example prompt to get started
 
 ```
-Build me a Pointset editor connected to Evo. Here's what it should do:
+I work as a mineral exploration geologist. I am working designing infill soil sampling on some of my projects. Build me app that lets me open my existing Pointsets I have in Evo, Plan new survey in grids on a 2D map. Here's what it should do:
 
 1. Let the user pick a workspace, then choose a pointset (collection of 3D points) from that workspace.
+2. Display the points on a 2D map using the x,y coordinates. Use satellite imagery in the background
+3. Let the user choose the numeric and catergory attributes they would like to display and colour them. Add an option to edit the colour map and ranges. 
+4. Design an interactive soil sample planning tool that lets the user select the area they would like to infill and plan the spacing. Show some basic overview information about the number of samples and coverage. 
+5. Once the user has finished editing, show a "Save to Evo" button that uploads the modified pointset back to the same workspace. 
 
-2. Display the points as a 2D scatter plot using the X and Y coordinates.
-
-3. Let the user click or lasso-select one or more points in the plot. Show the selected points' attributes in an editable panel — the user should be able to change attribute values for the selection.
-
-4. Let the user add a new attribute column to the pointset (with a name and a default value that applies to all points).
-
-5. Once the user has finished editing, show a "Save to Evo" button that uploads the modified pointset back to the same workspace.
-
-Show loading and error states throughout. Keep the UI clean and functional.
+Show loading and error states throughout. Keep the UI clean and functional. Use a Dark  mode theme
 ```
 
 ## Tech stack
