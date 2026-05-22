@@ -34,15 +34,15 @@ export default function InstancePicker() {
 
   // Auto-redirect for persisted or single instance
   if (persisted) {
-    return <Navigate to={`/instances/${persisted.id}`} replace />;
+    return <Navigate to={`/${persisted.id}`} replace />;
   }
   if (instances.length === 1 && instances[0]) {
-    return <Navigate to={`/instances/${instances[0].id}`} replace />;
+    return <Navigate to={`/${instances[0].id}`} replace />;
   }
 
   return <Picker instances={instances} onSelect={(instance) => {
     dispatch(selectInstance(instance));
-    navigate(`/instances/${instance.id}`);
+    navigate(`/${instance.id}`);
   }} />;
 }
 

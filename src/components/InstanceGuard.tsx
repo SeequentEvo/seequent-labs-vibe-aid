@@ -11,7 +11,7 @@ import { tryParseOrgId } from "@/types/ids";
 
 /**
  * Resolves the :instanceId URL param against discovered instances.
- * Selects the instance in Redux if it matches; redirects to "/instances" if not found
+ * Selects the instance in Redux if it matches; redirects to "/" if not found
  * or if the param is not a valid UUID.
  */
 export default function InstanceGuard() {
@@ -31,7 +31,7 @@ export default function InstanceGuard() {
   }, [matched, selected?.id, dispatch]);
 
   if (!matched) {
-    return <Navigate to="/instances" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <Outlet />;

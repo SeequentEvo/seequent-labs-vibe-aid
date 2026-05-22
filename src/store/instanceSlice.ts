@@ -70,7 +70,7 @@ const instanceSlice = createSlice({
         state.instances = action.payload;
         state.status = "ready";
         state.error = null;
-        // Instance selection is driven by the URL (/instances/:instanceId route).
+        // Instance selection is driven by the URL (/:instanceId route).
         // The InstancePicker page handles redirect for persisted/single instance.
       })
       .addCase(discoverInstances.rejected, (state, action) => {
