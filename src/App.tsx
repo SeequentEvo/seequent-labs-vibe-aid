@@ -24,16 +24,14 @@ function App() {
 
           {/* Authenticated routes */}
           <Route element={<AuthGuard />}>
-            {/* Root — redirect to instance picker */}
-            <Route index element={<Navigate to="/instances" replace />} />
-
-            {/* Instance picker */}
-            <Route path="instances" element={<InstancePicker />} />
+            {/* Instance root — redirect to persisted instance or show picker */}
+            <Route index element={<InstancePicker />} />
 
             {/* Instance-scoped routes */}
-            <Route path="instances/:instanceId" element={<InstanceGuard />}>
+            <Route path=":instanceId" element={<InstanceGuard />}>
+              <Route index element={<Navigate to="workspaces" replace />} />
               <Route element={<Layout />}>
-                <Route index element={<Workspaces />} />
+                <Route path="workspaces" element={<Workspaces />} />
               </Route>
             </Route>
           </Route>

@@ -55,7 +55,7 @@ export default function UserMenu() {
     dispatch(clearWorkspaces());
     dispatch(selectInstance(instance));
     setOpen(false);
-    navigate(`/instances/${instance.id}`);
+    navigate(`/${instance.id}`);
   }
 
   const hasMultipleInstances = instances.length > 1;
