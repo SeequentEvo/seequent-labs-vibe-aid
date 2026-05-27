@@ -57,7 +57,9 @@ function walkPath(root: unknown, path: readonly string[]): unknown {
   let node: unknown = root;
   for (const key of path) {
     if (node == null || typeof node !== "object") return undefined;
-    node = (node as Record<string, unknown>)[key];
+    const desc = Object.getOwnPropertyDescriptor(node, key);
+    if (!desc) return undefined;
+    node = desc.value;
   }
   return node;
 }
