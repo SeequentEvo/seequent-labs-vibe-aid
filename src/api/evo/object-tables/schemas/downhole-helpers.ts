@@ -12,7 +12,9 @@ export function buildCollectionAttachments(
   let node: unknown = envelope;
   for (const key of collectionPath) {
     if (node == null || typeof node !== "object") return [];
-    node = (node as Record<string, unknown>)[key];
+    const desc = Object.getOwnPropertyDescriptor(node, key);
+    if (!desc) return [];
+    node = desc.value;
   }
   if (!Array.isArray(node)) return [];
 
