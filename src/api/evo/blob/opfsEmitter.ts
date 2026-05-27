@@ -46,7 +46,7 @@ export class TypedEmitter {
       try {
         listener(data);
       } catch (err) {
-        console.error(`[BlobStore] listener for "${event}" threw`, err);
+        console.error("[BlobStore] listener for", event, "threw", err);
       }
     }
   }

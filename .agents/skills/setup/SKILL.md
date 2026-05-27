@@ -34,9 +34,9 @@ Common issues:
 Check whether a `.env` file exists at the project root. If it doesn't:
 
 1. Copy `.env.example` to `.env`
-2. Ask the user for their **Bentley IMS client ID**. If they don't have one, read
+2. Ask the user for their **client ID**. If they don't have one, read
    [references/ims-registration.md](references/ims-registration.md) and walk them through
-   the registration process step by step.
+   creating an app on developer.seequent.com step by step.
 3. Write the client ID into `VITE_IMS_CLIENT_ID` in `.env`
 
 If `.env` already exists, verify `VITE_IMS_CLIENT_ID` is set to a non-empty value. If it's
@@ -76,13 +76,12 @@ they should be redirected back to the home page.
 Common issues:
 - **"Invalid redirect_uri" from IMS** — the client ID's registered redirect URI doesn't
   match `http://localhost:5173/callback`. The user needs to update their app registration
-  at [developer.bentley.com](https://developer.bentley.com/).
+  at [developer.seequent.com/my-apps](https://developer.seequent.com/my-apps).
 - **"OAuth state mismatch" error** — the user may have stale sessionStorage data. Clear
   it via the browser devtools (Application → Session Storage → clear) and try again.
 - **Stuck on "Signing in…"** — the token exchange may have failed. Check the browser
   console network tab for errors on the `/connect/token` request. Common causes: wrong
-  client ID, or scopes not enabled for the app. See the **evo-scopes** skill for details
-  on available scopes and which ones to request.
+  client ID or redirect URI not registered. Verify your app on developer.seequent.com/my-apps.
 - **Login works but user sees an error flash** — this was a known issue with React
   StrictMode double-invoking effects. It should be fixed, but if it recurs, check that
   `Callback.tsx` uses a `useRef` guard to prevent double dispatch.
@@ -96,7 +95,7 @@ If the user comes back with a problem after initial setup, diagnose based on sym
 | `npm install` fails | Node version too old or network issue | Check `node -v` (need 20+) and network connectivity |
 | Build fails with type errors | Strict TypeScript mode | Fix the type errors — don't loosen the config |
 | Dev server starts but page is blank | Missing `.env` or bad env values | Check `.env` has all required variables |
-| Login redirects to IMS but fails | Wrong client ID, redirect URI not registered, or invalid scopes | Verify app registration matches. See the **evo-scopes** skill for valid scopes |
+| Login redirects to IMS but fails | Wrong client ID or redirect URI not registered | Verify app registration at developer.seequent.com/my-apps matches exactly |
 | Login succeeds but token is missing | Browser blocking sessionStorage | Check privacy/incognito settings |
 | "Missing PKCE code verifier" | StrictMode double-fire or stale session | Clear sessionStorage and retry |
 | Everything worked yesterday, now it doesn't | Token expired (sessionStorage) | Close and reopen the tab to clear sessionStorage |

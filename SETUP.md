@@ -16,25 +16,20 @@ This guide covers manual environment setup. If you'd prefer to be walked through
 3. Click **Create repository**
 4. Clone your new repo and open it in your editor
 
-## 2. Register your app with Bentley IMS
+## 2. Create your app on developer.seequent.com
 
-You need an OAuth client ID so your app can authenticate users against Bentley IMS.
+You need an OAuth client ID so your app can authenticate users.
 
-1. Go to [developer.bentley.com/register](https://developer.bentley.com/register/?product=seequent-evo) *(use this exact link — the default iTwin app registration will not work)*
-2. Give your application a descriptive name
-3. Select **SPA** (Single Page Application) — this requires no client secret
-4. Set the redirect URIs:
+1. Go to [developer.seequent.com/my-apps](https://developer.seequent.com/my-apps)
+2. Click **"Create app"** to open the form
+3. Enter your app name and select **SPA** as the application type
+4. Click **"+ Add new redirect URI"** and add: `http://localhost:5173/callback`
+5. Click **"+ Add new post logout redirect URI"** and add: `http://localhost:5173/login`
+6. Click **"Create app"** and copy your **Client ID**
 
-   | Field | Value |
-   |-------|-------|
-   | Redirect URI | `http://localhost:5173/callback` |
-   | Post-logout redirect URI | `http://localhost:5173/login` |
+For detailed guidance, see [IMS registration guide](.agents/skills/setup/references/ims-registration.md).
 
-5. Click **Register** and copy your **Client ID**
-
-Add additional redirect URIs for any deployed environments (e.g. `https://myapp.example.com/callback`).
-
-> **Port note:** Vite starts on `http://localhost:5173` by default. If that port is in use, Vite picks another port automatically — but your IMS redirect URI must match exactly. Stop the conflicting process or update your registered redirect URI if you see an OAuth state validation error.
+> **Port note:** Vite starts on `http://localhost:5173` by default. If that port is in use, Vite picks another port automatically — but your redirect URI must match exactly. Stop the conflicting process or update your registered redirect URI if you see an OAuth error.
 
 ## 3. Install and configure
 
@@ -85,11 +80,11 @@ See [`.env.example`](.env.example) for all available variables.
 ## Troubleshooting
 
 **"OAuth state validation failed"**
-- Your redirect URI in the Bentley portal must match exactly — including the port. Check it matches `http://localhost:5173/callback`.
+- Your redirect URI in the app registration must match exactly — including the port. Check it matches `http://localhost:5173/callback` at [developer.seequent.com/my-apps](https://developer.seequent.com/my-apps).
 - Try clearing your browser cache and cookies, then sign in again.
 
 **"invalid_scope" error during login**
-- You may have registered via the default iTwin portal instead of the Evo-specific link. Re-register at [developer.bentley.com/register/?product=seequent-evo](https://developer.bentley.com/register/?product=seequent-evo).
+- This shouldn't occur with the new developer.seequent.com tool, as scopes are pre-configured. If it happens, verify that your client ID was created on developer.seequent.com/my-apps (not on developer.bentley.com).
 
 **"Invalid Client ID"**
 - Check your `.env` file has no extra spaces, quotes, or line breaks around the client ID value.
