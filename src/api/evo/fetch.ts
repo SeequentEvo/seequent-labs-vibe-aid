@@ -120,6 +120,7 @@ export async function evoFetch<T = unknown>(
   const headers: Record<string, string> = {
     Authorization: `Bearer ${opts.accessToken}`,
     Accept: "application/json",
+    "Evo-SDK-Source": "seequent-labs-vibe-aid",
     ...(opts.headers ?? {}),
   };
 
