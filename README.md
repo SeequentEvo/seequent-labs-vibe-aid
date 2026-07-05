@@ -117,3 +117,7 @@ src/
 ## License
 
 [Apache 2.0](LICENSE.md) © 2026 Bentley Systems, Incorporated.
+
+## Disclaimer
+
+This template is designed specifically for AI-assisted development. While AI agents are incredibly powerful tools for accelerating your workflow, please be aware that AI-generated code and outputs may occasionally be inaccurate, incomplete, or non-functional. As the developer, you are solely responsible for thoroughly reviewing, testing, and validating all code and application behaviors before deploying them. Neither Bentley Systems nor the Seequent can guarantee the accuracy or security of AI-generated additions built on top of this codebase.
