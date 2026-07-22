@@ -4,6 +4,11 @@ A starter template for building geoscience web apps connected to the [Seequent E
 
 **No deep coding experience required.** Describe what you want to build, and let your AI agent write the code. This is your chance to get creative and build that capability that you have always needed without needing to spend time data import and support. The more context you can provide your agent about the problem you want to solve and the app you want to build the better! 
 
+## Disclaimer
+
+ This template is intended for AI-assisted development. AI-generated code and content may contain errors. You are responsible for reviewing, testing, and validating all code and application behaviour before use or deployment. Bentley Systems and Seequent do not warrant the accuracy, completeness, or security of any AI-generated content created using this template. Review the [license](#license) before using this template. 
+
+ This template has been developed by [Seequent Lab](https://labs.seequent.com) and is considered a prototype. We may choose to update or discontinue this prototype at any time without notice. 
 
 ## Before you start
 
@@ -118,6 +123,3 @@ src/
 
 [Apache 2.0](LICENSE.md) © 2026 Bentley Systems, Incorporated.
 
-## Disclaimer
-
-This template is designed specifically for AI-assisted development. While AI agents are incredibly powerful tools for accelerating your workflow, please be aware that AI-generated code and outputs may occasionally be inaccurate, incomplete, or non-functional. As the developer, you are solely responsible for thoroughly reviewing, testing, and validating all code and application behaviors before deploying them. Neither Bentley Systems nor the Seequent can guarantee the accuracy or security of AI-generated additions built on top of this codebase.
