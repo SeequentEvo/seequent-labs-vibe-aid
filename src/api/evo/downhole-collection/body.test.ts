@@ -7,6 +7,8 @@ import type { HoleDictionary } from './holes';
 import type { PreparedChildCollection } from './prepare';
 
 const hash = (c: string) => asBlobRef(c.repeat(64));
+const EXPECTED_LOCATION_HOLE_CHUNK_COUNT = 2;
+const EXPECTED_INTERVAL_CHILD_HOLE_CHUNK_COUNT = 2;
 
 function baseDictionary(): HoleDictionary {
   return {
@@ -44,6 +46,16 @@ function baseTags(): Map<string, BlobRef> {
 }
 
 describe('buildCollectionBody', () => {
+  function recordAt(
+    record: Record<string, unknown>,
+    key: string,
+  ): Record<string, unknown> {
+    const value = record[key];
+    expect(value).toBeDefined();
+    expect(value).toBeTypeOf('object');
+    return value as Record<string, unknown>;
+  }
+
   it('builds a minimal body with no children', () => {
     const body = buildCollectionBody(baseInput(), baseTags()) as Record<
       string,
@@ -62,12 +74,14 @@ describe('buildCollectionBody', () => {
     expect(body.collections).toEqual([]);
 
     const loc = body.location as Record<string, unknown>;
-    expect(loc.coordinates).toBeDefined();
-    expect(loc.distances).toBeDefined();
-    expect(loc.holes).toBeDefined();
+    expect(recordAt(loc, 'coordinates').length).toBe(2);
+    expect(recordAt(loc, 'distances').length).toBe(2);
+    expect(recordAt(loc, 'holes').length).toBe(
+      EXPECTED_LOCATION_HOLE_CHUNK_COUNT,
+    );
     expect(loc.hole_id).toBeDefined();
     expect(loc.attributes).toEqual([]);
-    expect(loc.path).toBeDefined();
+    expect(recordAt(loc, 'path').length).toBe(4);
   });
 
   it('builds body with one interval child', () => {
@@ -96,11 +110,14 @@ describe('buildCollectionBody', () => {
     const c = collections[0]!;
     expect(c.name).toBe('Assays');
     expect(c.collection_type).toBe('interval');
-    expect(c.holes).toBeDefined();
+    expect(recordAt(c, 'holes').length).toBe(
+      EXPECTED_INTERVAL_CHILD_HOLE_CHUNK_COUNT,
+    );
     expect(c.from_to).toBeDefined();
 
     const fromTo = c.from_to as Record<string, unknown>;
-    expect(fromTo.intervals).toBeDefined();
+    const intervals = recordAt(fromTo, 'intervals');
+    expect(recordAt(intervals, 'start_and_end').length).toBe(3);
     expect(fromTo.unit).toBeUndefined();
     expect(fromTo.attributes).toHaveLength(1);
   });
