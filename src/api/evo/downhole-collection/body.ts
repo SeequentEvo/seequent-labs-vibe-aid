@@ -25,6 +25,7 @@ export interface BuildCollectionBodyInput {
   readonly collarCoordinates: Float64Array;
   readonly collarCount: number;
   readonly pathCount: number;
+  readonly locationHoleChunkCount: number;
   readonly holeDictionary: HoleDictionary;
   readonly children: readonly PreparedChildCollection[];
   readonly distanceUnit?: string;
@@ -73,7 +74,10 @@ function buildChildBody(
   const base = {
     name: child.name,
     collection_type: child.type,
-    holes: holeChunksElement({ length: child.length, blobRef: { sha256: holesRef } }),
+    holes: holeChunksElement({
+      length: child.holeChunkCount,
+      blobRef: { sha256: holesRef },
+    }),
   };
 
   switch (child.type) {
@@ -162,6 +166,7 @@ export function buildCollectionBody(
     collarCoordinates,
     collarCount,
     pathCount,
+    locationHoleChunkCount,
     holeDictionary,
     children,
     distanceUnit,
@@ -202,7 +207,7 @@ export function buildCollectionBody(
       blobRef: { sha256: resolve('collar.distances') },
     }),
     holes: holeChunksElement({
-      length: pathCount,
+      length: locationHoleChunkCount,
       blobRef: { sha256: resolve('location.holes') },
     }),
     hole_id: categoryDataComponent({

@@ -7,8 +7,6 @@ import type { HoleDictionary } from './holes';
 import type { PreparedChildCollection } from './prepare';
 
 const hash = (c: string) => asBlobRef(c.repeat(64));
-const EXPECTED_LOCATION_HOLE_CHUNK_COUNT = 2;
-const EXPECTED_INTERVAL_CHILD_HOLE_CHUNK_COUNT = 2;
 
 function baseDictionary(): HoleDictionary {
   return {
@@ -27,6 +25,7 @@ function baseInput(
     collarCoordinates: new Float64Array([100, 50, 10, 200, 60, 20]),
     collarCount: 2,
     pathCount: 4,
+    locationHoleChunkCount: 2,
     holeDictionary: baseDictionary(),
     children: [],
     pathAttributes: [],
@@ -76,9 +75,7 @@ describe('buildCollectionBody', () => {
     const loc = body.location as Record<string, unknown>;
     expect(recordAt(loc, 'coordinates').length).toBe(2);
     expect(recordAt(loc, 'distances').length).toBe(2);
-    expect(recordAt(loc, 'holes').length).toBe(
-      EXPECTED_LOCATION_HOLE_CHUNK_COUNT,
-    );
+    expect(recordAt(loc, 'holes').length).toBe(2);
     expect(loc.hole_id).toBeDefined();
     expect(loc.attributes).toEqual([]);
     expect(recordAt(loc, 'path').length).toBe(4);
@@ -89,6 +86,7 @@ describe('buildCollectionBody', () => {
       name: 'Assays',
       type: 'interval',
       length: 3,
+      holeChunkCount: 2,
       attributes: [
         { name: 'grade', key: 'k1', kind: 'scalar', length: 3, valuesTag: 'child[0].k1.values' },
       ],
@@ -110,9 +108,7 @@ describe('buildCollectionBody', () => {
     const c = collections[0]!;
     expect(c.name).toBe('Assays');
     expect(c.collection_type).toBe('interval');
-    expect(recordAt(c, 'holes').length).toBe(
-      EXPECTED_INTERVAL_CHILD_HOLE_CHUNK_COUNT,
-    );
+    expect(recordAt(c, 'holes').length).toBe(2);
     expect(c.from_to).toBeDefined();
 
     const fromTo = c.from_to as Record<string, unknown>;
@@ -124,11 +120,11 @@ describe('buildCollectionBody', () => {
 
   it('builds body with all 5 child types', () => {
     const children: PreparedChildCollection[] = [
-      { name: 'Assays', type: 'interval', length: 3, attributes: [] },
-      { name: 'Samples', type: 'distance', length: 2, attributes: [] },
-      { name: 'Metadata', type: 'data', length: 4, attributes: [] },
-      { name: 'Planes', type: 'planar', length: 2, attributes: [] },
-      { name: 'Lines', type: 'lineation', length: 1, attributes: [] },
+      { name: 'Assays', type: 'interval', length: 3, holeChunkCount: 2, attributes: [] },
+      { name: 'Samples', type: 'distance', length: 2, holeChunkCount: 2, attributes: [] },
+      { name: 'Metadata', type: 'data', length: 4, holeChunkCount: 4, attributes: [] },
+      { name: 'Planes', type: 'planar', length: 2, holeChunkCount: 2, attributes: [] },
+      { name: 'Lines', type: 'lineation', length: 1, holeChunkCount: 1, attributes: [] },
     ];
 
     const tags = baseTags();
@@ -200,7 +196,7 @@ describe('buildCollectionBody', () => {
 
   it('includes planar polarity when tag is present', () => {
     const children: PreparedChildCollection[] = [
-      { name: 'Planes', type: 'planar', length: 2, attributes: [] },
+      { name: 'Planes', type: 'planar', length: 2, holeChunkCount: 2, attributes: [] },
     ];
     const tags = baseTags();
     tags.set('child[0].holes', hash('g'));

@@ -68,21 +68,22 @@ async function buildWorkflowObject(): Promise<{
   readonly prepared: CollectionPrepareResult;
   readonly body: Record<string, unknown>;
 }> {
-    const prepared = await prepareCollectionForUpload(downholeWorkflowInput());
-    const body = buildCollectionBody(
-      {
-        name: 'Workflow Collection',
-        description: 'Checks metadata lengths against generated blobs',
-        crs: 'unspecified',
-        collarCoordinates: prepared.collarCoordinates,
-        collarCount: prepared.collarCount,
-        pathCount: prepared.pathCount,
-        holeDictionary: prepared.holeDictionary,
-        children: prepared.children,
-        pathAttributes: prepared.pathAttributes,
-      },
-      tagToRefFromPreparedBlobs(prepared),
-    ) as Record<string, unknown>;
+  const prepared = await prepareCollectionForUpload(downholeWorkflowInput());
+  const body = buildCollectionBody(
+    {
+      name: 'Workflow Collection',
+      description: 'Checks metadata lengths against generated blobs',
+      crs: 'unspecified',
+      collarCoordinates: prepared.collarCoordinates,
+      collarCount: prepared.collarCount,
+      pathCount: prepared.pathCount,
+      locationHoleChunkCount: prepared.locationHoleChunkCount,
+      holeDictionary: prepared.holeDictionary,
+      children: prepared.children,
+      pathAttributes: prepared.pathAttributes,
+    },
+    tagToRefFromPreparedBlobs(prepared),
+  ) as Record<string, unknown>;
 
   return { prepared, body };
 }

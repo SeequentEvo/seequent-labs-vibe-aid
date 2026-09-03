@@ -76,6 +76,7 @@ describe('prepareCollectionForUpload', () => {
     const result = await prepareCollectionForUpload(minimal2HoleInput());
     expect(result.collarCount).toBe(2);
     expect(result.pathCount).toBe(4);
+    expect(result.locationHoleChunkCount).toBe(2);
   });
 
   it('builds location hole chunks once per drill hole, not once per path row', async () => {
@@ -83,6 +84,7 @@ describe('prepareCollectionForUpload', () => {
 
     expect(result.holeDictionary.ids).toHaveLength(2);
     expect(result.pathCount).toBe(4);
+    expect(result.locationHoleChunkCount).toBe(2);
     expect(blobRowCount(result, 'path')).toBe(4);
     expect(blobRowCount(result, 'location.holes')).toBe(2);
   });
@@ -91,6 +93,7 @@ describe('prepareCollectionForUpload', () => {
     const result = await prepareCollectionForUpload(minimal2HoleInput());
 
     expect(result.children[0]!.length).toBe(3);
+    expect(result.children[0]!.holeChunkCount).toBe(2);
     expect(blobRowCount(result, 'child[0].from_to')).toBe(3);
     expect(blobRowCount(result, 'child[0].holes')).toBe(2);
   });
@@ -118,6 +121,7 @@ describe('prepareCollectionForUpload', () => {
     expect(result.children[0]!.name).toBe('Assays');
     expect(result.children[0]!.type).toBe('interval');
     expect(result.children[0]!.length).toBe(3);
+    expect(result.children[0]!.holeChunkCount).toBe(2);
     expect(result.children[0]!.attributes).toHaveLength(1);
     expect(result.children[0]!.attributes[0]!.name).toBe('grade');
     expect(result.children[0]!.attributes[0]!.kind).toBe('scalar');
