@@ -94,6 +94,7 @@ export interface PreparedChildCollection {
   readonly name: string;
   readonly type: ChildCollectionType;
   readonly length: number;
+  readonly holeChunkCount: number;
   readonly attributes: readonly PreparedAttribute[];
 }
 
@@ -102,6 +103,7 @@ export interface CollectionPrepareResult {
   readonly collarCoordinates: Float64Array;
   readonly collarCount: number;
   readonly pathCount: number;
+  readonly locationHoleChunkCount: number;
   readonly holeDictionary: HoleDictionary;
   readonly children: readonly PreparedChildCollection[];
   readonly pathAttributes: readonly PreparedAttribute[];
@@ -292,6 +294,7 @@ export async function prepareCollectionForUpload(
       name: child.name,
       type: child.type,
       length: childLength,
+      holeChunkCount: childGrouped.chunks.length,
       attributes: childAttrResult.attributes,
     });
   }
@@ -301,6 +304,7 @@ export async function prepareCollectionForUpload(
     collarCoordinates: coords.interleaved,
     collarCount,
     pathCount: path.holeId.length,
+    locationHoleChunkCount: pathGrouped.chunks.length,
     holeDictionary,
     children: preparedChildren,
     pathAttributes: [],

@@ -25,6 +25,7 @@ function baseInput(
     collarCoordinates: new Float64Array([100, 50, 10, 200, 60, 20]),
     collarCount: 2,
     pathCount: 4,
+    locationHoleChunkCount: 2,
     holeDictionary: baseDictionary(),
     children: [],
     pathAttributes: [],
@@ -44,6 +45,16 @@ function baseTags(): Map<string, BlobRef> {
 }
 
 describe('buildCollectionBody', () => {
+  function recordAt(
+    record: Record<string, unknown>,
+    key: string,
+  ): Record<string, unknown> {
+    const value = record[key];
+    expect(value).toBeDefined();
+    expect(value).toBeTypeOf('object');
+    return value as Record<string, unknown>;
+  }
+
   it('builds a minimal body with no children', () => {
     const body = buildCollectionBody(baseInput(), baseTags()) as Record<
       string,
@@ -62,12 +73,12 @@ describe('buildCollectionBody', () => {
     expect(body.collections).toEqual([]);
 
     const loc = body.location as Record<string, unknown>;
-    expect(loc.coordinates).toBeDefined();
-    expect(loc.distances).toBeDefined();
-    expect(loc.holes).toBeDefined();
+    expect(recordAt(loc, 'coordinates').length).toBe(2);
+    expect(recordAt(loc, 'distances').length).toBe(2);
+    expect(recordAt(loc, 'holes').length).toBe(2);
     expect(loc.hole_id).toBeDefined();
     expect(loc.attributes).toEqual([]);
-    expect(loc.path).toBeDefined();
+    expect(recordAt(loc, 'path').length).toBe(4);
   });
 
   it('builds body with one interval child', () => {
@@ -75,6 +86,7 @@ describe('buildCollectionBody', () => {
       name: 'Assays',
       type: 'interval',
       length: 3,
+      holeChunkCount: 2,
       attributes: [
         { name: 'grade', key: 'k1', kind: 'scalar', length: 3, valuesTag: 'child[0].k1.values' },
       ],
@@ -96,22 +108,23 @@ describe('buildCollectionBody', () => {
     const c = collections[0]!;
     expect(c.name).toBe('Assays');
     expect(c.collection_type).toBe('interval');
-    expect(c.holes).toBeDefined();
+    expect(recordAt(c, 'holes').length).toBe(2);
     expect(c.from_to).toBeDefined();
 
     const fromTo = c.from_to as Record<string, unknown>;
-    expect(fromTo.intervals).toBeDefined();
+    const intervals = recordAt(fromTo, 'intervals');
+    expect(recordAt(intervals, 'start_and_end').length).toBe(3);
     expect(fromTo.unit).toBeUndefined();
     expect(fromTo.attributes).toHaveLength(1);
   });
 
   it('builds body with all 5 child types', () => {
     const children: PreparedChildCollection[] = [
-      { name: 'Assays', type: 'interval', length: 3, attributes: [] },
-      { name: 'Samples', type: 'distance', length: 2, attributes: [] },
-      { name: 'Metadata', type: 'data', length: 4, attributes: [] },
-      { name: 'Planes', type: 'planar', length: 2, attributes: [] },
-      { name: 'Lines', type: 'lineation', length: 1, attributes: [] },
+      { name: 'Assays', type: 'interval', length: 3, holeChunkCount: 2, attributes: [] },
+      { name: 'Samples', type: 'distance', length: 2, holeChunkCount: 2, attributes: [] },
+      { name: 'Metadata', type: 'data', length: 4, holeChunkCount: 4, attributes: [] },
+      { name: 'Planes', type: 'planar', length: 2, holeChunkCount: 2, attributes: [] },
+      { name: 'Lines', type: 'lineation', length: 1, holeChunkCount: 1, attributes: [] },
     ];
 
     const tags = baseTags();
@@ -183,7 +196,7 @@ describe('buildCollectionBody', () => {
 
   it('includes planar polarity when tag is present', () => {
     const children: PreparedChildCollection[] = [
-      { name: 'Planes', type: 'planar', length: 2, attributes: [] },
+      { name: 'Planes', type: 'planar', length: 2, holeChunkCount: 2, attributes: [] },
     ];
     const tags = baseTags();
     tags.set('child[0].holes', hash('g'));
