@@ -8,9 +8,9 @@ info:
     \ file path. Files are versioned, so updating or\nreplacing them will create a\
     \ new version of the file. The latest version of the file is always returned\n\
     unless a specific version is requested.\n\nFor more information on using the File\
-    \ API, see [Overview](https://developer.seequent.com/docs/guides/file/), or the\
+    \ API, see [Overview](https://developer.seequent.com/docs/guides/file/),\nor the\
     \ API references here.\n        "
-  version: 2.11.5
+  version: 2.11.10
 paths:
   /file/v2/orgs/{organisation_id}/workspaces/{workspace_id}/files/{file_id}:
     delete:
@@ -105,6 +105,29 @@ paths:
                 - $ref: '#/components/schemas/MetadataStoreError'
                 - $ref: '#/components/schemas/BadGateway'
                 title: Response 502 Deletefilebyid
+        '410':
+          description: '
+
+            #### /file-api/files/gone
+
+
+            The workspace has been deleted. `upstream_type` is set to `https://seequent.com/error-codes/workspace-service/gone`.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: The file has been deleted
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/file-api/files/gone
+                  summary: /file-api/files/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/FileDeletedError'
         '400':
           description: '
 
@@ -364,20 +387,33 @@ paths:
             #### /file-api/files/gone
 
 
-            File has been deleted.
+            The requested file has been deleted, the folder containing it has been
+            deleted, or the workspace containing it has been deleted. When the workspace
+            has been deleted, `upstream_type` is set to `https://seequent.com/error-codes/workspace-service/gone`.
+            When the folder containing it has been deleted, `upstream_type` is set
+            to `https://seequent.com/error-codes/folders/gone`. When the file alone
+            has been deleted, `upstream_type` is absent.
 
 
             '
           content:
             application/json:
               examples:
-                /file-api/files/gone:
+                /file-api/files/gone (file deleted):
                   value:
                     status: 410
                     title: The file has been deleted
                     detail: The requested file has been deleted.
                     type: https://seequent.com/error-codes/file-api/files/gone
-                  summary: /file-api/files/gone
+                  summary: /file-api/files/gone (file deleted)
+                /file-api/files/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: The file has been deleted
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/file-api/files/gone
+                  summary: /file-api/files/gone (workspace deleted)
               schema:
                 $ref: '#/components/schemas/FileDeletedError'
         '400':
@@ -660,28 +696,6 @@ paths:
                   summary: /file-api/files/not-found
               schema:
                 $ref: '#/components/schemas/FileNotFoundError'
-        '410':
-          description: '
-
-            #### /file-api/files/gone
-
-
-            File has been deleted.
-
-
-            '
-          content:
-            application/json:
-              examples:
-                /file-api/files/gone:
-                  value:
-                    status: 410
-                    title: The file has been deleted
-                    detail: The requested file has been deleted.
-                    type: https://seequent.com/error-codes/file-api/files/gone
-                  summary: /file-api/files/gone
-              schema:
-                $ref: '#/components/schemas/FileDeletedError'
         '502':
           description: '
 
@@ -740,6 +754,41 @@ paths:
                   summary: /file-api/files/already-exists
               schema:
                 $ref: '#/components/schemas/FileAlreadyExistsError'
+        '410':
+          description: '
+
+            #### /file-api/files/gone
+
+
+            The requested file has been deleted, the folder containing it has been
+            deleted, or the workspace containing it has been deleted. When the workspace
+            has been deleted, `upstream_type` is set to `https://seequent.com/error-codes/workspace-service/gone`.
+            When the folder containing it has been deleted, `upstream_type` is set
+            to `https://seequent.com/error-codes/folders/gone`. When the file alone
+            has been deleted, `upstream_type` is absent.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/gone (file deleted):
+                  value:
+                    status: 410
+                    title: The file has been deleted
+                    detail: The requested file has been deleted.
+                    type: https://seequent.com/error-codes/file-api/files/gone
+                  summary: /file-api/files/gone (file deleted)
+                /file-api/files/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: The file has been deleted
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/file-api/files/gone
+                  summary: /file-api/files/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/FileDeletedError'
         '400':
           description: '
 
@@ -882,6 +931,367 @@ paths:
               schema:
                 $ref: '#/components/schemas/DownloadFileResponse'
       x-api-preview: true
+    patch:
+      tags:
+      - file:v2
+      summary: Move or rename a file
+      description: Update the path to the file. This can be used to move or rename
+        a file.
+      operationId: moveFileById
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: file_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: UUID of a file.
+          examples:
+          - 355fa5a6-f37d-11ed-93c1-00155d19a71b
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: File Id
+        description: UUID of a file.
+      - name: organisation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Organisation Id
+        description: The customer's organisation ID.
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The ID of the workspace in the organization.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Workspace Id
+        description: The ID of the workspace in the organization.
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveFileRequest'
+      responses:
+        '200':
+          description: The file has been moved or renamed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MoveFileResponse'
+        '204':
+          description: The file has not been changed.
+        '400':
+          description: '
+
+            #### /file-api/files/invalid-path
+
+
+            The provided name or folder path is invalid.
+
+
+
+            #### /file-api/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/invalid-path:
+                  value:
+                    status: 400
+                    title: Invalid Path.
+                    type: https://seequent.com/error-codes/file-api/files/invalid-path
+                  summary: /file-api/files/invalid-path
+                /file-api/bad-request:
+                  value:
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/file-api/bad-request
+                  summary: /file-api/bad-request
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InvalidPathError'
+                - $ref: '#/components/schemas/BadRequestError'
+                title: Response 400 Movefilebyid
+        '404':
+          description: '
+
+            #### /file-api/files/not-found
+
+
+            File does not exist.
+
+
+
+            #### /file-api/folders/not-found
+
+
+            Destination folder does not exist.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/not-found:
+                  value:
+                    status: 404
+                    title: File Not Found.
+                    type: https://seequent.com/error-codes/file-api/files/not-found
+                  summary: /file-api/files/not-found
+                /file-api/folders/not-found:
+                  value:
+                    status: 404
+                    title: Folder Not Found.
+                    type: https://seequent.com/error-codes/file-api/folders/not-found
+                  summary: /file-api/folders/not-found
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/FileNotFoundError'
+                - $ref: '#/components/schemas/FolderNotFoundError'
+                title: Response 404 Movefilebyid
+        '410':
+          description: '
+
+            #### /file-api/files/gone
+
+
+            The requested file has been deleted, the folder containing it has been
+            deleted, or the workspace containing it has been deleted. When the workspace
+            has been deleted, `upstream_type` is set to `https://seequent.com/error-codes/workspace-service/gone`.
+            When the folder containing it has been deleted, `upstream_type` is set
+            to `https://seequent.com/error-codes/folders/gone`. When the file alone
+            has been deleted, `upstream_type` is absent.
+
+
+
+            #### /file-api/folders/gone
+
+
+            Destination folder has been deleted.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/folders/gone:
+                  value:
+                    status: 410
+                    title: The folder has been deleted.
+                    type: https://seequent.com/error-codes/file-api/folders/gone
+                  summary: /file-api/folders/gone
+                /file-api/files/gone (file deleted):
+                  value:
+                    status: 410
+                    title: The file has been deleted
+                    detail: The requested file has been deleted.
+                    type: https://seequent.com/error-codes/file-api/files/gone
+                  summary: /file-api/files/gone (file deleted)
+                /file-api/files/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: The file has been deleted
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/file-api/files/gone
+                  summary: /file-api/files/gone (workspace deleted)
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/FileDeletedError'
+                - $ref: '#/components/schemas/FolderGoneError'
+                title: Response 410 Movefilebyid
+        '502':
+          description: '
+
+            #### /file-api/metadata/store-error
+
+
+            A database error has occurred while updating the file.
+
+
+
+            #### /file-api/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/metadata/store-error:
+                  value:
+                    status: 502
+                    title: File Metadata Storage Operation Failed.
+                    type: https://seequent.com/error-codes/file-api/metadata/store-error
+                  summary: /file-api/metadata/store-error
+                /file-api/bad-gateway:
+                  value:
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/file-api/bad-gateway
+                  summary: /file-api/bad-gateway
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MetadataStoreError'
+                - $ref: '#/components/schemas/BadGateway'
+                title: Response 502 Movefilebyid
+        '409':
+          description: '
+
+            #### /file-api/files/already-exists
+
+
+            Another file with the same name already exists at the requested path.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/already-exists:
+                  value:
+                    status: 409
+                    title: Invalid Request.
+                    type: https://seequent.com/error-codes/file-api/files/already-exists
+                  summary: /file-api/files/already-exists
+              schema:
+                $ref: '#/components/schemas/FileAlreadyExistsError'
+        '401':
+          description: '
+
+            #### /file-api/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /file-api/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/missing-token
+                  summary: /file-api/auth/missing-token
+                /file-api/auth/invalid-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/invalid-token
+                  summary: /file-api/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Movefilebyid
+        '403':
+          description: '
+
+            #### /file-api/auth/insufficient-role
+
+
+            Forbidden. The client credentials are valid but the client does not have
+            a sufficient role to access to this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    - owner
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/file-api/auth/insufficient-role
+                  summary: /file-api/auth/insufficient-role
+              schema:
+                $ref: '#/components/schemas/InsufficientRoleError'
+        '500':
+          description: '
+
+            #### /file-api/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/file-api/api-errors
+                  summary: /file-api/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: '
+
+            #### /file-api/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/file-api/validation
+                  summary: /file-api/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
+      x-api-preview: true
   /file/v2/orgs/{organisation_id}/workspaces/{workspace_id}/files/path/{file_path}:
     delete:
       tags:
@@ -974,6 +1384,29 @@ paths:
                 - $ref: '#/components/schemas/MetadataStoreError'
                 - $ref: '#/components/schemas/BadGateway'
                 title: Response 502 Deletefilebypath
+        '410':
+          description: '
+
+            #### /file-api/files/gone
+
+
+            The workspace has been deleted. `upstream_type` is set to `https://seequent.com/error-codes/workspace-service/gone`.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: The file has been deleted
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/file-api/files/gone
+                  summary: /file-api/files/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/FileDeletedError'
         '400':
           description: '
 
@@ -1260,20 +1693,33 @@ paths:
             #### /file-api/files/gone
 
 
-            File has been deleted.
+            The requested file has been deleted, the folder containing it has been
+            deleted, or the workspace containing it has been deleted. When the workspace
+            has been deleted, `upstream_type` is set to `https://seequent.com/error-codes/workspace-service/gone`.
+            When the folder containing it has been deleted, `upstream_type` is set
+            to `https://seequent.com/error-codes/folders/gone`. When the file alone
+            has been deleted, `upstream_type` is absent.
 
 
             '
           content:
             application/json:
               examples:
-                /file-api/files/gone:
+                /file-api/files/gone (file deleted):
                   value:
                     status: 410
                     title: The file has been deleted
                     detail: The requested file has been deleted.
                     type: https://seequent.com/error-codes/file-api/files/gone
-                  summary: /file-api/files/gone
+                  summary: /file-api/files/gone (file deleted)
+                /file-api/files/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: The file has been deleted
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/file-api/files/gone
+                  summary: /file-api/files/gone (workspace deleted)
               schema:
                 $ref: '#/components/schemas/FileDeletedError'
         '401':
@@ -1597,6 +2043,41 @@ paths:
                 - $ref: '#/components/schemas/FileUploadCompleteError'
                 - $ref: '#/components/schemas/BadRequestError'
                 title: Response 400 Upsertfilebypath
+        '410':
+          description: '
+
+            #### /file-api/files/gone
+
+
+            The requested file has been deleted, the folder containing it has been
+            deleted, or the workspace containing it has been deleted. When the workspace
+            has been deleted, `upstream_type` is set to `https://seequent.com/error-codes/workspace-service/gone`.
+            When the folder containing it has been deleted, `upstream_type` is set
+            to `https://seequent.com/error-codes/folders/gone`. When the file alone
+            has been deleted, `upstream_type` is absent.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/gone (file deleted):
+                  value:
+                    status: 410
+                    title: The file has been deleted
+                    detail: The requested file has been deleted.
+                    type: https://seequent.com/error-codes/file-api/files/gone
+                  summary: /file-api/files/gone (file deleted)
+                /file-api/files/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: The file has been deleted
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/file-api/files/gone
+                  summary: /file-api/files/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/FileDeletedError'
         '401':
           description: '
 
@@ -1764,15 +2245,6 @@ paths:
           default: 0
           title: Offset
         description: The number of results to skip.
-      - name: deleted
-        in: query
-        required: false
-        schema:
-          type: boolean
-          description: When true, only files that have been deleted will be returned
-          default: false
-          title: Deleted
-        description: When true, only files that have been deleted will be returned
       - name: author
         in: query
         required: false
@@ -1935,6 +2407,16 @@ paths:
           with either `asc:` or `desc:` for ascending or descending respectively.
           Field names can be one of the following known sort fields: `created_at`,
           `modified_at`, `deleted_at`'
+      - name: deleted
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          description: When true, only files that have been deleted will be returned
+          title: Deleted
+        description: When true, only files that have been deleted will be returned
       - name: authorization
         in: header
         required: true
@@ -2023,6 +2505,29 @@ paths:
                 - $ref: '#/components/schemas/MetadataStoreError'
                 - $ref: '#/components/schemas/BadGateway'
                 title: Response 502 Listfiles
+        '410':
+          description: '
+
+            #### /file-api/files/gone
+
+
+            The workspace has been deleted. `upstream_type` is set to `https://seequent.com/error-codes/workspace-service/gone`.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: The file has been deleted
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/file-api/files/gone
+                  summary: /file-api/files/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/FileDeletedError'
         '401':
           description: '
 
@@ -2132,6 +2637,417 @@ paths:
                   summary: /file-api/validation
               schema:
                 $ref: '#/components/schemas/EvoRequestValidationError'
+  /file/v2/orgs/{organisation_id}/files:
+    get:
+      tags:
+      - file:v2
+      summary: List files by org
+      description: The response will list files for the provided organisation ID.
+      operationId: listFilesByOrg
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: organisation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Organisation Id
+        description: The customer's organisation ID.
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: The number of results to return.
+          default: 100
+          title: Limit
+        description: The number of results to return.
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          description: The number of results to skip.
+          default: 0
+          title: Offset
+        description: The number of results to skip.
+      - name: author
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              type: string
+              format: uuid
+          - type: 'null'
+          description: The ID of the author to filter on.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          title: Author
+        description: The ID of the author to filter on.
+      - name: file_name
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            minLength: 1
+            pattern: ^[^/]*$
+          - type: 'null'
+          description: The name of the file to filter on. Will perform a case insensitive
+            partial match, so the query `file_name=gold` will match a file with the
+            name `allgoldcolumns.csv`.
+          examples:
+          - drilling_data
+          title: File Name
+        description: The name of the file to filter on. Will perform a case insensitive
+          partial match, so the query `file_name=gold` will match a file with the
+          name `allgoldcolumns.csv`.
+      - name: created_at
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: 'null'
+          description: A date or dates (max 2) to filter files by. Dates may contain
+            operator prefixes, in the form `<operator>:<datetime>`. The following
+            operators are available (`lt`=less than, `lte`=less than or equal to,
+            `gt`=greater than, `gte`=greater than or equal to).If you omit the operator,
+            then it is assumed the operator is 'equal to'. In this case you may only
+            supply one date. The dates must also be in a valid ISO 8601 format.Dates
+            may include a UTC offset. If the offset is omitted, the timezone is assumed
+            to be UTC.
+          examples:
+          - gte:2023-03-10T22:56:53Z
+          title: Created At
+        description: A date or dates (max 2) to filter files by. Dates may contain
+          operator prefixes, in the form `<operator>:<datetime>`. The following operators
+          are available (`lt`=less than, `lte`=less than or equal to, `gt`=greater
+          than, `gte`=greater than or equal to).If you omit the operator, then it
+          is assumed the operator is 'equal to'. In this case you may only supply
+          one date. The dates must also be in a valid ISO 8601 format.Dates may include
+          a UTC offset. If the offset is omitted, the timezone is assumed to be UTC.
+      - name: modified_by
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              type: string
+              format: uuid
+          - type: 'null'
+          description: The ID of the last person to modify the file to filter on.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          title: Modified By
+        description: The ID of the last person to modify the file to filter on.
+      - name: modified_at
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: 'null'
+          description: A date or dates (max 2) to filter files by. Dates may contain
+            operator prefixes, in the form `<operator>:<datetime>`. The following
+            operators are available (`lt`=less than, `lte`=less than or equal to,
+            `gt`=greater than, `gte`=greater than or equal to).If you omit the operator,
+            then it is assumed the operator is 'equal to'. In this case you may only
+            supply one date. The dates must also be in a valid ISO 8601 format.Dates
+            may include a UTC offset. If the offset is omitted, the timezone is assumed
+            to be UTC.
+          examples:
+          - gte:2023-03-10T22:56:53Z
+          title: Modified At
+        description: A date or dates (max 2) to filter files by. Dates may contain
+          operator prefixes, in the form `<operator>:<datetime>`. The following operators
+          are available (`lt`=less than, `lte`=less than or equal to, `gt`=greater
+          than, `gte`=greater than or equal to).If you omit the operator, then it
+          is assumed the operator is 'equal to'. In this case you may only supply
+          one date. The dates must also be in a valid ISO 8601 format.Dates may include
+          a UTC offset. If the offset is omitted, the timezone is assumed to be UTC.
+      - name: deleted_by
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              type: string
+              format: uuid
+          - type: 'null'
+          description: The UUID of the user that deleted a file.
+          examples:
+          - 00000000-0000-0000-0000-000000000000
+          title: Deleted By
+        description: The UUID of the user that deleted a file.
+      - name: deleted_at
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: 'null'
+          description: A date or dates (max 2) to filter files by. Dates may contain
+            operator prefixes, in the form `<operator>:<datetime>`. The following
+            operators are available (`lt`=less than, `lte`=less than or equal to,
+            `gt`=greater than, `gte`=greater than or equal to).If you omit the operator,
+            then it is assumed the operator is 'equal to'. In this case you may only
+            supply one date. The dates must also be in a valid ISO 8601 format.Dates
+            may include a UTC offset. If the offset is omitted, the timezone is assumed
+            to be UTC.
+          examples:
+          - gte:2023-03-10T22:56:53Z
+          title: Deleted At
+        description: A date or dates (max 2) to filter files by. Dates may contain
+          operator prefixes, in the form `<operator>:<datetime>`. The following operators
+          are available (`lt`=less than, `lte`=less than or equal to, `gt`=greater
+          than, `gte`=greater than or equal to).If you omit the operator, then it
+          is assumed the operator is 'equal to'. In this case you may only supply
+          one date. The dates must also be in a valid ISO 8601 format.Dates may include
+          a UTC offset. If the offset is omitted, the timezone is assumed to be UTC.
+      - name: order_by
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Order By
+          description: 'A comma separated list of fields to order by, where the default
+            sort order is ascending. To specify the sort order, prefix the field name
+            with either `asc:` or `desc:` for ascending or descending respectively.
+            Field names can be one of the following known sort fields: `created_at`,
+            `modified_at`, `deleted_at`'
+          examples:
+          - order_by=modified_at,desc:created_at
+        description: 'A comma separated list of fields to order by, where the default
+          sort order is ascending. To specify the sort order, prefix the field name
+          with either `asc:` or `desc:` for ascending or descending respectively.
+          Field names can be one of the following known sort fields: `created_at`,
+          `modified_at`, `deleted_at`'
+      - name: deleted
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          description: When true, only files that have been deleted will be returned
+          title: Deleted
+        description: When true, only files that have been deleted will be returned
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      responses:
+        '200':
+          description: A list of files within the organisation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFilesByOrgResponse'
+        '422':
+          description: '
+
+            #### /file-api/files/invalid-params
+
+
+            The provided filter parameters are invalid.
+
+
+
+            #### /file-api/sorting/invalid-params
+
+
+            The provided sort parameters are invalid.
+
+
+
+            #### /file-api/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/files/invalid-params:
+                  value:
+                    status: 422
+                    title: Invalid Filter Params.
+                    type: https://seequent.com/error-codes/file-api/files/invalid-params
+                  summary: /file-api/files/invalid-params
+                /file-api/sorting/invalid-params:
+                  value:
+                    status: 422
+                    title: Invalid Sorting Parameters
+                    type: https://seequent.com/error-codes/file-api/sorting/invalid-params
+                  summary: /file-api/sorting/invalid-params
+                /file-api/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/file-api/validation
+                  summary: /file-api/validation
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InvalidFilterParamsError'
+                - $ref: '#/components/schemas/InvalidSortParams'
+                - $ref: '#/components/schemas/EvoRequestValidationError'
+                title: Response 422 Listfilesbyorg
+        '400':
+          description: '
+
+            #### /file-api/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/bad-request:
+                  value:
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/file-api/bad-request
+                  summary: /file-api/bad-request
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: '
+
+            #### /file-api/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /file-api/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/missing-token
+                  summary: /file-api/auth/missing-token
+                /file-api/auth/invalid-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/file-api/auth/invalid-token
+                  summary: /file-api/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Listfilesbyorg
+        '403':
+          description: '
+
+            #### /file-api/auth/insufficient-role
+
+
+            Forbidden. The client credentials are valid but the client does not have
+            a sufficient role to access to this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    - owner
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/file-api/auth/insufficient-role
+                  summary: /file-api/auth/insufficient-role
+              schema:
+                $ref: '#/components/schemas/InsufficientRoleError'
+        '500':
+          description: '
+
+            #### /file-api/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/file-api/api-errors
+                  summary: /file-api/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '502':
+          description: '
+
+            #### /file-api/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /file-api/bad-gateway:
+                  value:
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/file-api/bad-gateway
+                  summary: /file-api/bad-gateway
+              schema:
+                $ref: '#/components/schemas/BadGateway'
 components:
   schemas:
     ApiError:
@@ -2227,6 +3143,12 @@ components:
           type: string
           format: uuid
           title: File Id
+        folder_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Folder Id
         modified_at:
           type: string
           format: date-time
@@ -2333,6 +3255,11 @@ components:
           type: string
           title: Type
           default: https://seequent.com/error-codes/file-api/files/gone
+        upstream_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Type
       type: object
       title: FileDeletedError
     FileNotFoundError:
@@ -2419,6 +3346,48 @@ components:
       - version_id
       title: FileVersionResponse
       description: Metadata for specific file version
+    FolderGoneError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 410
+        title:
+          type: string
+          title: Title
+          default: The folder has been deleted.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/folders/gone
+      type: object
+      title: FolderGoneError
+    FolderNotFoundError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 404
+        title:
+          type: string
+          title: Title
+          default: Folder Not Found.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/folders/not-found
+      type: object
+      title: FolderNotFoundError
     InsufficientRoleError:
       properties:
         detail:
@@ -2449,6 +3418,27 @@ components:
           default: ''
       type: object
       title: InsufficientRoleError
+    InvalidFilterParamsError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 422
+        title:
+          type: string
+          title: Title
+          default: Invalid Filter Params.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/files/invalid-params
+      type: object
+      title: InvalidFilterParamsError
     InvalidPathError:
       properties:
         detail:
@@ -2470,6 +3460,27 @@ components:
           default: https://seequent.com/error-codes/file-api/files/invalid-path
       type: object
       title: InvalidPathError
+    InvalidSortParams:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          type: integer
+          title: Status
+          default: 422
+        title:
+          type: string
+          title: Title
+          default: Invalid Sorting Parameters
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/file-api/sorting/invalid-params
+      type: object
+      title: InvalidSortParams
     InvalidTokenError:
       properties:
         detail:
@@ -2518,6 +3529,12 @@ components:
           type: string
           format: uuid
           title: File Id
+        folder_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Folder Id
         links:
           $ref: '#/components/schemas/ListFileLinks'
         modified_at:
@@ -2564,6 +3581,36 @@ components:
       required:
       - self
       title: ListFileLinks
+    ListFilesByOrgResponse:
+      properties:
+        count:
+          type: integer
+          title: Count
+          default: 0
+        files:
+          items:
+            $ref: '#/components/schemas/OrgListedFile'
+          type: array
+          title: Files
+        limit:
+          type: integer
+          title: Limit
+          default: 0
+        links:
+          $ref: '#/components/schemas/ListFilesResponseLinks'
+        offset:
+          type: integer
+          title: Offset
+          default: 0
+        total:
+          type: integer
+          title: Total
+          default: 0
+      type: object
+      required:
+      - files
+      - links
+      title: ListFilesByOrgResponse
     ListFilesResponse:
       properties:
         count:
@@ -2658,6 +3705,152 @@ components:
           default: https://seequent.com/error-codes/file-api/auth/missing-token
       type: object
       title: MissingTokenError
+    MoveFileRequest:
+      properties:
+        folder_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Folder Id
+        folder_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Folder Path
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+      type: object
+      title: MoveFileRequest
+      description: Destination for file move
+    MoveFileResponse:
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        created_by:
+          anyOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+        file_id:
+          type: string
+          format: uuid
+          title: File Id
+        folder_id:
+          type: string
+          format: uuid
+          title: Folder Id
+        modified_at:
+          type: string
+          format: date-time
+          title: Modified At
+        modified_by:
+          anyOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+        name:
+          type: string
+          title: Name
+        path:
+          type: string
+          title: Path
+        version_id:
+          type: string
+          format: int64
+          title: Version Id
+      type: object
+      required:
+      - created_at
+      - file_id
+      - folder_id
+      - modified_at
+      - name
+      - path
+      - version_id
+      title: MoveFileResponse
+      description: Move file response.
+    OrgListedFile:
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        created_by:
+          anyOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+        deleted_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deleted At
+        deleted_by:
+          anyOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+        file_id:
+          type: string
+          format: uuid
+          title: File Id
+        folder_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Folder Id
+        modified_at:
+          type: string
+          format: date-time
+          title: Modified At
+        modified_by:
+          anyOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+        name:
+          type: string
+          title: Name
+        path:
+          type: string
+          title: Path
+        size:
+          type: integer
+          title: Size
+        workspace_access:
+          anyOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          - type: 'null'
+        workspace_id:
+          type: string
+          format: uuid
+          title: Workspace Id
+        workspace_name:
+          type: string
+          title: Workspace Name
+      type: object
+      required:
+      - created_at
+      - created_by
+      - file_id
+      - modified_at
+      - modified_by
+      - name
+      - path
+      - size
+      - workspace_id
+      - workspace_name
+      title: OrgListedFile
+    RoleEnum:
+      type: string
+      enum:
+      - owner
+      - editor
+      - viewer
+      title: RoleEnum
     UploadFileResponse:
       properties:
         file_id:

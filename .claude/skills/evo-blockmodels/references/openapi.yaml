@@ -75,7 +75,7 @@ paths:
               - bf1a040c-8c58-4bc2-bec2-c5ae7de8bd84
             pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
           description: ID of the organization this call is scoped to. Represented as a v4 UUID.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -136,6 +136,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
     get:
       tags:
         - Metadata
@@ -235,11 +241,9 @@ paths:
           in: query
           required: false
           schema:
-            anyOf:
-              - type: integer
-                maximum: 2147483647
-                minimum: 0
-              - type: 'null'
+            type: integer
+            maximum: 2147483647
+            minimum: 0
             description: Index of the first item to return.
             default: 0
             title: Offset
@@ -248,16 +252,14 @@ paths:
           in: query
           required: false
           schema:
-            anyOf:
-              - type: integer
-                maximum: 100
-                exclusiveMinimum: 0
-              - type: 'null'
+            type: integer
+            maximum: 100
+            exclusiveMinimum: 0
             description: Maximum number of items to return from the list. Must be greater than 0 and less than or equal to 100.
             default: 50
             title: Limit
           description: Maximum number of items to return from the list. Must be greater than 0 and less than or equal to 100.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -306,6 +308,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/workspaces/{workspace_id}/block-models/{bm_id}/blocks:
     post:
       tags:
@@ -328,8 +336,8 @@ paths:
         }
         ```
 
-        The `download_url` points to the output file of the query job, and can be downloaded using either a GET request
-        or using the Azure SDK. The download URL that is generated every time the completed `job_url` is
+        The `download_url` points to the output file of the query job, and can be downloaded using a GET request.
+        The download URL that is generated every time the completed `job_url` is
         polled has a 30 minute time-to-live (TTL), so the download process must be started within 30 minutes. The download
          itself can take longer than 30 minutes, as long as the connection remains open.
 
@@ -424,7 +432,7 @@ paths:
               - bf1a040c-8c58-4bc2-bec2-c5ae7de8bd84
             pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
           description: ID of the organization this call is scoped to. Represented as a v4 UUID.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -479,6 +487,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
     patch:
       tags:
         - Column operations
@@ -503,8 +517,8 @@ paths:
         - There is an optional field `update_type`, which is used to determine which blocks are updated in the block model. The supported update types are `replace` and `merge`.
             - If `update_type` is set to `replace`, the values of the columns provided in the update file are updated for all blocks within the block model. If a block is not provided in the update file, the column values for that block are set to `null`. The columns not provided in the update file are not affected.
             - If `update_type` is set to `merge` (the default), only the blocks and columns that are provided in the update file are updated. The blocks and columns not provided in the update file are not affected.
-        - Note that the optional field `geometry_change` can only be provided for sub-blocked models.
-            - If `geometry_change` is set to `false`, no new sub-blocks can be created nor destroyed, only sub-blocks that exist in the latest version can be updated.
+        - Note that the optional field `geometry_change` can only be set to `true` for sub-blocked models.
+            - If `geometry_change` is omitted, `null`, or set to `false`, no new sub-blocks can be created nor destroyed, only sub-blocks that exist in the latest version can be updated. `null` and `false` are treated identically, for all model types.
             - If `geometry_change` is set to `true`, new sub-blocks can be created and/or existing sub-blocks can be destroyed, but all columns must be provided. If `update_type` is set to `merge`, then all sub-blocks within a parent block must be provided.
         - For `new` and `update` operations, the details of the data file for upload can be specified using the optional `input_options` field.
 
@@ -566,7 +580,7 @@ paths:
               - e3c277c2-edc6-4a7a-8380-251dd19231f2
             pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
           description: ID of the block model this call is scoped to. Represented as a v4 UUID.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -577,7 +591,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateDataLite-Input'
+              $ref: '#/components/schemas/UpdateDataLite'
       responses:
         '202':
           description: Successful Response
@@ -627,6 +641,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/workspaces/{workspace_id}/block-models/{bm_id}/jobs/{job_id}/uploaded:
     post:
       tags:
@@ -691,7 +711,7 @@ paths:
               - e3c277c2-edc6-4a7a-8380-251dd19231f2
             pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
           description: ID of the block model this call is scoped to. Represented as a v4 UUID.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -746,6 +766,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/block-models:
     get:
       tags:
@@ -833,11 +859,9 @@ paths:
           in: query
           required: false
           schema:
-            anyOf:
-              - type: integer
-                maximum: 2147483647
-                minimum: 0
-              - type: 'null'
+            type: integer
+            maximum: 2147483647
+            minimum: 0
             description: Index of the first item to return.
             default: 0
             title: Offset
@@ -846,16 +870,14 @@ paths:
           in: query
           required: false
           schema:
-            anyOf:
-              - type: integer
-                maximum: 100
-                exclusiveMinimum: 0
-              - type: 'null'
+            type: integer
+            maximum: 100
+            exclusiveMinimum: 0
             description: Maximum number of items to return from the list. Must be greater than 0 and less than or equal to 100.
             default: 50
             title: Limit
           description: Maximum number of items to return from the list. Must be greater than 0 and less than or equal to 100.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -892,6 +914,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/workspaces/{workspace_id}/block-models/{bm_id}:
     get:
       tags:
@@ -956,7 +984,7 @@ paths:
 
             An optional boolean parameter. It must be set to `true` when retrieving the block model for the given `bm_id` that has been deleted via the 'Delete a block model' endpoint.
             By default, or if set to `false`, an attempt to access a deleted block model will result in an error.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -1005,6 +1033,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
     patch:
       tags:
         - Operations
@@ -1053,7 +1087,7 @@ paths:
               - e3c277c2-edc6-4a7a-8380-251dd19231f2
             pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
           description: ID of the block model this call is scoped to. Represented as a v4 UUID.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -1114,6 +1148,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
     delete:
       tags:
         - Operations
@@ -1162,7 +1202,7 @@ paths:
               - bf1a040c-8c58-4bc2-bec2-c5ae7de8bd84
             pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
           description: ID of the organization this call is scoped to. Represented as a v4 UUID.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -1207,6 +1247,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
     post:
       tags:
         - Operations
@@ -1269,7 +1315,7 @@ paths:
 
             A boolean parameter that must be provided and set to `false` when using this endpoint.
             Omitting it or setting it to a different value will result in an error.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -1324,6 +1370,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/RestoreErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/workspaces/{workspace_id}/block-models/{bm_id}/versions:
     get:
       tags:
@@ -1393,11 +1445,9 @@ paths:
           in: query
           required: false
           schema:
-            anyOf:
-              - type: integer
-                maximum: 2147483647
-                minimum: 0
-              - type: 'null'
+            type: integer
+            maximum: 2147483647
+            minimum: 0
             description: Index of the first item to return.
             default: 0
             title: Offset
@@ -1406,16 +1456,14 @@ paths:
           in: query
           required: false
           schema:
-            anyOf:
-              - type: integer
-                maximum: 100
-                exclusiveMinimum: 0
-              - type: 'null'
+            type: integer
+            maximum: 100
+            exclusiveMinimum: 0
             description: Maximum number of items to return from the list. Must be greater than 0 and less than or equal to 100.
             default: 50
             title: Limit
           description: Maximum number of items to return from the list. Must be greater than 0 and less than or equal to 100.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -1427,7 +1475,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedResponseWithUnits_Version_'
+                $ref: '#/components/schemas/PaginatedResponseWithUnits_ListingVersion_'
         '401':
           content:
             application/json:
@@ -1464,6 +1512,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/workspaces/{workspace_id}/block-models/{bm_id}/versions/{version_id}:
     get:
       tags:
@@ -1485,7 +1539,7 @@ paths:
         - columns->deleted: List of columns (specified by title) deleted in the update that created the Version. Empty if the update did not delete any columns.
         - columns->updated: List of columns (specified by title) updated in the update that created the Version. Empty if the update did not update any columns.
         - columns->renamed: List of the `ColumnRename` object, denoting which columns were renamed in the update the created the version. Empty if the update did not rename any columns. `ColumnRename` contains the fields: (`old_title`, `new_title`).
-        - columns->metadata_updated: List of the `UpdateMetadataLite` object, containing column metadata changes if they were made in the update. This includes the `title` of the column, the new title, and updated unit ID, respective of what was modified in the update. Empty if the update did not update any column metadata.
+        - columns->metadata_updated: List of the `UpdateMetadataLite` object, containing column metadata changes if they were made in the update. This includes the `title` of the column, the new title, updated unit ID, and replacement `tags`, respective of what was modified in the update. Empty if the update did not update any column metadata.
 
 
         All workspace roles can use this endpoint.
@@ -1549,7 +1603,7 @@ paths:
             default: false
             title: Include Changes
           description: Whether or not to include the changes made in the update that created the specified block model version.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -1601,6 +1655,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/workspaces/{workspace_id}/block-models/{bm_id}/versions/{version_id}/delta:
     post:
       tags:
@@ -1686,7 +1746,7 @@ paths:
               - e3c277c2-edc6-4a7a-8380-251dd19231f2
             pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
           description: ID of the block model this call is scoped to. Represented as a v4 UUID.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -1705,7 +1765,7 @@ paths:
             application/json:
               schema:
                 anyOf:
-                  - $ref: '#/components/schemas/DeltaResponseData'
+                  - $ref: '#/components/schemas/ListingDeltaResponseData'
                   - type: 'null'
                 title: Response Get Deltas For Block Model
         '304':
@@ -1746,6 +1806,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/workspaces/{workspace_id}/block-models/{bm_id}/jobs/{job_id}:
     get:
       tags:
@@ -1810,7 +1876,7 @@ paths:
               - e3c277c2-edc6-4a7a-8380-251dd19231f2
             pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
           description: ID of the block model this call is scoped to. Represented as a v4 UUID.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -1859,6 +1925,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/units:
     get:
       tags:
@@ -1881,7 +1953,7 @@ paths:
               - bf1a040c-8c58-4bc2-bec2-c5ae7de8bd84
             pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
           description: ID of the organization this call is scoped to. Represented as a v4 UUID.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -1921,6 +1993,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/workspaces/{workspace_id}/block-models/{bm_id}/report-specifications:
     get:
       tags:
@@ -1982,11 +2060,9 @@ paths:
           in: query
           required: false
           schema:
-            anyOf:
-              - type: integer
-                maximum: 2147483647
-                minimum: 0
-              - type: 'null'
+            type: integer
+            maximum: 2147483647
+            minimum: 0
             description: Index of the first item to return.
             default: 0
             title: Offset
@@ -1995,16 +2071,14 @@ paths:
           in: query
           required: false
           schema:
-            anyOf:
-              - type: integer
-                maximum: 100
-                exclusiveMinimum: 0
-              - type: 'null'
+            type: integer
+            maximum: 100
+            exclusiveMinimum: 0
             description: Maximum number of items to return from the list. Must be greater than 0 and less than or equal to 100.
             default: 50
             title: Limit
           description: Maximum number of items to return from the list. Must be greater than 0 and less than or equal to 100.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -2053,6 +2127,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
     post:
       tags:
         - Reports
@@ -2115,7 +2195,7 @@ paths:
             default: false
             title: Run Now
           description: Whether to trigger a Reporting Job immediately after the creation of the Report Specification
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -2176,6 +2256,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '501':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureNotImplementedErrorResponse'
+          description: Not Implemented
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/workspaces/{workspace_id}/block-models/{bm_id}/report-specifications/{rs_id}:
     get:
       tags:
@@ -2233,7 +2325,7 @@ paths:
               - e3c277c2-edc6-4a7a-8380-251dd19231f2
             pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
           description: ID of the block model this call is scoped to. Represented as a v4 UUID.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -2282,6 +2374,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
     patch:
       tags:
         - Reports
@@ -2351,7 +2449,7 @@ paths:
             default: false
             title: Run Now
           description: Whether to trigger a Reporting Job immediately after the update of the Report Specification
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -2362,7 +2460,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateReportSpecification'
+              $ref: '#/components/schemas/UpdateReportSpecification'
       responses:
         '200':
           description: Successful Response
@@ -2412,6 +2510,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '501':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureNotImplementedErrorResponse'
+          description: Not Implemented
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/workspaces/{workspace_id}/block-models/{bm_id}/report-specifications/{rs_id}/results/{report_result_uuid}:
     get:
       tags:
@@ -2480,7 +2590,7 @@ paths:
               - e3c277c2-edc6-4a7a-8380-251dd19231f2
             pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
           description: ID of the block model this call is scoped to. Represented as a v4 UUID.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -2529,6 +2639,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/workspaces/{workspace_id}/block-models/{bm_id}/report-specifications/{rs_id}/results:
     get:
       tags:
@@ -2600,11 +2716,9 @@ paths:
           in: query
           required: false
           schema:
-            anyOf:
-              - type: integer
-                maximum: 2147483647
-                minimum: 0
-              - type: 'null'
+            type: integer
+            maximum: 2147483647
+            minimum: 0
             description: Index of the first item to return.
             default: 0
             title: Offset
@@ -2613,16 +2727,14 @@ paths:
           in: query
           required: false
           schema:
-            anyOf:
-              - type: integer
-                maximum: 100
-                exclusiveMinimum: 0
-              - type: 'null'
+            type: integer
+            maximum: 100
+            exclusiveMinimum: 0
             description: Maximum number of items to return from the list. Must be greater than 0 and less than or equal to 100.
             default: 50
             title: Limit
           description: Maximum number of items to return from the list. Must be greater than 0 and less than or equal to 100.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -2671,6 +2783,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/workspaces/{workspace_id}/block-models/{bm_id}/report-specifications/{rs_id}/jobs:
     post:
       tags:
@@ -2731,7 +2849,7 @@ paths:
               - e3c277c2-edc6-4a7a-8380-251dd19231f2
             pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
           description: ID of the block model this call is scoped to. Represented as a v4 UUID.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -2792,6 +2910,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '501':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureNotImplementedErrorResponse'
+          description: Not Implemented
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
   /blockmodel/orgs/{org_id}/workspaces/{workspace_id}/block-models/{bm_id}/report-specifications/{rs_id}/comparisons:
     get:
       tags:
@@ -2879,7 +3009,7 @@ paths:
             description: Number of decimal places to use for comparison (between 0 and 10 inclusive)
             title: Decimal Places
           description: Number of decimal places to use for comparison (between 0 and 10 inclusive)
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -2928,6 +3058,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
     post:
       tags:
         - Reports
@@ -2987,7 +3123,7 @@ paths:
               - e3c277c2-edc6-4a7a-8380-251dd19231f2
             pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
           description: ID of the block model this call is scoped to. Represented as a v4 UUID.
-        - name: authorization
+        - name: Authorization
           in: header
           required: true
           schema:
@@ -3048,18 +3184,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceErrorResponse'
           description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorResponse'
+          description: Service Unavailable
 components:
   schemas:
-    AllInputOptions-Input:
-      anyOf:
-        - $ref: '#/components/schemas/InputOptionsParquet'
-        - $ref: '#/components/schemas/InputOptionsCSV'
-        - $ref: '#/components/schemas/InputOptionsDatamine'
-    AllInputOptions-Output:
-      anyOf:
-        - $ref: '#/components/schemas/InputOptionsParquet'
-        - $ref: '#/components/schemas/InputOptionsCSV'
-        - $ref: '#/components/schemas/InputOptionsDatamine'
     AuthenticationErrorResponse:
       properties:
         detail:
@@ -3215,7 +3347,7 @@ components:
           title: Created At
           description: Block model creation time
         created_by:
-          $ref: '#/components/schemas/UserInfo'
+          $ref: '#/components/schemas/IMSUserInfo'
           description: User who created the block model
         description:
           anyOf:
@@ -3243,7 +3375,7 @@ components:
           title: Last Updated At
           description: Date and time of the last block model update, including metadata updates
         last_updated_by:
-          $ref: '#/components/schemas/UserInfo'
+          $ref: '#/components/schemas/IMSUserInfo'
           description: User who last updated the block model, including metadata updates
         model_origin:
           $ref: '#/components/schemas/Location'
@@ -3367,7 +3499,7 @@ components:
           title: Created At
           description: Block model creation time
         created_by:
-          $ref: '#/components/schemas/UserInfo'
+          $ref: '#/components/schemas/IMSUserInfo'
           description: User who created the block model
         description:
           anyOf:
@@ -3390,17 +3522,14 @@ components:
           examples:
             - f1230d69-c779-4736-9eb6-f82d49aafa9a
         job_url:
-          type: string
-          minLength: 1
-          format: uri
-          title: Job Url
+          $ref: '#/components/schemas/URLStr'
         last_updated_at:
           type: string
           format: date-time
           title: Last Updated At
           description: Date and time of the last block model update, including metadata updates
         last_updated_by:
-          $ref: '#/components/schemas/UserInfo'
+          $ref: '#/components/schemas/IMSUserInfo'
           description: User who last updated the block model, including metadata updates
         model_origin:
           $ref: '#/components/schemas/Location'
@@ -3506,6 +3635,20 @@ components:
             - 618d6339-2fa7-4dfd-9c7f-c0b12016639e
         data_type:
           $ref: '#/components/schemas/DataType'
+        group_uuid:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Group Uuid
+          description: UUID of the group this column belongs to. Null means ungrouped.
+        tags:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Tags
+          description: 'Publisher-supplied free-form metadata for the column, as a JSON object. Keys must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`; keys are unique case-insensitively. Values may be any JSON-compatible type. A single `tags` object serialised as UTF-8 JSON must be at most 10 KiB.'
         title:
           type: string
           title: Title
@@ -3533,6 +3676,19 @@ components:
       properties:
         data_type:
           $ref: '#/components/schemas/DataType'
+        group:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Group
+          description: 'Qualified path of the group this column belongs to: a bare title for a top-level group, or segments joined by the response separator for a nested group. The separator is the request''s `qualified_title_separator` where supported, defaulting to `▸`. Null means ungrouped.'
+        tags:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Tags
+          description: 'Publisher-supplied free-form metadata for the column, as a JSON object. Keys must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`; keys are unique case-insensitively. Values may be any JSON-compatible type. A single `tags` object serialised as UTF-8 JSON must be at most 10 KiB.'
         title:
           type: string
           title: Title
@@ -3549,6 +3705,54 @@ components:
         - data_type
         - title
       title: ColumnLite
+    ColumnMetadataChange:
+      properties:
+        from_group:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: From Group
+          description: Qualified path of the column's group before the move; null when previously ungrouped.
+        from_group_uuid:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: From Group Uuid
+          description: UUID of the column's group before the move; null when the column was previously ungrouped.
+        title:
+          type: string
+          title: Title
+          description: The original human-readable label used to identify the column
+        to_group:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: To Group
+          description: Qualified path of the column's group after the move; null when the column is now ungrouped.
+        to_group_uuid:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: To Group Uuid
+          description: UUID of the column's group after the move; null when the column is now ungrouped.
+        values:
+          $ref: '#/components/schemas/UpdateMetadataValuesBase'
+      additionalProperties: false
+      type: object
+      required:
+        - title
+        - values
+      title: ColumnMetadataChange
+      description: |-
+        Describes how a single column's metadata changed between two versions.
+
+        ``values`` holds the new title, unit and tags for the column. If the column was also moved
+        between groups, the ``from_group*`` and ``to_group*`` fields record where it was before and after
+        the move: ``from_*`` refers to the parent version's group tree and ``to_*`` to the target version's.
+        When the column was not in a group on either side, that side's group UUID and path are simply
+        ``null``.
     ColumnNameMapping:
       properties:
         csv_name:
@@ -3687,7 +3891,7 @@ components:
           default: false
         lineage:
           anyOf:
-            - $ref: '#/components/schemas/Lineage_V1_0_0-Input'
+            - $ref: '#/components/schemas/Lineage_V1_0_0'
             - type: 'null'
           description: Lineage of the block model
           deprecated: true
@@ -3742,6 +3946,23 @@ components:
         - name
         - size_options
       title: CreateData
+    CreateReportNegativeValuesPolicy:
+      type: string
+      enum:
+        - USE
+        - ZERO
+        - IGNORE_BLOCK
+        - IGNORE_VALUE
+        - MARK_AS_INVALID
+      title: CreateReportNegativeValuesPolicy
+    CreateReportNullValuesPolicy:
+      type: string
+      enum:
+        - ZERO
+        - IGNORE_BLOCK
+        - IGNORE_VALUE
+        - MARK_AS_INVALID
+      title: CreateReportNullValuesPolicy
     CreateReportSpecification:
       properties:
         autorun:
@@ -3865,21 +4086,23 @@ components:
           title: Name
           description: The human-readable label used to identify the report
         negative_values_policy:
-          anyOf:
-            - $ref: '#/components/schemas/ReportNegativeValuesPolicy'
-            - type: 'null'
-          description: Policy for handling negative values in the report's cut-off or value columns
-          default: IGNORE_BLOCK
+          $ref: '#/components/schemas/CreateReportNegativeValuesPolicy'
+          description: Policy for handling negative values in the report's cut-off or value columns. `IGNORE_BLOCK` is deprecated and cannot be used when creating a new Report Specification
+          default: MARK_AS_INVALID
           examples:
             - USE
         null_values_policy:
-          anyOf:
-            - $ref: '#/components/schemas/ReportNullValuesPolicy'
-            - type: 'null'
-          description: Policy for handling null values in the report's cut-off or value columns
-          default: IGNORE_BLOCK
+          $ref: '#/components/schemas/CreateReportNullValuesPolicy'
+          description: Policy for handling null values in the report's cut-off or value columns. `IGNORE_BLOCK` is deprecated and cannot be used when creating a new Report Specification
+          default: MARK_AS_INVALID
           examples:
             - ZERO
+        volume_filter_options:
+          anyOf:
+            - $ref: '#/components/schemas/VolumeFilterOptions-Input'
+            - type: 'null'
+          description: Volume filter options for this report
+          x-api-preview: true
       additionalProperties: false
       type: object
       required:
@@ -3948,80 +4171,39 @@ components:
         - bbox
         - columns
       title: DeltaRequestData
-    DeltaResponseData:
+    FeatureNotImplementedErrorResponse:
       properties:
-        delete_deltas:
-          items:
-            type: string
-            format: uuid
-          type: array
-          title: Delete Deltas
-          description: List of versions that deleted specified columns
-        new_deltas:
-          items:
-            type: string
-            format: uuid
-          type: array
-          title: New Deltas
-          description: List of versions that added new columns
-        update_deltas:
-          items:
-            type: string
-            format: uuid
-          type: array
-          title: Update Deltas
-          description: List of versions that contain updates within the specified bounding box, to the specified columns
-        version_data:
-          items:
-            $ref: '#/components/schemas/DeltaVersionData'
-          type: array
-          title: Version Data
-          description: Details about the changes per version
-      additionalProperties: false
-      type: object
-      required:
-        - delete_deltas
-        - new_deltas
-        - update_deltas
-        - version_data
-      title: DeltaResponseData
-      description: Details about changes that occurred between two versions, within the specified bounding box.
-    DeltaVersionData:
-      properties:
-        bbox:
-          anyOf:
-            - $ref: '#/components/schemas/BBox'
-            - type: 'null'
-          description: Bounding box of the search area as integer indexes
-        mapping:
-          $ref: '#/components/schemas/Mapping'
-          description: List of internal column names to be included into the result
-        update_columns:
-          $ref: '#/components/schemas/UpdateColumns'
-          description: Columns added, updated, or deleted in this version
-        version_id:
-          type: integer
-          title: Version Id
-          description: |-
-            Identifier for the version within a block model as a monotonically increasing integer, where 1 is
-            the `version_id` for the version created upon creation of the block model.
-          examples:
-            - 5
-        version_uuid:
+        detail:
           type: string
-          format: uuid
-          title: Version Uuid
-          description: A universally unique identifier for the version
+          title: Detail
+          description: A human-readable explanation specific to this occurrence of the problem.
           examples:
-            - 3e9ce8de-f6ba-4920-8c6e-0882e90f0ed7
-      additionalProperties: false
+            - Field 'geometry_columns' is not implemented
+        status:
+          type: integer
+          title: Status
+          description: The HTTP status code generated by the origin server for this occurrence of the problem.
+          examples:
+            - 501
+        title:
+          type: string
+          title: Title
+          description: A short, human-readable summary of the problem type.
+          examples:
+            - Feature not implemented
+        type:
+          type: string
+          title: Type
+          description: A URI reference that is the primary identifier of the problem type.
+          examples:
+            - https://seequent.com/error-codes/block-model-service/feature-not-implemented
       type: object
       required:
-        - mapping
-        - update_columns
-        - version_id
-        - version_uuid
-      title: DeltaVersionData
+        - detail
+        - status
+        - title
+        - type
+      title: FeatureNotImplementedErrorResponse
     FileConflictErrorResponse:
       properties:
         detail:
@@ -4143,6 +4325,358 @@ components:
         - title
         - type
       title: GoneExceptionResponse
+    Group:
+      properties:
+        group_uuid:
+          type: string
+          format: uuid
+          title: Group Uuid
+          description: Unique identifier for the group.
+          examples:
+            - 00633b08-165b-4dcb-bbae-0d3befa74c7e
+        is_hidden:
+          type: boolean
+          title: Is Hidden
+          description: When true, the group's direct member columns are excluded from wildcard queries unless include_hidden is set.
+          default: false
+        missing_column_policy:
+          anyOf:
+            - $ref: '#/components/schemas/MissingColumnPolicy'
+            - type: 'null'
+          description: Policy for columns in this group's zone that are absent from an update. Defaults to INHERIT, which adopts the nearest ancestor's explicit policy zone (USE_PREVIOUS at the root).
+          default: INHERIT
+        parent_group_uuid:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Parent Group Uuid
+          description: UUID of the parent group within the same block model. Null means top-level.
+        tags:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Tags
+          description: 'Publisher-supplied free-form metadata for the group, as a JSON object. Keys must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`; keys are unique case-insensitively. Values may be any JSON-compatible type. A single `tags` object serialised as UTF-8 JSON must be at most 10 KiB.'
+        title:
+          type: string
+          title: Title
+          description: 'Human-readable label for the group, unique across the parent group, or across top-level groups if no parent. They must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`. Must not contain the qualified title separator `▸`.'
+      additionalProperties: false
+      type: object
+      required:
+        - group_uuid
+        - title
+      title: Group
+      description: Group metadata using UUID-based references (``update`` flow).
+    GroupChangeRef:
+      properties:
+        group:
+          type: string
+          title: Group
+          description: Qualified path of the group in the relevant version's group tree.
+        group_uuid:
+          type: string
+          format: uuid
+          title: Group Uuid
+          description: Stable UUID of the group.
+      additionalProperties: false
+      type: object
+      required:
+        - group
+        - group_uuid
+      title: GroupChangeRef
+      description: Identifies a group involved in a definition-level addition or deletion.
+    GroupLite:
+      properties:
+        is_hidden:
+          type: boolean
+          title: Is Hidden
+          description: When true, the group's direct member columns are excluded from wildcard queries unless include_hidden is set.
+          default: false
+        missing_column_policy:
+          anyOf:
+            - $ref: '#/components/schemas/MissingColumnPolicy'
+            - type: 'null'
+          description: Policy for columns in this group's zone that are absent from an update. Defaults to INHERIT, which adopts the nearest ancestor's explicit policy zone (USE_PREVIOUS at the root).
+          default: INHERIT
+        parent_group:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Parent Group
+          description: 'Qualified path of the parent group within the same block model: a bare title when the parent is a top-level group, or segments joined by `▸` when the parent is itself nested. Null means top-level.'
+        tags:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Tags
+          description: 'Publisher-supplied free-form metadata for the group, as a JSON object. Keys must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`; keys are unique case-insensitively. Values may be any JSON-compatible type. A single `tags` object serialised as UTF-8 JSON must be at most 10 KiB.'
+        title:
+          type: string
+          title: Title
+          description: 'Human-readable label for the group, unique across the parent group, or across top-level groups if no parent. They must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`. Must not contain the qualified title separator `▸`.'
+      additionalProperties: false
+      type: object
+      required:
+        - title
+      title: GroupLite
+      description: Group metadata using title-based column references (``update_lite`` flow).
+    GroupMetadataChange:
+      properties:
+        from_group:
+          type: string
+          title: From Group
+          description: Qualified path of the group in the parent version's tree.
+        group_uuid:
+          type: string
+          format: uuid
+          title: Group Uuid
+          description: Stable UUID of the group.
+        is_hidden:
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Is Hidden
+          description: New hidden flag, when it changed.
+        missing_column_policy:
+          anyOf:
+            - $ref: '#/components/schemas/MissingColumnPolicy'
+            - type: 'null'
+          description: New missing-column policy, when it changed.
+        tags:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Tags
+          description: New tags, when they changed.
+        title:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Title
+          description: New title, when the title changed.
+        to_group:
+          type: string
+          title: To Group
+          description: Qualified path of the group in the target version's tree.
+      additionalProperties: false
+      type: object
+      required:
+        - from_group
+        - group_uuid
+        - to_group
+      title: GroupMetadataChange
+      description: |-
+        A group-definition metadata change between two versions.
+
+        ``from_group``/``to_group`` are the group's fully qualified paths in the parent and target trees;
+        they differ when the group was renamed or re-parented. The remaining fields carry the post-change
+        value of any attribute that changed and are null when that attribute was unchanged.
+    GroupUpdateMetadata:
+      properties:
+        group_uuid:
+          type: string
+          format: uuid
+          title: Group Uuid
+          description: UUID of the group to update.
+        values:
+          $ref: '#/components/schemas/GroupUpdateMetadataValues'
+      additionalProperties: false
+      type: object
+      required:
+        - group_uuid
+        - values
+      title: GroupUpdateMetadata
+    GroupUpdateMetadataLite:
+      properties:
+        title:
+          type: string
+          title: Title
+          description: Title of the group to update.
+        values:
+          $ref: '#/components/schemas/GroupUpdateMetadataValuesLite'
+      additionalProperties: false
+      type: object
+      required:
+        - title
+        - values
+      title: GroupUpdateMetadataLite
+    GroupUpdateMetadataValues:
+      properties:
+        is_hidden:
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Is Hidden
+          description: New hidden flag value.
+        missing_column_policy:
+          anyOf:
+            - $ref: '#/components/schemas/MissingColumnPolicy'
+            - type: 'null'
+          description: New missing-column policy. Null/absent means leave unchanged; use INHERIT to adopt the parent chain's policy zone.
+        parent_group_uuid:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Parent Group Uuid
+          description: New parent group UUID. Null/absent means leave unchanged; the Nil UUID makes the group a top-level group.
+        tags:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Tags
+          description: 'Publisher-supplied free-form metadata for the group, as a JSON object. Keys must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`; keys are unique case-insensitively. Values may be any JSON-compatible type. A single `tags` object serialised as UTF-8 JSON must be at most 10 KiB.'
+        title:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Title
+          description: New title for the group.
+      additionalProperties: false
+      type: object
+      title: GroupUpdateMetadataValues
+      description: Values that may be updated on an existing group via ``groups.update_metadata``.
+    GroupUpdateMetadataValuesLite:
+      properties:
+        is_hidden:
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Is Hidden
+          description: New hidden flag value.
+        missing_column_policy:
+          anyOf:
+            - $ref: '#/components/schemas/MissingColumnPolicy'
+            - type: 'null'
+          description: New missing-column policy. Null/absent means leave unchanged; use INHERIT to adopt the parent chain's policy zone.
+        parent_group:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Parent Group
+          description: New parent group title. Null/absent means leave unchanged; an empty string makes the group a top-level group.
+        tags:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Tags
+          description: 'Publisher-supplied free-form metadata for the group, as a JSON object. Keys must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`; keys are unique case-insensitively. Values may be any JSON-compatible type. A single `tags` object serialised as UTF-8 JSON must be at most 10 KiB.'
+        title:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Title
+          description: New title for the group.
+      additionalProperties: false
+      type: object
+      title: GroupUpdateMetadataValuesLite
+      description: Values that may be updated on an existing group via ``groups.update_metadata`` (lite flow).
+    IMSUserInfo:
+      properties:
+        email:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Email Address
+          description: The primary email address of the user.
+          examples:
+            - kim@example.test
+        first_name:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: First Name
+          description: The first name of the user.
+          examples:
+            - Kim
+        group_ids:
+          anyOf:
+            - items:
+                type: string
+              type: array
+            - type: 'null'
+          title: Group IDs
+          description: The IDs of the groups the user belongs to.
+          examples:
+            - - 249160E6-6404-4C09-8F61-8BB2469A4DDF
+        group_names:
+          anyOf:
+            - items:
+                type: string
+              type: array
+            - type: 'null'
+          title: Group Names
+          description: The names of the groups the user belongs to.
+          examples:
+            - - My Group
+        id:
+          type: string
+          format: uuid
+          title: User ID
+          description: The unique identifier of the user.
+          examples:
+            - 59b73891-5538-4e45-ae67-f8c5b00d7405
+        last_name:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Last Name
+          description: The last name of the user.
+          examples:
+            - Kim
+        name:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Full Name
+          description: The full name of the user.
+          examples:
+            - Kim Kim
+        org_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Organization ID
+          description: The organization ID of the user.
+          examples:
+            - CAEAADB6-D052-40AA-9DEA-221CA6EA26B9
+        org_name:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Organization Name
+          description: The organization name of the user.
+          examples:
+            - Bentley Systems Inc
+        role_name:
+          anyOf:
+            - items:
+                type: string
+              type: array
+            - type: string
+            - type: 'null'
+          title: Role Name
+          description: The role name(s) of the user.
+          examples:
+            - Account Admin
+            - - Account Admin
+              - User
+      additionalProperties: false
+      type: object
+      required:
+        - id
+      title: IMSUserInfo
+      description: |-
+        Unified user information model for IMS responses.
+
+        All optional fields default to None to clearly indicate missing values.
     InputOptionsCSV:
       properties:
         column_name_mapping:
@@ -4265,11 +4799,8 @@ components:
             - Update file 38e3ca486b3b477db0f99646b0529746 not found.
         download_url:
           anyOf:
-            - type: string
-              minLength: 1
-              format: uri
+            - $ref: '#/components/schemas/URLStr'
             - type: 'null'
-          title: Download Url
           description: URL for downloading an errors block model file. Set if the job is for block model update and there were block-specific errors.
         status:
           type: integer
@@ -4301,11 +4832,8 @@ components:
       properties:
         upload_url:
           anyOf:
-            - type: string
-              minLength: 1
-              format: uri
+            - $ref: '#/components/schemas/URLStr'
             - type: 'null'
-          title: Upload Url
           description: Upload URL for the job, with an up-to-date SAS token
       additionalProperties: false
       type: object
@@ -4358,7 +4886,7 @@ components:
         - COMPLETE
         - FAILED
       title: JobStatus
-    Lineage_V1_0_0-Input:
+    Lineage_V1_0_0:
       properties:
         events:
           items:
@@ -4370,26 +4898,17 @@ components:
             - type: string
             - type: 'null'
           title: Self Link
+      additionalProperties: false
       type: object
       required:
         - events
-      title: Lineage_V1_0_0-Input
-    Lineage_V1_0_0-Output:
-      properties:
-        events:
-          items:
-            $ref: '#/components/schemas/Lineage_V1_0_0_Runevent'
-          type: array
-          title: Events
-        self_link:
-          anyOf:
-            - type: string
-            - type: 'null'
-          title: Self Link
-      type: object
-      required:
-        - events
-      title: Lineage_V1_0_0-Output
+      title: Lineage_V1_0_0
+      description: |-
+        Events describing segments of the input lineage graph of this object
+
+        Attributes:
+            self_link (str, optional): Self link pointing to where this Geoscience Object is referenced within the events array
+            events (list[Lineage_V1_0_0_Runevent]): List of zero or more OpenLineage run events
     Lineage_V1_0_0_Runevent:
       properties:
         eventTime:
@@ -4424,6 +4943,7 @@ components:
         schemaURL:
           type: string
           title: Schemaurl
+      additionalProperties: false
       type: object
       required:
         - eventTime
@@ -4432,6 +4952,17 @@ components:
         - run
         - schemaURL
       title: Lineage_V1_0_0_Runevent
+      description: |-
+        Attributes:
+
+        eventTime (str): the time the event occurred at
+        producer (str): URI identifying the producer of this metadata. For example this could be a git url with a given tag or sha
+        schemaURL (str): URI identifying the corresponding version of the schema definition for this RunEvent
+        eventType (str, optional): the current transition of the run state. It is required to issue 1 START event and 1 of [ COMPLETE, ABORT, FAIL ] event per run. Additional events with OTHER eventType can be added to the same run. For example to send additional metadata after the run is complete
+        run (Lineage_V1_0_0_Runevent_Run)
+        job (Lineage_V1_0_0_Runevent_Job)
+        inputs (list[Lineage_V1_0_0_Runevent_Inputdataset], optional): The set of **input** datasets.
+        outputs (list[Lineage_V1_0_0_Runevent_Outputdataset], optional): The set of **output** datasets.
     Lineage_V1_0_0_Runevent_Inputdataset:
       properties:
         facets:
@@ -4456,11 +4987,20 @@ components:
         namespace:
           type: string
           title: Namespace
+      additionalProperties: false
       type: object
       required:
         - name
         - namespace
       title: Lineage_V1_0_0_Runevent_Inputdataset
+      description: |-
+        An input dataset
+
+        Attributes:
+            inputFacets (dict[str, dict[str, typing.Any]], optional): The input facets for this dataset.
+            namespace (str): The namespace containing that dataset
+            name (str): The unique name for that dataset within that namespace
+            facets (dict[str, dict[str, typing.Any]], optional): The facets for this dataset
     Lineage_V1_0_0_Runevent_Job:
       properties:
         facets:
@@ -4477,11 +5017,18 @@ components:
         namespace:
           type: string
           title: Namespace
+      additionalProperties: false
       type: object
       required:
         - name
         - namespace
       title: Lineage_V1_0_0_Runevent_Job
+      description: |-
+        Attributes:
+
+        namespace (str): The namespace containing that job
+        name (str): The unique name for that job within that namespace
+        facets (dict[str, dict[str, typing.Any]], optional): The job facets.
     Lineage_V1_0_0_Runevent_Outputdataset:
       properties:
         facets:
@@ -4506,11 +5053,20 @@ components:
               type: object
             - type: 'null'
           title: Outputfacets
+      additionalProperties: false
       type: object
       required:
         - name
         - namespace
       title: Lineage_V1_0_0_Runevent_Outputdataset
+      description: |-
+        An output dataset
+
+        Attributes:
+            outputFacets (dict[str, dict[str, typing.Any]], optional): The output facets for this dataset
+            namespace (str): The namespace containing that dataset
+            name (str): The unique name for that dataset within that namespace
+            facets (dict[str, dict[str, typing.Any]], optional): The facets for this dataset
     Lineage_V1_0_0_Runevent_Run:
       properties:
         facets:
@@ -4525,10 +5081,430 @@ components:
           type: string
           format: uuid
           title: Runid
+      additionalProperties: false
       type: object
       required:
         - runId
       title: Lineage_V1_0_0_Runevent_Run
+      description: |-
+        Attributes:
+
+        runId (uuid.UUID): The globally unique ID of the run associated with the job.
+        facets (dict[str, dict[str, typing.Any]], optional): The run facets.
+    ListingDeltaResponseData:
+      properties:
+        delete_deltas:
+          items:
+            type: string
+            format: uuid
+          type: array
+          title: Delete Deltas
+          description: List of versions that deleted specified columns
+        group_deltas:
+          items:
+            type: string
+            format: uuid
+          type: array
+          title: Group Deltas
+          description: List of versions that changed group definitions (added, deleted, or updated group metadata)
+          default: []
+        new_deltas:
+          items:
+            type: string
+            format: uuid
+          type: array
+          title: New Deltas
+          description: List of versions that added new columns
+        update_deltas:
+          items:
+            type: string
+            format: uuid
+          type: array
+          title: Update Deltas
+          description: List of versions that contain updates within the specified bounding box, to the specified columns
+        version_data:
+          items:
+            $ref: '#/components/schemas/ListingDeltaVersionData'
+          type: array
+          title: Version Data
+          description: Details about the changes per version
+      additionalProperties: false
+      type: object
+      required:
+        - delete_deltas
+        - new_deltas
+        - update_deltas
+        - version_data
+      title: ListingDeltaResponseData
+    ListingDeltaVersionData:
+      properties:
+        bbox:
+          anyOf:
+            - $ref: '#/components/schemas/BBox'
+            - type: 'null'
+          description: Bounding box of the search area as integer indexes
+        mapping:
+          $ref: '#/components/schemas/ListingReadMapping'
+          description: List of internal column names to be included into the result
+        update_columns:
+          $ref: '#/components/schemas/ListingReadUpdateColumns'
+          description: Columns added, updated, or deleted in this version
+        update_groups:
+          $ref: '#/components/schemas/ListingVersionGroupChanges'
+          description: Group-definition additions, deletions, and metadata updates in this version
+        version_id:
+          type: integer
+          title: Version Id
+          description: |-
+            Identifier for the version within a block model as a monotonically increasing integer, where 1 is
+            the `version_id` for the version created upon creation of the block model.
+          examples:
+            - 5
+        version_uuid:
+          type: string
+          format: uuid
+          title: Version Uuid
+          description: A universally unique identifier for the version
+          examples:
+            - 3e9ce8de-f6ba-4920-8c6e-0882e90f0ed7
+      additionalProperties: false
+      type: object
+      required:
+        - mapping
+        - update_columns
+        - version_id
+        - version_uuid
+      title: ListingDeltaVersionData
+    ListingGroupMetadataChange:
+      properties:
+        from_group:
+          type: string
+          title: From Group
+          description: Qualified path of the group in the parent version's tree.
+        group_uuid:
+          type: string
+          format: uuid
+          title: Group Uuid
+          description: Stable UUID of the group.
+        is_hidden:
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Is Hidden
+          description: New hidden flag, when it changed.
+        missing_column_policy:
+          anyOf:
+            - $ref: '#/components/schemas/MissingColumnPolicy'
+            - type: 'null'
+          description: New missing-column policy, when it changed.
+        title:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Title
+          description: New title, when the title changed.
+        to_group:
+          type: string
+          title: To Group
+          description: Qualified path of the group in the target version's tree.
+      additionalProperties: false
+      type: object
+      required:
+        - from_group
+        - group_uuid
+        - to_group
+      title: ListingGroupMetadataChange
+      description: Group-metadata-change variant for listing-style (delta) responses; never carries ``tags``.
+    ListingReadColumn:
+      properties:
+        col_id:
+          type: string
+          title: Col Id
+          description: The ID of the column, a UUID for non-system columns
+          examples:
+            - 618d6339-2fa7-4dfd-9c7f-c0b12016639e
+        data_type:
+          $ref: '#/components/schemas/DataType'
+        group:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Group
+          description: 'Qualified path of the group this column belongs to: a bare title for a top-level group, or segments joined by the response separator for a nested group. The separator is the request''s `qualified_title_separator` where supported, defaulting to `▸`. Null means ungrouped.'
+        group_uuid:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Group Uuid
+          description: UUID of the group this column belongs to. Null means ungrouped.
+        title:
+          type: string
+          title: Title
+          description: The human-readable label used to identify the column
+        unit_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Unit Id
+          description: The ID of the column's unit
+      additionalProperties: false
+      type: object
+      required:
+        - col_id
+        - data_type
+        - title
+      title: ListingReadColumn
+      description: Tag-free read column representation for listing responses.
+    ListingReadGroup:
+      properties:
+        group_uuid:
+          type: string
+          format: uuid
+          title: Group Uuid
+          description: Unique identifier for the group.
+          examples:
+            - 00633b08-165b-4dcb-bbae-0d3befa74c7e
+        is_hidden:
+          type: boolean
+          title: Is Hidden
+          description: When true, the group's direct member columns are excluded from wildcard queries unless include_hidden is set.
+          default: false
+        missing_column_policy:
+          anyOf:
+            - $ref: '#/components/schemas/MissingColumnPolicy'
+            - type: 'null'
+          description: Policy for columns in this group's zone that are absent from an update. Defaults to INHERIT, which adopts the nearest ancestor's explicit policy zone (USE_PREVIOUS at the root).
+        parent_group_uuid:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Parent Group Uuid
+          description: UUID of the parent group within the same block model. Null means top-level.
+        resolved_missing_column_policy:
+          $ref: '#/components/schemas/MissingColumnPolicy'
+          description: Effective missing-column policy after resolving against the stored parent chain. A group with INHERIT (or no policy) adopts the nearest ancestor's explicit policy zone, defaulting to USE_PREVIOUS when no ancestor sets one.
+        title:
+          type: string
+          title: Title
+          description: 'Human-readable label for the group, unique across the parent group, or across top-level groups if no parent. They must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`. Must not contain the qualified title separator `▸`.'
+      additionalProperties: false
+      type: object
+      required:
+        - group_uuid
+        - resolved_missing_column_policy
+        - title
+      title: ListingReadGroup
+      description: Tag-free read group representation for listing responses.
+    ListingReadMapping:
+      properties:
+        columns:
+          items:
+            $ref: '#/components/schemas/ListingReadColumn'
+          type: array
+          title: Columns
+        groups:
+          items:
+            $ref: '#/components/schemas/ListingReadGroup'
+          type: array
+          title: Groups
+          default: []
+      additionalProperties: false
+      type: object
+      required:
+        - columns
+      title: ListingReadMapping
+      description: Tag-free mapping representation for listing responses.
+    ListingReadUpdateColumns:
+      properties:
+        delete:
+          items:
+            type: string
+          type: array
+          title: Delete
+          description: The list of column IDs for deletion
+        new:
+          items:
+            $ref: '#/components/schemas/ListingReadColumn'
+          type: array
+          title: New
+        rename:
+          items:
+            $ref: '#/components/schemas/Rename'
+          type: array
+          title: Rename
+        update:
+          items:
+            type: string
+          type: array
+          title: Update
+          description: The list of column IDs for update
+        update_metadata:
+          anyOf:
+            - items:
+                $ref: '#/components/schemas/ListingUpdateMetadata'
+              type: array
+            - type: 'null'
+          title: Update Metadata
+      additionalProperties: false
+      type: object
+      required:
+        - delete
+        - new
+        - rename
+        - update
+      title: ListingReadUpdateColumns
+      description: Tag-free read update-column representation for listing responses.
+    ListingUpdateMetadata:
+      properties:
+        col_id:
+          type: string
+          title: Col Id
+          description: The ID of the column, a UUID for non-system columns
+          examples:
+            - 618d6339-2fa7-4dfd-9c7f-c0b12016639e
+        values:
+          $ref: '#/components/schemas/ListingUpdateMetadataValues'
+      additionalProperties: false
+      type: object
+      required:
+        - col_id
+        - values
+      title: ListingUpdateMetadata
+    ListingUpdateMetadataValues:
+      properties:
+        group_uuid:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Group Uuid
+          description: The new group UUID for the column. The nil UUID (`00000000-0000-0000-0000-000000000000`) indicates an explicit ungroup.
+        title:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Title
+          description: The new human-readable label for the column
+        unit_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Unit Id
+          description: The new unit ID for the column
+      additionalProperties: false
+      type: object
+      title: ListingUpdateMetadataValues
+      description: '`UpdateMetadataValues` variant for listing-style responses; never carries ``tags``.'
+    ListingVersion:
+      properties:
+        base_version_id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Base Version Id
+          description: |-
+            Version the update was applied to. This will be the same as `parent_version_id`, except for
+            updates made by Leapfrog, where it is the current local version when the block model is published. This is null if this
+            is the first version.
+          examples:
+            - 4
+        bbox:
+          anyOf:
+            - $ref: '#/components/schemas/BBox'
+            - type: 'null'
+          description: |
+
+            Bounding box of data updated between this version and last version. Will be None for the initial version, and updates
+            that only delete and rename columns.
+        bm_uuid:
+          type: string
+          format: uuid
+          title: Bm Uuid
+          description: ID of the block model
+          examples:
+            - e3c277c2-edc6-4a7a-8380-251dd19231f2
+        comment:
+          type: string
+          title: Comment
+          description: User-supplied comment
+          default: ''
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+          description: When the version was created
+        created_by:
+          $ref: '#/components/schemas/IMSUserInfo'
+          description: User who performed the action that created the version
+        geoscience_version_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Geoscience Version Id
+          description: ID of the Geoscience Object Service object version associated with this block model version
+          examples:
+            - '1234567890'
+        mapping:
+          $ref: '#/components/schemas/ListingReadMapping'
+          description: Columns within this version
+        parent_version_id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Parent Version Id
+          description: Previous version. 0 if this is the first version.
+          examples:
+            - 4
+        version_id:
+          type: integer
+          title: Version Id
+          description: |-
+            Identifier for the version within a block model as a monotonically increasing integer, where 1 is
+            the `version_id` for the version created upon creation of the block model.
+          examples:
+            - 5
+        version_uuid:
+          type: string
+          format: uuid
+          title: Version Uuid
+          description: A universally unique identifier for the version
+          examples:
+            - 3e9ce8de-f6ba-4920-8c6e-0882e90f0ed7
+      additionalProperties: false
+      type: object
+      required:
+        - bm_uuid
+        - created_at
+        - created_by
+        - mapping
+        - version_id
+        - version_uuid
+      title: ListingVersion
+    ListingVersionGroupChanges:
+      properties:
+        deleted:
+          items:
+            $ref: '#/components/schemas/GroupChangeRef'
+          type: array
+          title: Deleted
+          default: []
+        metadata_updated:
+          items:
+            $ref: '#/components/schemas/ListingGroupMetadataChange'
+          type: array
+          title: Metadata Updated
+          default: []
+        new:
+          items:
+            $ref: '#/components/schemas/GroupChangeRef'
+          type: array
+          title: New
+          default: []
+      additionalProperties: false
+      type: object
+      title: ListingVersionGroupChanges
     Location:
       properties:
         x:
@@ -4547,18 +5523,39 @@ components:
         - 'y'
         - z
       title: Location
-    Mapping:
+    Mesh:
       properties:
-        columns:
-          items:
-            $ref: '#/components/schemas/Column'
-          type: array
-          title: Columns
+        geoscience_object_id:
+          type: string
+          format: uuid
+          title: Geoscience Object Id
+          description: UUID of the mesh
+        geoscience_version_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Geoscience Version Id
+          description: Version ID of the mesh; uses latest when omitted
+        selector:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Selector
+          description: Identifier for nested mesh within a geological-model-mesh
       additionalProperties: false
       type: object
       required:
-        - columns
-      title: Mapping
+        - geoscience_object_id
+      title: Mesh
+      description: Represents a mesh.
+    MissingColumnPolicy:
+      type: string
+      enum:
+        - INHERIT
+        - USE_PREVIOUS
+        - SET_NULL
+        - REJECT
+      title: MissingColumnPolicy
     NameConflictErrorResponse:
       properties:
         detail:
@@ -4739,6 +5736,46 @@ components:
       additionalProperties: false
       type: object
       title: OutputOptionsParquet
+    PaginatedResponseWithUnits_ListingVersion_:
+      properties:
+        count:
+          type: integer
+          title: Count
+          description: Number of results returned in `results`
+        limit:
+          type: integer
+          title: Limit
+          description: Maximum number of items requested
+        offset:
+          type: integer
+          title: Offset
+          description: Index of the first item in `results` with respect to the full list without pagination
+        referenced_units:
+          items:
+            $ref: '#/components/schemas/Unit'
+          type: array
+          title: Referenced Units
+          description: List of all units referenced in the results
+        results:
+          items:
+            $ref: '#/components/schemas/ListingVersion'
+          type: array
+          title: Results
+          description: List of results
+        total:
+          type: integer
+          title: Total
+          description: Total number of items within the full list without pagination
+      additionalProperties: false
+      type: object
+      required:
+        - count
+        - limit
+        - offset
+        - referenced_units
+        - results
+        - total
+      title: PaginatedResponseWithUnits[ListingVersion]
     PaginatedResponseWithUnits_ReportSpecificationWithLastRunInfo_:
       properties:
         count:
@@ -4779,46 +5816,6 @@ components:
         - results
         - total
       title: PaginatedResponseWithUnits[ReportSpecificationWithLastRunInfo]
-    PaginatedResponseWithUnits_Version_:
-      properties:
-        count:
-          type: integer
-          title: Count
-          description: Number of results returned in `results`
-        limit:
-          type: integer
-          title: Limit
-          description: Maximum number of items requested
-        offset:
-          type: integer
-          title: Offset
-          description: Index of the first item in `results` with respect to the full list without pagination
-        referenced_units:
-          items:
-            $ref: '#/components/schemas/Unit'
-          type: array
-          title: Referenced Units
-          description: List of all units referenced in the results
-        results:
-          items:
-            $ref: '#/components/schemas/Version'
-          type: array
-          title: Results
-          description: List of results
-        total:
-          type: integer
-          title: Total
-          description: Total number of items within the full list without pagination
-      additionalProperties: false
-      type: object
-      required:
-        - count
-        - limit
-        - offset
-        - referenced_units
-        - results
-        - total
-      title: PaginatedResponseWithUnits[Version]
     PaginatedResponse_BlockModel_:
       properties:
         count:
@@ -4934,6 +5931,24 @@ components:
             If `geometry_columns` is set to "indices" (the default), then the first columns in the output file will be `i`, `j`, `k` followed by the sub-block index columns (if applicable).
             If `geometry_columns` is set to "coordinates", then the output file will contain the columns `x`, `y`, `z` for regular block models and `x`, `y`, `z`, `dx`, `dy`, `dz` for sub-blocked block models. These columns are referred to as the "geometry" columns, and will appear before any others columns specified in the `columns` field.
           default: indices
+        groups:
+          anyOf:
+            - items:
+                $ref: '#/components/schemas/QueryGroupSelection'
+              type: array
+            - type: 'null'
+          title: Groups
+          description: |
+
+            List of group-scoped column selections, applied in addition to the top-level `columns` field.
+            Each entry identifies a single group by either its `group_uuid` or its `title` (a qualified group path using the request's `qualified_title_separator`), and lists the `columns` to select from within that group.
+            Columns within a group entry may be referenced by their `col_id` or by their bare title (resolved within the group's namespace). A wildcard (`"*"`) selects the group's direct member columns only, and does not descend into nested groups.
+            A group entry returns its columns regardless of the group's `is_hidden` flag. The final column set of the query is the union of the top-level `columns` selection and all `groups` selections.
+        include_hidden:
+          type: boolean
+          title: Include Hidden
+          description: When true, the wildcard (`"*"`) expansion also includes columns in hidden groups (groups with `is_hidden = true`) and their descendants. Defaults to false, so hidden groups' columns are excluded from `"*"`. Explicitly named columns are unaffected by this flag.
+          default: false
         output_options:
           anyOf:
             - oneOf:
@@ -4947,6 +5962,13 @@ components:
             - type: 'null'
           title: Output Options
           description: Format of the output file
+        qualified_title_separator:
+          type: string
+          maxLength: 1
+          minLength: 1
+          title: Qualified Title Separator
+          description: Single-character separator used to parse qualified group paths and column titles, and to render returned column headers for this request. The character must not be present in any group or column title in the relevant version. If not provided, the default separator `▸` is used.
+          default: ▸
         version_uuid:
           anyOf:
             - type: string
@@ -4962,13 +5984,10 @@ components:
     QueryDownload:
       properties:
         download_url:
-          type: string
-          minLength: 1
-          format: uri
-          title: Download Url
+          $ref: '#/components/schemas/URLStr'
           description: Download URL for the results of the query.
           examples:
-            - https://au.static.evo.seequent.com/blocksync/169ccde2-4d0f-4a7a-adb7-1ccadc734cdd/query/{criteria hash}.parquet?st=2023-11-09T03%3A05%3A30Z&se=2023-11-10T03%3A06%3A30Z&sp=r&spr=http&sv=2021-08-06&sr=b&sig=ABCDEF0123456789ABCDEF0123456789
+            - https://api.au.evo.seequent.net/blockmodel/orgs/2f9c1e08-6c1e-4b7a-9f3e-6d2a1b8c4d5e/workspaces/169ccde2-4d0f-4a7a-adb7-1ccadc734cdd/storage/query/6f1e2d3c4b5a69788796a5b4c3d2e1f0.parquet?token=REDACTED
       additionalProperties: false
       type: object
       required:
@@ -5007,6 +6026,34 @@ components:
         - title
         - type
       title: QueryErrorResponse
+    QueryGroupSelection:
+      properties:
+        columns:
+          items:
+            type: string
+          type: array
+          title: Columns
+          description: Columns to select from within the group, referenced by `col_id` or bare title, or `"*"` to select the group's direct member columns.
+          examples:
+            - - '*'
+        group_uuid:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Group Uuid
+          description: UUID of the group to select columns from. Mutually exclusive with `title`.
+        title:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Title
+          description: Qualified path of the group to select columns from, using the request's `qualified_title_separator`. Mutually exclusive with `group_uuid`.
+      additionalProperties: false
+      type: object
+      required:
+        - columns
+      title: QueryGroupSelection
     QueryParameterErrorResponse:
       properties:
         detail:
@@ -5083,13 +6130,10 @@ components:
             Please note that the wildcard does not cover the system column `version_id`. To include `version_id` in the output file, it must also be explicitly specified in the `columns` field alongside the wildcard.
             The order of columns in the output file will match the order in the `columns` field. Columns that are part of the initial "geometry" columns will be ignored if specified.
         job_url:
-          type: string
-          minLength: 1
-          format: uri
-          title: Job Url
+          $ref: '#/components/schemas/URLStr'
           description: Pollable job URL for this query
         mapping:
-          $ref: '#/components/schemas/Mapping'
+          $ref: '#/components/schemas/ReadMapping'
           description: |
 
             List of columns, in addition to the "geometry" columns, that will be included in the output file.
@@ -5122,6 +6166,122 @@ components:
         - version_id
         - version_uuid
       title: QueryResult
+    ReadColumn:
+      properties:
+        col_id:
+          type: string
+          title: Col Id
+          description: The ID of the column, a UUID for non-system columns
+          examples:
+            - 618d6339-2fa7-4dfd-9c7f-c0b12016639e
+        data_type:
+          $ref: '#/components/schemas/DataType'
+        group:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Group
+          description: 'Qualified path of the group this column belongs to: a bare title for a top-level group, or segments joined by the response separator for a nested group. The separator is the request''s `qualified_title_separator` where supported, defaulting to `▸`. Null means ungrouped.'
+        group_uuid:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Group Uuid
+          description: UUID of the group this column belongs to. Null means ungrouped.
+        tags:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Tags
+          description: 'Publisher-supplied free-form metadata for the column, as a JSON object. Keys must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`; keys are unique case-insensitively. Values may be any JSON-compatible type. A single `tags` object serialised as UTF-8 JSON must be at most 10 KiB.'
+        title:
+          type: string
+          title: Title
+          description: The human-readable label used to identify the column
+        unit_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Unit Id
+          description: The ID of the column's unit
+      additionalProperties: false
+      type: object
+      required:
+        - col_id
+        - data_type
+        - title
+      title: ReadColumn
+      description: Column representation for read responses with its derived group path.
+    ReadGroup:
+      properties:
+        group_uuid:
+          type: string
+          format: uuid
+          title: Group Uuid
+          description: Unique identifier for the group.
+          examples:
+            - 00633b08-165b-4dcb-bbae-0d3befa74c7e
+        is_hidden:
+          type: boolean
+          title: Is Hidden
+          description: When true, the group's direct member columns are excluded from wildcard queries unless include_hidden is set.
+          default: false
+        missing_column_policy:
+          anyOf:
+            - $ref: '#/components/schemas/MissingColumnPolicy'
+            - type: 'null'
+          description: Policy for columns in this group's zone that are absent from an update. Defaults to INHERIT, which adopts the nearest ancestor's explicit policy zone (USE_PREVIOUS at the root).
+        parent_group_uuid:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Parent Group Uuid
+          description: UUID of the parent group within the same block model. Null means top-level.
+        resolved_missing_column_policy:
+          $ref: '#/components/schemas/MissingColumnPolicy'
+          description: Effective missing-column policy after resolving against the stored parent chain. A group with INHERIT (or no policy) adopts the nearest ancestor's explicit policy zone, defaulting to USE_PREVIOUS when no ancestor sets one.
+        tags:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Tags
+          description: 'Publisher-supplied free-form metadata for the group, as a JSON object. Keys must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`; keys are unique case-insensitively. Values may be any JSON-compatible type. A single `tags` object serialised as UTF-8 JSON must be at most 10 KiB.'
+        title:
+          type: string
+          title: Title
+          description: 'Human-readable label for the group, unique across the parent group, or across top-level groups if no parent. They must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`. Must not contain the qualified title separator `▸`.'
+      additionalProperties: false
+      type: object
+      required:
+        - group_uuid
+        - resolved_missing_column_policy
+        - title
+      title: ReadGroup
+      description: Group representation for read responses.
+    ReadMapping:
+      properties:
+        columns:
+          items:
+            $ref: '#/components/schemas/ReadColumn'
+          type: array
+          title: Columns
+        groups:
+          items:
+            $ref: '#/components/schemas/ReadGroup'
+          type: array
+          title: Groups
+          description: Column groups within this version.
+          default: []
+      additionalProperties: false
+      type: object
+      required:
+        - columns
+      title: ReadMapping
+      description: Mapping representation for read responses.
     RegularSubblocks:
       properties:
         nx:
@@ -5220,6 +6380,43 @@ components:
         - col_id
         - label
       title: ReportCategory
+    ReportCell:
+      properties:
+        status:
+          $ref: '#/components/schemas/ReportCellStatus'
+          description: Status of the cell, describing how `value` should be interpreted.
+          examples:
+            - OK
+        value:
+          anyOf:
+            - type: integer
+            - type: number
+            - type: 'null'
+          title: Value
+          description: Value of the cell. This is `null` whenever `status` is not `OK`.
+          examples:
+            - 2.7
+      additionalProperties: false
+      type: object
+      required:
+        - status
+        - value
+      title: ReportCell
+    ReportCellStatus:
+      type: string
+      enum:
+        - OK
+        - PERCENT_CHANGE_FROM_ZERO
+        - NO_DATA
+        - INVALID
+      title: ReportCellStatus
+      description: |-
+        Status of a single report cell, describing how its value should be interpreted.
+
+        * `OK`: the value was calculated normally and can be used as-is.
+        * `PERCENT_CHANGE_FROM_ZERO`: the percentage change is undefined because the 'from' value was zero. Only used in comparisons.
+        * `NO_DATA`: no data was available to calculate the value.
+        * `INVALID`: the value could not be calculated because the underlying data contained an invalid value.
     ReportColumn:
       properties:
         aggregation:
@@ -5388,7 +6585,11 @@ components:
       additionalProperties: false
       type: object
       required:
+        - from_result_uuid
+        - from_version_uuid
         - report_specification_uuid
+        - to_result_uuid
+        - to_version_uuid
       title: ReportComparisonJobResult
     ReportComparisonRequestResult:
       properties:
@@ -5403,11 +6604,8 @@ components:
             - e3c277c2-edc6-4a7a-8380-251dd19231f2
         job_url:
           anyOf:
-            - type: string
-              minLength: 1
-              format: uri
+            - $ref: '#/components/schemas/URLStr'
             - type: 'null'
-          title: Job Url
           description: URL to the Report Comparison Job, if created. If both results already exist, no job will be created and this will be null.
         to_result_uuid:
           anyOf:
@@ -5458,7 +6656,8 @@ components:
           examples:
             - '2021-01-01T00:00:00Z'
         version_created_by:
-          $ref: '#/components/schemas/UserInfo'
+          additionalProperties: true
+          type: object
           description: User who created the version of the block model that the report was run on
         version_id:
           type: integer
@@ -5467,14 +6666,18 @@ components:
           examples:
             - 2
         version_uuid:
-          anyOf:
-            - type: string
-              format: uuid
-            - type: 'null'
+          type: string
+          format: uuid
           title: Version Uuid
           description: Version UUID of the version of block model that the report was run on
           examples:
             - ccc277c2-edc6-4a7a-8380-251dd19231f2
+        volume_filter_options:
+          anyOf:
+            - $ref: '#/components/schemas/VolumeFilterOptions-Output'
+            - type: 'null'
+          description: Volume filter options applied to the report
+          x-api-preview: true
       additionalProperties: false
       type: object
       required:
@@ -5504,11 +6707,21 @@ components:
           title: Rows
           description: List of rows in the Report Result
           examples:
-            - categories:
-                - Granite
-              values:
-                - 2.7
-                - 0.3
+            - - categories:
+                  - Granite
+                values:
+                  - difference:
+                      status: OK
+                      value: 1.35
+                    from_value:
+                      status: OK
+                      value: 2.7
+                    percent:
+                      status: OK
+                      value: 50
+                    to_value:
+                      status: OK
+                      value: 4.05
       additionalProperties: false
       type: object
       required:
@@ -5535,10 +6748,20 @@ components:
             $ref: '#/components/schemas/ReportComparisonValue'
           type: array
           title: Values
-          description: List of values for the value columns
+          description: List of ReportComparisonValue objects for the value columns
           examples:
-            - - 2.7
-              - 0.3
+            - - difference:
+                  status: OK
+                  value: 1.35
+                from_value:
+                  status: OK
+                  value: 2.7
+                percent:
+                  status: OK
+                  value: 50
+                to_value:
+                  status: OK
+                  value: 4.05
       additionalProperties: false
       type: object
       required:
@@ -5563,29 +6786,20 @@ components:
             - e3c277c2-edc6-4a7a-8380-251dd19231f2
       additionalProperties: false
       type: object
+      required:
+        - from_version_uuid
+        - to_version_uuid
       title: ReportComparisonSpec
     ReportComparisonValue:
       properties:
         difference:
-          anyOf:
-            - type: number
-            - type: integer
-          title: Difference
+          $ref: '#/components/schemas/ReportCell'
         from_value:
-          anyOf:
-            - type: number
-            - type: integer
-          title: From Value
+          $ref: '#/components/schemas/ReportCell'
         percent:
-          anyOf:
-            - type: number
-            - type: 'null'
-          title: Percent
+          $ref: '#/components/schemas/ReportCell'
         to_value:
-          anyOf:
-            - type: number
-            - type: integer
-          title: To Value
+          $ref: '#/components/schemas/ReportCell'
       additionalProperties: false
       type: object
       required:
@@ -5624,12 +6838,16 @@ components:
         - USE
         - ZERO
         - IGNORE_BLOCK
+        - IGNORE_VALUE
+        - MARK_AS_INVALID
       title: ReportNegativeValuesPolicy
     ReportNullValuesPolicy:
       type: string
       enum:
         - ZERO
         - IGNORE_BLOCK
+        - IGNORE_VALUE
+        - MARK_AS_INVALID
       title: ReportNullValuesPolicy
     ReportResult:
       properties:
@@ -5736,7 +6954,8 @@ components:
           examples:
             - '2021-01-01T00:00:00Z'
         version_created_by:
-          $ref: '#/components/schemas/UserInfo'
+          additionalProperties: true
+          type: object
           description: User who created the version of the block model that the report was run on
         version_id:
           type: integer
@@ -5745,14 +6964,18 @@ components:
           examples:
             - 2
         version_uuid:
-          anyOf:
-            - type: string
-              format: uuid
-            - type: 'null'
+          type: string
+          format: uuid
           title: Version Uuid
           description: Version UUID of the version of block model that the report was run on
           examples:
             - ccc277c2-edc6-4a7a-8380-251dd19231f2
+        volume_filter_options:
+          anyOf:
+            - $ref: '#/components/schemas/VolumeFilterOptions-Output'
+            - type: 'null'
+          description: Volume filter options applied to the report
+          x-api-preview: true
         warnings:
           items:
             $ref: '#/components/schemas/ReportWarning'
@@ -5929,7 +7152,8 @@ components:
           examples:
             - '2021-01-01T00:00:00Z'
         version_created_by:
-          $ref: '#/components/schemas/UserInfo'
+          additionalProperties: true
+          type: object
           description: User who created the version of the block model that the report was run on
         version_id:
           type: integer
@@ -5938,14 +7162,18 @@ components:
           examples:
             - 2
         version_uuid:
-          anyOf:
-            - type: string
-              format: uuid
-            - type: 'null'
+          type: string
+          format: uuid
           title: Version Uuid
           description: Version UUID of the version of block model that the report was run on
           examples:
             - ccc277c2-edc6-4a7a-8380-251dd19231f2
+        volume_filter_options:
+          anyOf:
+            - $ref: '#/components/schemas/VolumeFilterOptions-Output'
+            - type: 'null'
+          description: Volume filter options applied to the report
+          x-api-preview: true
       additionalProperties: false
       type: object
       required:
@@ -5974,15 +7202,15 @@ components:
             - - Granite
         values:
           items:
-            anyOf:
-              - type: integer
-              - type: number
+            $ref: '#/components/schemas/ReportCell'
           type: array
           title: Values
-          description: List of values for the value columns
+          description: List of ReportCell objects for the value columns
           examples:
-            - - 2.7
-              - 0.3
+            - - status: OK
+                value: 2.7
+              - status: OK
+                value: 0.3
       additionalProperties: false
       type: object
       required:
@@ -6139,11 +7367,8 @@ components:
             - Gold resource report for test purposes
         job_url:
           anyOf:
-            - type: string
-              minLength: 1
-              format: uri
+            - $ref: '#/components/schemas/URLStr'
             - type: 'null'
-          title: Job Url
           description: URL for the Reporting Job, if `run_now` was requested
         mass_unit_id:
           type: string
@@ -6161,7 +7386,7 @@ components:
             - $ref: '#/components/schemas/ReportNegativeValuesPolicy'
             - type: 'null'
           description: Policy for handling negative values in the report's cut-off or value columns
-          default: IGNORE_BLOCK
+          default: MARK_AS_INVALID
           examples:
             - USE
         null_values_policy:
@@ -6169,7 +7394,7 @@ components:
             - $ref: '#/components/schemas/ReportNullValuesPolicy'
             - type: 'null'
           description: Policy for handling null values in the report's cut-off or value columns
-          default: IGNORE_BLOCK
+          default: MARK_AS_INVALID
           examples:
             - ZERO
         report_specification_uuid:
@@ -6184,6 +7409,12 @@ components:
           title: Revision
           description: Revision number of this Report Specification
           default: 0
+        volume_filter_options:
+          anyOf:
+            - $ref: '#/components/schemas/VolumeFilterOptions-Output'
+            - type: 'null'
+          description: Volume filter options for this report
+          x-api-preview: true
       additionalProperties: false
       type: object
       required:
@@ -6344,7 +7575,7 @@ components:
             - $ref: '#/components/schemas/ReportNegativeValuesPolicy'
             - type: 'null'
           description: Policy for handling negative values in the report's cut-off or value columns
-          default: IGNORE_BLOCK
+          default: MARK_AS_INVALID
           examples:
             - USE
         null_values_policy:
@@ -6352,7 +7583,7 @@ components:
             - $ref: '#/components/schemas/ReportNullValuesPolicy'
             - type: 'null'
           description: Policy for handling null values in the report's cut-off or value columns
-          default: IGNORE_BLOCK
+          default: MARK_AS_INVALID
           examples:
             - ZERO
         report_specification_uuid:
@@ -6367,6 +7598,12 @@ components:
           title: Revision
           description: Revision number of this Report Specification
           default: 0
+        volume_filter_options:
+          anyOf:
+            - $ref: '#/components/schemas/VolumeFilterOptions-Output'
+            - type: 'null'
+          description: Volume filter options for this report
+          x-api-preview: true
       additionalProperties: false
       type: object
       required:
@@ -6415,6 +7652,7 @@ components:
         - LONG_CATEGORY_VALUE
         - UNIT_FROM_LATEST_VERSION
         - MISSING_SUB_BLOCK
+        - MESH_FILTER_EXCLUDED_ALL_BLOCKS
       title: ReportWarningType
     ReportingJobResult:
       properties:
@@ -6426,10 +7664,7 @@ components:
           examples:
             - e3c277c2-edc6-4a7a-8380-251dd19231f2
         job_url:
-          type: string
-          minLength: 1
-          format: uri
-          title: Job Url
+          $ref: '#/components/schemas/URLStr'
         job_uuid:
           type: string
           format: uuid
@@ -6570,6 +7805,39 @@ components:
         - title
         - type
       title: ServiceErrorResponse
+    ServiceUnavailableErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          description: A human-readable explanation specific to this occurrence of the problem.
+          examples:
+            - An upstream service is temporarily unavailable. Please retry.
+        status:
+          type: integer
+          title: Status
+          description: The HTTP status code generated by the origin server for this occurrence of the problem.
+          examples:
+            - 503
+        title:
+          type: string
+          title: Title
+          description: A short, human-readable summary of the problem type.
+          examples:
+            - Service Unavailable
+        type:
+          type: string
+          title: Type
+          description: A URI reference that is the primary identifier of the problem type.
+          examples:
+            - https://seequent.com/error-codes/block-model-service/service-unavailable
+      type: object
+      required:
+        - detail
+        - status
+        - title
+        - type
+      title: ServiceUnavailableErrorResponse
     Size3D:
       properties:
         nx:
@@ -6686,6 +7954,13 @@ components:
         - model_type
         - n_blocks
       title: SizeOptionsRegular
+    SpatialRelation:
+      type: string
+      enum:
+        - INSIDE
+        - OUTSIDE
+      title: SpatialRelation
+      description: Represents the relation between a mesh and the filtered block model.
     TooManyColumnsErrorResponse:
       properties:
         detail:
@@ -6719,6 +7994,10 @@ components:
         - title
         - type
       title: TooManyColumnsErrorResponse
+    URLStr:
+      type: string
+      minLength: 1
+      format: uri
     Unit:
       properties:
         conversion_factor:
@@ -6775,6 +8054,9 @@ components:
         - MASS_PER_MASS
         - VOLUME_PER_VOLUME
         - VALUE_PER_MASS
+        - ANGLE
+        - GENERIC_DIMENSIONLESS
+        - CATEGORY
       title: UnitType
     UpdateBlockModel:
       properties:
@@ -6809,10 +8091,9 @@ components:
             Sets the default fill_subblocks value for this block model. It can be overridden at the time of an update.
             If this flag is `true`, then updates to a fully subblocked-model with `update_type`=`merge`, and `geometry_change`=`true`
             with missing sub-blocks will fill the missing sub-blocks with data from the parent block.
-          default: false
         lineage:
           anyOf:
-            - $ref: '#/components/schemas/Lineage_V1_0_0-Input'
+            - $ref: '#/components/schemas/Lineage_V1_0_0'
             - type: 'null'
           description: Lineage of the block model
           deprecated: true
@@ -6872,7 +8153,7 @@ components:
         - rename
         - update
       title: UpdateColumns
-    UpdateColumnsLite-Input:
+    UpdateColumnsLite:
       properties:
         delete:
           items:
@@ -6910,50 +8191,16 @@ components:
         - new
         - rename
         - update
-      title: UpdateColumnsLite-Input
-    UpdateColumnsLite-Output:
-      properties:
-        delete:
-          items:
-            type: string
-          type: array
-          title: Delete
-          description: The list of column titles for deletion
-        new:
-          items:
-            $ref: '#/components/schemas/ColumnLite'
-          type: array
-          title: New
-        rename:
-          items:
-            $ref: '#/components/schemas/RenameLite'
-          type: array
-          title: Rename
-        update:
-          items:
-            type: string
-          type: array
-          title: Update
-          description: The list of column titles for update
-        update_metadata:
-          anyOf:
-            - items:
-                $ref: '#/components/schemas/UpdateMetadataLite'
-              type: array
-            - type: 'null'
-          title: Update Metadata
-      additionalProperties: false
-      type: object
-      required:
-        - delete
-        - new
-        - rename
-        - update
-      title: UpdateColumnsLite-Output
-    UpdateDataLite-Input:
+      title: UpdateColumnsLite
+    UpdateDataLite:
+      anyOf:
+        - required:
+            - columns
+        - required:
+            - groups
       properties:
         columns:
-          $ref: '#/components/schemas/UpdateColumnsLite-Input'
+          $ref: '#/components/schemas/UpdateColumnsLite'
         comment:
           anyOf:
             - type: string
@@ -6976,31 +8223,60 @@ components:
           title: Geometry Change
           description: |
 
-            Whether the update will create or destroy sub-blocks.
-            - If set to `false`, no sub-blocks can be created nor destroyed, only sub-blocks that exist in the latest version can be updated.
+            Whether the update will create or destroy sub-blocks. Only sub-blocked models may set this to `true`.
+            - If omitted, `null`, or set to `false`, no sub-blocks can be created nor destroyed, only sub-blocks that
+              exist in the latest version can be updated. `null` and `false` are treated identically, for all model types.
             - If set to `true`:
                 - New sub-blocks can be created and/or existing sub-blocks can be destroyed, but all columns must be provided.
                 - Only `new`, `update`, and `delete` column operations are allowed as standalone operations.
                 - `update_metadata` is allowed, but only when the target columns are being updated as part of the `update` operation, and only when there are no columns being renamed.
                 - If `update_type` is set to `merge`, then all sub-blocks within a parent block must be provided.
+        group_missing_column_override:
+          anyOf:
+            - additionalProperties:
+                type: string
+                const: USE_PREVIOUS
+              type: object
+            - type: 'null'
+          title: Group Missing Column Override
+          description: |
+
+            Per-request override of the resolved missing-column policy for specific groups, keyed by qualified
+            group title. The override is local-only: it replaces the named group's own resolved policy
+            for this request only, and does not affect other groups in the same zone (the overridden group's columns are
+            excluded from the zone).
+        groups:
+          anyOf:
+            - $ref: '#/components/schemas/UpdateGroupsLite'
+            - type: 'null'
+          description: Group operations for this update.
         input_options:
           anyOf:
             - oneOf:
-                - $ref: '#/components/schemas/AllInputOptions-Input'
+                - $ref: '#/components/schemas/InputOptionsParquet'
+                - $ref: '#/components/schemas/InputOptionsCSV'
+                - $ref: '#/components/schemas/InputOptionsDatamine'
               discriminator:
                 propertyName: file_format
                 mapping:
-                  csv: '#/components/schemas/AllInputOptions-Input'
-                  datamine: '#/components/schemas/AllInputOptions-Input'
-                  parquet: '#/components/schemas/AllInputOptions-Input'
+                  csv: '#/components/schemas/InputOptionsCSV'
+                  datamine: '#/components/schemas/InputOptionsDatamine'
+                  parquet: '#/components/schemas/InputOptionsParquet'
             - type: 'null'
           title: Input Options
         lineage:
           anyOf:
-            - $ref: '#/components/schemas/Lineage_V1_0_0-Input'
+            - $ref: '#/components/schemas/Lineage_V1_0_0'
             - type: 'null'
           description: Lineage of the block model update
           deprecated: true
+        qualified_title_separator:
+          type: string
+          maxLength: 1
+          minLength: 1
+          title: Qualified Title Separator
+          description: Single-character separator used to parse qualified group paths and column titles for this request.The character must not be present in any group or column title in the relevant version. If not provided, the default separator `▸` is used.
+          default: ▸
         update_type:
           $ref: '#/components/schemas/UpdateType'
           description: |
@@ -7011,74 +8287,13 @@ components:
           default: merge
       additionalProperties: false
       type: object
-      required:
-        - columns
-      title: UpdateDataLite-Input
-    UpdateDataLite-Output:
-      properties:
-        columns:
-          $ref: '#/components/schemas/UpdateColumnsLite-Output'
-        comment:
-          anyOf:
-            - type: string
-              maxLength: 250
-            - type: 'null'
-          title: Comment
-        fill_subblocks:
-          anyOf:
-            - type: boolean
-            - type: 'null'
-          title: Fill Subblocks
-          description: |
-
-            If set to true, any missing sub-blocks will be filled with data from the parent block.
-            This is only available for fully sub-blocked models, when `update_type` is `merge`, and `geometry_change` is `true`.
-        geometry_change:
-          anyOf:
-            - type: boolean
-            - type: 'null'
-          title: Geometry Change
-          description: |
-
-            Whether the update will create or destroy sub-blocks.
-            - If set to `false`, no sub-blocks can be created nor destroyed, only sub-blocks that exist in the latest version can be updated.
-            - If set to `true`:
-                - New sub-blocks can be created and/or existing sub-blocks can be destroyed, but all columns must be provided.
-                - Only `new`, `update`, and `delete` column operations are allowed as standalone operations.
-                - `update_metadata` is allowed, but only when the target columns are being updated as part of the `update` operation, and only when there are no columns being renamed.
-                - If `update_type` is set to `merge`, then all sub-blocks within a parent block must be provided.
-        input_options:
-          anyOf:
-            - oneOf:
-                - $ref: '#/components/schemas/AllInputOptions-Output'
-              discriminator:
-                propertyName: file_format
-                mapping:
-                  csv: '#/components/schemas/AllInputOptions-Output'
-                  datamine: '#/components/schemas/AllInputOptions-Output'
-                  parquet: '#/components/schemas/AllInputOptions-Output'
-            - type: 'null'
-          title: Input Options
-        lineage:
-          anyOf:
-            - $ref: '#/components/schemas/Lineage_V1_0_0-Output'
-            - type: 'null'
-          description: Lineage of the block model update
-          deprecated: true
-        update_type:
-          $ref: '#/components/schemas/UpdateType'
-          description: |
-
-            Behaviour of the update, for blocks that are omitted from the update file.
-            - If set to `replace`, the values for blocks that are omitted will be set to null, for the selected columns. If `geometry_change` is true, the geometry of any parent block that has no blocks in the update file will be reset to an un-subdivided state.
-            - If set to `merge`, blocks that are omitted will be left unchanged, the values within those blocks will be the same as within the previous version.
-          default: merge
-      additionalProperties: false
-      type: object
-      required:
-        - columns
-      title: UpdateDataLite-Output
+      title: UpdateDataLite
     UpdateDataWithVersion:
+      anyOf:
+        - required:
+            - columns
+        - required:
+            - groups
       properties:
         base_version_uuid:
           type: string
@@ -7115,16 +8330,37 @@ components:
           title: Geometry Change
           description: |
 
-            Whether the update will create or destroy sub-blocks.
-            - If set to `false`, no sub-blocks can be created nor destroyed, only sub-blocks that exist in the latest version can be updated.
+            Whether the update will create or destroy sub-blocks. Only sub-blocked models may set this to `true`.
+            - If omitted, `null`, or set to `false`, no sub-blocks can be created nor destroyed, only sub-blocks that
+              exist in the latest version can be updated. `null` and `false` are treated identically, for all model types.
             - If set to `true`:
                 - New sub-blocks can be created and/or existing sub-blocks can be destroyed, but all columns must be provided.
                 - Only `new`, `update`, and `delete` column operations are allowed as standalone operations.
                 - `update_metadata` is allowed, but only when the target columns are being updated as part of the `update` operation, and only when there are no columns being renamed.
                 - If `update_type` is set to `merge`, then all sub-blocks within a parent block must be provided.
+        group_missing_column_override:
+          anyOf:
+            - additionalProperties:
+                type: string
+                const: USE_PREVIOUS
+              propertyNames:
+                format: uuid
+              type: object
+            - type: 'null'
+          title: Group Missing Column Override
+          description: |
+
+            Per-request override of the resolved missing-column policy for specific groups, keyed by group UUID.
+            The override is local-only: it replaces the named group's own resolved policy for this request only, and
+            does not affect other groups in the same zone (the overridden group's columns are excluded from the zone).
+        groups:
+          anyOf:
+            - $ref: '#/components/schemas/UpdateGroups'
+            - type: 'null'
+          description: Group operations for this update.
         lineage:
           anyOf:
-            - $ref: '#/components/schemas/Lineage_V1_0_0-Output'
+            - $ref: '#/components/schemas/Lineage_V1_0_0'
             - type: 'null'
           description: Lineage of the block model update
           deprecated: true
@@ -7140,7 +8376,6 @@ components:
       type: object
       required:
         - base_version_uuid
-        - columns
       title: UpdateDataWithVersion
     UpdateErrorResponse:
       properties:
@@ -7175,6 +8410,57 @@ components:
         - title
         - type
       title: UpdateErrorResponse
+    UpdateGroups:
+      properties:
+        delete:
+          items:
+            type: string
+            format: uuid
+          type: array
+          title: Delete
+          description: List of group UUIDs to delete.
+          default: []
+        new:
+          items:
+            $ref: '#/components/schemas/Group'
+          type: array
+          title: New
+          default: []
+        update_metadata:
+          items:
+            $ref: '#/components/schemas/GroupUpdateMetadata'
+          type: array
+          title: Update Metadata
+          default: []
+      additionalProperties: false
+      type: object
+      title: UpdateGroups
+      description: Shell for group operations on the ``update`` (UUID-based) flow.
+    UpdateGroupsLite:
+      properties:
+        delete:
+          items:
+            type: string
+          type: array
+          title: Delete
+          description: List of group titles to delete.
+          default: []
+        new:
+          items:
+            $ref: '#/components/schemas/GroupLite'
+          type: array
+          title: New
+          default: []
+        update_metadata:
+          items:
+            $ref: '#/components/schemas/GroupUpdateMetadataLite'
+          type: array
+          title: Update Metadata
+          default: []
+      additionalProperties: false
+      type: object
+      title: UpdateGroupsLite
+      description: Shell for group operations on the ``update_lite`` (title-based) flow.
     UpdateMetadata:
       properties:
         col_id:
@@ -7198,7 +8484,7 @@ components:
           title: Title
           description: The original human-readable label used to identify the column
         values:
-          $ref: '#/components/schemas/UpdateMetadataValues'
+          $ref: '#/components/schemas/UpdateMetadataValuesLite'
       additionalProperties: false
       type: object
       required:
@@ -7207,6 +8493,20 @@ components:
       title: UpdateMetadataLite
     UpdateMetadataValues:
       properties:
+        group_uuid:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Group Uuid
+          description: The new group UUID for the column. The nil UUID (`00000000-0000-0000-0000-000000000000`) can be used to ungroup a column. Omit or send `null` to leave the existing group unchanged.
+        tags:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Tags
+          description: 'Replacement `tags` for the column. Omit or send `null` to leave the existing tags untouched; send `{}` to clear them; send a populated object to replace them wholesale. Publisher-supplied free-form metadata for the column, as a JSON object. Keys must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`; keys are unique case-insensitively. Values may be any JSON-compatible type. A single `tags` object serialised as UTF-8 JSON must be at most 10 KiB.'
         title:
           anyOf:
             - type: string
@@ -7222,6 +8522,209 @@ components:
       additionalProperties: false
       type: object
       title: UpdateMetadataValues
+    UpdateMetadataValuesBase:
+      properties:
+        tags:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Tags
+          description: 'Replacement `tags` for the column. Omit or send `null` to leave the existing tags untouched; send `{}` to clear them; send a populated object to replace them wholesale. Publisher-supplied free-form metadata for the column, as a JSON object. Keys must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`; keys are unique case-insensitively. Values may be any JSON-compatible type. A single `tags` object serialised as UTF-8 JSON must be at most 10 KiB.'
+        title:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Title
+          description: The new human-readable label for the column
+        unit_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Unit Id
+          description: The new unit ID for the column
+      additionalProperties: false
+      type: object
+      title: UpdateMetadataValuesBase
+    UpdateMetadataValuesLite:
+      properties:
+        group:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Group
+          description: The qualified title (path) for the new group for the column. An empty string can be used to ungroup a column. Omit or send `null` to leave the existing group unchanged.
+        tags:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: 'null'
+          title: Tags
+          description: 'Replacement `tags` for the column. Omit or send `null` to leave the existing tags untouched; send `{}` to clear them; send a populated object to replace them wholesale. Publisher-supplied free-form metadata for the column, as a JSON object. Keys must be 1-100 chars and cannot contain leading whitespace or dot, or the characters `/ \ : > < | ? " *`; keys are unique case-insensitively. Values may be any JSON-compatible type. A single `tags` object serialised as UTF-8 JSON must be at most 10 KiB.'
+        title:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Title
+          description: The new human-readable label for the column
+        unit_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Unit Id
+          description: The new unit ID for the column
+      additionalProperties: false
+      type: object
+      title: UpdateMetadataValuesLite
+    UpdateReportSpecification:
+      properties:
+        autorun:
+          type: boolean
+          title: Autorun
+          description: Whether to automatically run this Report Specification when a new version is published
+          default: true
+        bbox:
+          anyOf:
+            - oneOf:
+                - $ref: '#/components/schemas/BBox'
+                - $ref: '#/components/schemas/BBoxXYZ'
+            - type: 'null'
+          title: Bbox
+          description: Bounding box for the report
+          examples:
+            - i_minmax:
+                max: 1
+                min: 0
+              j_minmax:
+                max: 1
+                min: 0
+              k_minmax:
+                max: 1
+                min: 0
+        categories:
+          anyOf:
+            - items:
+                $ref: '#/components/schemas/ReportCategory'
+              type: array
+              maxItems: 5
+              minItems: 0
+            - type: 'null'
+          title: Categories
+          description: Category columns within this Report Specification. If null or empty, the report will have a single total row for each cut-off.
+          examples:
+            - - col_id: 11c277c2-edc6-4a7a-8380-251dd19231f2
+                label: Grade
+                values:
+                  - low
+                  - medium
+                  - high
+        columns:
+          items:
+            $ref: '#/components/schemas/ReportColumn'
+          type: array
+          title: Columns
+          description: Columns within this Report Specification
+          examples:
+            - - aggregation: SUM
+                col_id: abc277c2-edc6-4a7a-8380-251dd19231f2
+                label: Au content
+                output_unit_id: kg
+        cutoff_col_id:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Cutoff Col Id
+          description: ID of the column to use for cut-off evaluation
+          examples:
+            - 13c277c2-edc6-4a7a-8380-251dd19231f2
+        cutoff_values:
+          anyOf:
+            - items:
+                type: number
+              type: array
+              maxItems: 20
+              minItems: 1
+            - type: 'null'
+          title: Cutoff Values
+          description: Values to use for cut-off evaluation
+          examples:
+            - - 0.5
+              - 1.5
+              - 5
+        density_col_id:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Density Col Id
+          description: ID of the column to use for block density
+          examples:
+            - 24c277c2-edc6-4a7a-8380-251dd19231f2
+        density_unit_id:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Density Unit Id
+          description: ID of the unit to use for block density. The unit must be of type `MASS_PER_VOLUME`.
+          examples:
+            - kg/m3
+        density_value:
+          anyOf:
+            - type: number
+              exclusiveMinimum: 0
+            - type: 'null'
+          title: Density Value
+          description: Value to use for block density
+          examples:
+            - 2.5
+        description:
+          anyOf:
+            - type: string
+              maxLength: 1000
+            - type: 'null'
+          title: Description
+          description: User-supplied description of the report
+          examples:
+            - Gold resource report for test purposes
+        mass_unit_id:
+          type: string
+          title: Mass Unit Id
+          description: ID of the unit to use for total mass. The unit must be of type `MASS`
+          examples:
+            - t
+        name:
+          type: string
+          maxLength: 120
+          title: Name
+          description: The human-readable label used to identify the report
+        negative_values_policy:
+          anyOf:
+            - $ref: '#/components/schemas/CreateReportNegativeValuesPolicy'
+            - type: 'null'
+          description: Policy for handling negative values in the report's cut-off or value columns. If omitted or null, the existing policy will be retained. `IGNORE_BLOCK` is deprecated and cannot be newly adopted, though an existing `IGNORE_BLOCK` policy may be retained
+          examples:
+            - USE
+        null_values_policy:
+          anyOf:
+            - $ref: '#/components/schemas/CreateReportNullValuesPolicy'
+            - type: 'null'
+          description: Policy for handling null values in the report's cut-off or value columns. If omitted or null, the existing policy will be retained. `IGNORE_BLOCK` is deprecated and cannot be newly adopted, though an existing `IGNORE_BLOCK` policy may be retained
+          examples:
+            - ZERO
+        volume_filter_options:
+          anyOf:
+            - $ref: '#/components/schemas/VolumeFilterOptions-Input'
+            - type: 'null'
+          description: Volume filter options for this report
+          x-api-preview: true
+      additionalProperties: false
+      type: object
+      required:
+        - columns
+        - mass_unit_id
+        - name
+      title: UpdateReportSpecification
     UpdateType:
       type: string
       enum:
@@ -7233,24 +8736,18 @@ components:
         changes:
           anyOf:
             - $ref: '#/components/schemas/UpdateDataWithVersion'
-            - $ref: '#/components/schemas/UpdateDataLite-Output'
+            - $ref: '#/components/schemas/UpdateDataLite'
           title: Changes
         job_url:
-          type: string
-          minLength: 1
-          format: uri
-          title: Job Url
+          $ref: '#/components/schemas/URLStr'
         job_uuid:
           type: string
           format: uuid
           title: Job Uuid
         upload_url:
           anyOf:
-            - type: string
-              minLength: 1
-              format: uri
+            - $ref: '#/components/schemas/URLStr'
             - type: 'null'
-          title: Upload Url
         version_uuid:
           type: string
           format: uuid
@@ -7266,45 +8763,12 @@ components:
     UpdatedResponse:
       properties:
         job_url:
-          type: string
-          minLength: 1
-          format: uri
-          title: Job Url
+          $ref: '#/components/schemas/URLStr'
       additionalProperties: false
       type: object
       required:
         - job_url
       title: UpdatedResponse
-    UserInfo:
-      properties:
-        email:
-          anyOf:
-            - type: string
-            - type: 'null'
-          title: Email Address
-          description: The primary email address of the user. Can be null if an error occurred while retrieving this information.
-          examples:
-            - kim@example.test
-        id:
-          type: string
-          format: uuid
-          title: User ID
-          description: The ID of the user
-          examples:
-            - 59b73891-5538-4e45-ae67-f8c5b00d7405
-        name:
-          anyOf:
-            - type: string
-            - type: 'null'
-          title: Full Name
-          description: The full name of the user. Can be null if an error occurred while retrieving this information.
-          examples:
-            - Kim Kim
-      additionalProperties: false
-      type: object
-      required:
-        - id
-      title: UserInfo
     ValidationErrorResponse:
       properties:
         detail:
@@ -7380,7 +8844,7 @@ components:
           title: Created At
           description: When the version was created
         created_by:
-          $ref: '#/components/schemas/UserInfo'
+          $ref: '#/components/schemas/IMSUserInfo'
           description: User who performed the action that created the version
         geoscience_version_id:
           anyOf:
@@ -7391,7 +8855,7 @@ components:
           examples:
             - '1234567890'
         mapping:
-          $ref: '#/components/schemas/Mapping'
+          $ref: '#/components/schemas/ReadMapping'
           description: Columns within this version
         parent_version_id:
           anyOf:
@@ -7436,6 +8900,8 @@ components:
           title: Blocks Uploaded
         columns:
           $ref: '#/components/schemas/VersionColumnChanges'
+        group_changes:
+          $ref: '#/components/schemas/VersionGroupChanges'
         total_blocks:
           type: integer
           title: Total Blocks
@@ -7467,7 +8933,7 @@ components:
         metadata_updated:
           anyOf:
             - items:
-                $ref: '#/components/schemas/UpdateMetadataLite'
+                $ref: '#/components/schemas/ColumnMetadataChange'
               type: array
             - type: 'null'
           title: Metadata Updated
@@ -7493,6 +8959,29 @@ components:
       additionalProperties: false
       type: object
       title: VersionColumnChanges
+    VersionGroupChanges:
+      properties:
+        deleted:
+          items:
+            $ref: '#/components/schemas/GroupChangeRef'
+          type: array
+          title: Deleted
+          default: []
+        metadata_updated:
+          items:
+            $ref: '#/components/schemas/GroupMetadataChange'
+          type: array
+          title: Metadata Updated
+          default: []
+        new:
+          items:
+            $ref: '#/components/schemas/GroupChangeRef'
+          type: array
+          title: New
+          default: []
+      additionalProperties: false
+      type: object
+      title: VersionGroupChanges
     VersionWithChanges:
       properties:
         base_version_id:
@@ -7534,7 +9023,7 @@ components:
           title: Created At
           description: When the version was created
         created_by:
-          $ref: '#/components/schemas/UserInfo'
+          $ref: '#/components/schemas/IMSUserInfo'
           description: User who performed the action that created the version
         geoscience_version_id:
           anyOf:
@@ -7545,7 +9034,7 @@ components:
           examples:
             - '1234567890'
         mapping:
-          $ref: '#/components/schemas/Mapping'
+          $ref: '#/components/schemas/ReadMapping'
           description: Columns within this version
         parent_version_id:
           anyOf:
@@ -7581,6 +9070,111 @@ components:
         - version_id
         - version_uuid
       title: VersionWithChanges
+    VolumeFilter:
+      properties:
+        mesh:
+          $ref: '#/components/schemas/Mesh'
+          description: Mesh defining the volume filter
+        spatial_relation:
+          $ref: '#/components/schemas/SpatialRelation'
+          description: Relation for the volume filter
+      additionalProperties: false
+      type: object
+      required:
+        - mesh
+        - spatial_relation
+      title: VolumeFilter
+      description: Represents a volume filter for a single mesh.
+    VolumeFilterBlockInclusion:
+      type: string
+      enum:
+        - CENTROID_IN
+      title: VolumeFilterBlockInclusion
+      description: Represents how qualifying blocks contribute to a volume-filtered report.
+    VolumeFilterExpression-Input:
+      anyOf:
+        - $ref: '#/components/schemas/VolumeFilter'
+        - $ref: '#/components/schemas/VolumeFilterGroup-Input'
+    VolumeFilterExpression-Output:
+      anyOf:
+        - $ref: '#/components/schemas/VolumeFilter'
+        - $ref: '#/components/schemas/VolumeFilterGroup-Output'
+    VolumeFilterGroup-Input:
+      properties:
+        operator:
+          $ref: '#/components/schemas/VolumeFilterOperator'
+          description: Operator joining the nested volume filters
+        volumes:
+          items:
+            $ref: '#/components/schemas/VolumeFilterExpression-Input'
+          type: array
+          minItems: 1
+          title: Volumes
+          description: Volume filters or nested volume filter groups
+      additionalProperties: false
+      type: object
+      required:
+        - operator
+        - volumes
+      title: VolumeFilterGroup-Input
+      description: Represents recursively combined volume filters.
+    VolumeFilterGroup-Output:
+      properties:
+        operator:
+          $ref: '#/components/schemas/VolumeFilterOperator'
+          description: Operator joining the nested volume filters
+        volumes:
+          items:
+            $ref: '#/components/schemas/VolumeFilterExpression-Output'
+          type: array
+          minItems: 1
+          title: Volumes
+          description: Volume filters or nested volume filter groups
+      additionalProperties: false
+      type: object
+      required:
+        - operator
+        - volumes
+      title: VolumeFilterGroup-Output
+      description: Represents recursively combined volume filters.
+    VolumeFilterOperator:
+      type: string
+      enum:
+        - UNION
+        - INTERSECTION
+        - COMPLEMENT
+      title: VolumeFilterOperator
+      description: Represents a set operation on volume filter expressions.
+    VolumeFilterOptions-Input:
+      properties:
+        volume_filter:
+          $ref: '#/components/schemas/VolumeFilterExpression-Input'
+          description: Volume filter expression
+        volume_filter_block_inclusion:
+          $ref: '#/components/schemas/VolumeFilterBlockInclusion'
+          description: How qualifying blocks contribute to the report
+      additionalProperties: false
+      type: object
+      required:
+        - volume_filter
+        - volume_filter_block_inclusion
+      title: VolumeFilterOptions-Input
+      description: Represents the options for applying a volume filter.
+    VolumeFilterOptions-Output:
+      properties:
+        volume_filter:
+          $ref: '#/components/schemas/VolumeFilterExpression-Output'
+          description: Volume filter expression
+        volume_filter_block_inclusion:
+          $ref: '#/components/schemas/VolumeFilterBlockInclusion'
+          description: How qualifying blocks contribute to the report
+      additionalProperties: false
+      type: object
+      required:
+        - volume_filter
+        - volume_filter_block_inclusion
+      title: VolumeFilterOptions-Output
+      description: Represents the options for applying a volume filter.
   securitySchemes:
     HTTPBearer:
       type: http
