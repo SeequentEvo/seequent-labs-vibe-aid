@@ -17,7 +17,7 @@ info:
     API overview](/docs/guides/objects), or the API references here.
 
     '
-  version: 1.21.4
+  version: 1.26.0
 paths:
   /geoscience-object/orgs/{org_id}/objects:
     get:
@@ -78,18 +78,6 @@ paths:
           description: When true, only objects that have been deleted will be returned
           title: Deleted
         description: When true, only objects that have been deleted will be returned
-      - name: permitted_workspaces_only
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          description: Only return objects in workspaces the user is permitted to
-            access.
-          x-api-preview: true
-          title: Permitted Workspaces Only
-        description: Only return objects in workspaces the user is permitted to access.
       - name: order_by
         in: query
         required: false
@@ -250,16 +238,16 @@ paths:
             when no operators are supplied, this will perform a case sensitive prefix
             match of the object file name. The query `object_name=gold` will match
             an object with the name `goldcolumns.json`. Providing an operator will
-            query over the entire path to and including the file name.
+            query over the file name.
           examples:
           - object.json
-          - eq:path/to/object.json
+          - like:*.json
           title: Object Name
         description: The name of the object to filter on. For backwards compatibility,
           when no operators are supplied, this will perform a case sensitive prefix
           match of the object file name. The query `object_name=gold` will match an
           object with the name `goldcolumns.json`. Providing an operator will query
-          over the entire path to and including the file name.
+          over the file name.
       - name: schema_id
         in: query
         required: false
@@ -546,7 +534,6 @@ paths:
                   summary: /geoscienceobject/api-errors
               schema:
                 $ref: '#/components/schemas/ApiError'
-      x-api-preview: true
   /geoscience-object/orgs/{org_id}/stages:
     get:
       tags:
@@ -1205,6 +1192,40 @@ paths:
                   summary: /geoscienceobject/auth/insufficient-role
               schema:
                 $ref: '#/components/schemas/InsufficientRoleError'
+        '410':
+          description: '
+
+            #### /geoscienceobject/objects/gone
+
+
+            The requested object has been deleted, or the workspace containing it
+            has been deleted. When the workspace has been deleted, `upstream_type`
+            is set to `https://seequent.com/error-codes/workspace-service/gone`; when
+            the object alone has been deleted, `upstream_type` is absent.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/gone (object deleted):
+                  value:
+                    status: 410
+                    title: Object Error.
+                    detail: Object '00000000-0000-0000-0000-000000000000' has been
+                      deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (object deleted)
+                /geoscienceobject/objects/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: Object Error.
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/ObjectDeletedError'
         '401':
           description: '
 
@@ -1322,6 +1343,389 @@ paths:
               schema:
                 $ref: '#/components/schemas/PostObjectResponse'
       x-api-preview: true
+    patch:
+      tags:
+      - Objects
+      summary: Move or rename a geoscience object
+      description: 'Move and/or rename an object without creating a new version.
+
+        Omitted or null fields are unchanged. An empty JSON object or an unchanged
+        destination returns 204 without changing modification metadata. The object
+        must exist and must not be deleted.
+
+        Provide just `name` to only rename the object.
+
+        Provide just `folder_path` and/or `folder_id` to only move the object.
+
+        Providing both `folder_path` and `folder_id` allows for extra validation of
+        the target folder.
+
+        Providing either or both folder fields and name field allows for simultaneous
+        move and rename.
+
+        A real change updates modified_at and modified_by and returns the object,
+        without a versions array.'
+      operationId: moveObjectById
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: object_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: UUID of a geoscience object.
+          examples:
+          - 355fa5a6-f37d-11ed-93c1-00155d19a71b
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Object Id
+        description: UUID of a geoscience object.
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          description: The customer's organisation ID
+          examples:
+          - b208a6c9-6881-4b97-b02d-acb5d81299bb
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          title: Org Id
+        description: The customer's organisation ID
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: The customer's workspace ID
+          examples:
+          - 032806a8-dcd7-11ed-8d5c-00155d8f28b5
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      - name: authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          title: Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveObjectRequest'
+      responses:
+        '200':
+          description: The object has been moved or renamed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MoveObjectResponse'
+        '204':
+          description: The object has not changed.
+        '400':
+          description: '
+
+            #### /geoscienceobject/objects/invalid-object
+
+
+            The object name must have a .json extension.
+
+
+
+            #### /geoscienceobject/invalid-path
+
+
+            The object name or folder path is invalid.
+
+
+
+            #### /geoscienceobject/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/invalid-object:
+                  value:
+                    expected: triangle-mesh.schema.json
+                    actual: variogram.schema.json
+                    status: 400
+                    title: Object Error.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/invalid-object
+                  summary: /geoscienceobject/objects/invalid-object
+                /geoscienceobject/invalid-path:
+                  value:
+                    status: 400
+                    title: Invalid Path.
+                    type: https://seequent.com/error-codes/geoscienceobject/invalid-path
+                  summary: /geoscienceobject/invalid-path
+                /geoscienceobject/bad-request:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-request
+                  summary: /geoscienceobject/bad-request
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InvalidObjectError'
+                - $ref: '#/components/schemas/InvalidPathError'
+                - $ref: '#/components/schemas/BadRequestError'
+                title: Response 400 Moveobjectbyid
+        '404':
+          description: '
+
+            #### /geoscienceobject/objects/not-found
+
+
+            The object does not exist in this workspace.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/not-found:
+                  value:
+                    upstream_type: /workspace/not-found
+                    object_id: 00000000-0000-0000-0000-000000000000
+                    status: 404
+                    title: Object Not Found.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/not-found
+                  summary: /geoscienceobject/objects/not-found
+              schema:
+                $ref: '#/components/schemas/ObjectNotFound'
+        '410':
+          description: '
+
+            #### /geoscienceobject/objects/gone
+
+
+            The requested object has been deleted, or the workspace containing it
+            has been deleted. When the workspace has been deleted, `upstream_type`
+            is set to `https://seequent.com/error-codes/workspace-service/gone`; when
+            the object alone has been deleted, `upstream_type` is absent.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/gone (object deleted):
+                  value:
+                    status: 410
+                    title: Object Error.
+                    detail: Object '00000000-0000-0000-0000-000000000000' has been
+                      deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (object deleted)
+                /geoscienceobject/objects/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: Object Error.
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/ObjectDeletedError'
+        '409':
+          description: '
+
+            #### /geoscienceobject/objects/already-exists
+
+
+            Another object already exists at the destination.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/already-exists:
+                  value:
+                    object_path: /a/b/c.json
+                    existing_id: 00000000-0000-0000-0000-000000000000
+                    status: 409
+                    title: Geoscience Object Already Exists.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/already-exists
+                  summary: /geoscienceobject/objects/already-exists
+              schema:
+                $ref: '#/components/schemas/ObjectAlreadyExistsError'
+        '412':
+          description: '
+
+            #### /geoscienceobject/objects/modified
+
+
+            The object was repeatedly modified concurrently; retry the request.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/modified:
+                  value:
+                    status: 412
+                    title: Object Modified.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/modified
+                  summary: /geoscienceobject/objects/modified
+              schema:
+                $ref: '#/components/schemas/ObjectModified'
+        '403':
+          description: '
+
+            #### /geoscienceobject/auth/insufficient-role
+
+
+            The user lacks the required editor role.
+
+
+
+            #### /geoscienceobject/auth/reference-object
+
+
+            This reference object cannot be modified directly.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/insufficient-role:
+                  value:
+                    your_role: viewer
+                    permitted_roles:
+                    - editor
+                    status: 403
+                    title: Insufficient Role.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/insufficient-role
+                  summary: /geoscienceobject/auth/insufficient-role
+                /geoscienceobject/auth/reference-object:
+                  value:
+                    status: 403
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/reference-object
+                  summary: /geoscienceobject/auth/reference-object
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InsufficientRoleError'
+                - $ref: '#/components/schemas/ReferenceObjectError'
+                title: Response 403 Moveobjectbyid
+        '401':
+          description: '
+
+            #### /geoscienceobject/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /geoscienceobject/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
+                  summary: /geoscienceobject/auth/missing-token
+                /geoscienceobject/auth/invalid-token:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/invalid-token
+                  summary: /geoscienceobject/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Moveobjectbyid
+        '500':
+          description: '
+
+            #### /geoscienceobject/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/geoscienceobject/api-errors
+                  summary: /geoscienceobject/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '502':
+          description: '
+
+            #### /geoscienceobject/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-gateway:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-gateway
+                  summary: /geoscienceobject/bad-gateway
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '422':
+          description: '
+
+            #### /geoscienceobject/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/geoscienceobject/validation
+                  summary: /geoscienceobject/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
     get:
       tags:
       - Objects
@@ -1452,6 +1856,40 @@ paths:
                   summary: /geoscienceobject/objects/not-found
               schema:
                 $ref: '#/components/schemas/ObjectNotFound'
+        '410':
+          description: '
+
+            #### /geoscienceobject/objects/gone
+
+
+            The requested object has been deleted, or the workspace containing it
+            has been deleted. When the workspace has been deleted, `upstream_type`
+            is set to `https://seequent.com/error-codes/workspace-service/gone`; when
+            the object alone has been deleted, `upstream_type` is absent.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/gone (object deleted):
+                  value:
+                    status: 410
+                    title: Object Error.
+                    detail: Object '00000000-0000-0000-0000-000000000000' has been
+                      deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (object deleted)
+                /geoscienceobject/objects/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: Object Error.
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/ObjectDeletedError'
         '400':
           description: '
 
@@ -1691,6 +2129,29 @@ paths:
                   summary: /geoscienceobject/auth/insufficient-role
               schema:
                 $ref: '#/components/schemas/InsufficientRoleError'
+        '410':
+          description: '
+
+            #### /geoscienceobject/objects/gone
+
+
+            The workspace has been deleted. `upstream_type` is set to `https://seequent.com/error-codes/workspace-service/gone`.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: Object Error.
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/ObjectDeletedError'
         '400':
           description: '
 
@@ -1825,23 +2286,52 @@ paths:
       tags:
       - Objects
       summary: Create a geoscience object
-      description: "Create or update a geoscience object.\n\nUpload a geoscience object\
-        \ based on the schema element. Geoscience objects can be stored hierarchically,\
-        \ \nby providing the path to the object, including the object name, in the\
-        \ request URL. \nA detailed list of the available object schemas can be found\
-        \ in \nSeequent's [evo-schemas](https://github.com/seequentevo/evo-schemas)\
-        \ repository. \n\nThe submitted properties will be validated against the specified\
-        \ schema properties.\n\nTo create a new object, upload it to a unique path\
-        \ with the UUID field set to `null`.\nThe response will contain a reflection\
-        \ of the uploaded object with a newly assigned object ID.\nThis can be used\
-        \ for future requests to update the object.\n\nIf a version of the geoscience\
-        \ object already exists at the specified path a new version will be created.\n\
-        To move or rename an existing object, simply upload a new version of it (with\
-        \ the same UUID) to a new, unique path or\nfile name.\n\nNote that every upload\
-        \ of an object is considered a new version, even if no changes have been made.\n\
-        \nIf required, the object should be compressed, currently gzip compression\
-        \ is supported.\nSet header `Content-Encoding: gzip` if the content is compressed\
-        \ and `Accept-Encoding: gzip` to receive\ncompressed content."
+      description: 'Create or update a geoscience object.
+
+
+        Upload a geoscience object based on the schema element. Geoscience objects
+        can be stored hierarchically,
+
+        by providing the path to the object, including the object name, in the request
+        URL.
+
+        A detailed list of the available object schemas can be found in
+
+        Seequent''s [evo-schemas](https://github.com/seequentevo/evo-schemas) repository.
+
+
+        The submitted properties will be validated against the specified schema properties.
+
+
+        To create a new object, upload it to a unique path with the UUID field set
+        to `null`.
+
+        The response will contain a reflection of the uploaded object with a newly
+        assigned object ID.
+
+        This can be used for future requests to update the object.
+
+
+        If a version of the geoscience object already exists at the specified path
+        a new version will be created.
+
+        To move or rename an existing object, simply upload a new version of it (with
+        the same UUID) to a new, unique path or
+
+        file name.
+
+
+        Note that every upload of an object is considered a new version, even if no
+        changes have been made.
+
+
+        If required, the object should be compressed, currently gzip compression is
+        supported.
+
+        Set header `Content-Encoding: gzip` if the content is compressed and `Accept-Encoding:
+        gzip` to receive
+
+        compressed content.'
       operationId: postObjects
       security:
       - HTTPBearer: []
@@ -2128,6 +2618,40 @@ paths:
                   summary: /geoscienceobject/auth/insufficient-role
               schema:
                 $ref: '#/components/schemas/InsufficientRoleError'
+        '410':
+          description: '
+
+            #### /geoscienceobject/objects/gone
+
+
+            The requested object has been deleted, or the workspace containing it
+            has been deleted. When the workspace has been deleted, `upstream_type`
+            is set to `https://seequent.com/error-codes/workspace-service/gone`; when
+            the object alone has been deleted, `upstream_type` is absent.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/gone (object deleted):
+                  value:
+                    status: 410
+                    title: Object Error.
+                    detail: Object '00000000-0000-0000-0000-000000000000' has been
+                      deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (object deleted)
+                /geoscienceobject/objects/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: Object Error.
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/ObjectDeletedError'
         '401':
           description: '
 
@@ -2382,6 +2906,40 @@ paths:
                 - $ref: '#/components/schemas/InvalidPathError'
                 - $ref: '#/components/schemas/BadRequestError'
                 title: Response 400 Getobject
+        '410':
+          description: '
+
+            #### /geoscienceobject/objects/gone
+
+
+            The requested object has been deleted, or the workspace containing it
+            has been deleted. When the workspace has been deleted, `upstream_type`
+            is set to `https://seequent.com/error-codes/workspace-service/gone`; when
+            the object alone has been deleted, `upstream_type` is absent.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/gone (object deleted):
+                  value:
+                    status: 410
+                    title: Object Error.
+                    detail: Object '00000000-0000-0000-0000-000000000000' has been
+                      deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (object deleted)
+                /geoscienceobject/objects/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: Object Error.
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/ObjectDeletedError'
         '401':
           description: '
 
@@ -2581,6 +3139,29 @@ paths:
                   summary: /geoscienceobject/auth/insufficient-role
               schema:
                 $ref: '#/components/schemas/InsufficientRoleError'
+        '410':
+          description: '
+
+            #### /geoscienceobject/objects/gone
+
+
+            The workspace has been deleted. `upstream_type` is set to `https://seequent.com/error-codes/workspace-service/gone`.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: Object Error.
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/ObjectDeletedError'
         '400':
           description: '
 
@@ -2960,16 +3541,16 @@ paths:
             when no operators are supplied, this will perform a case sensitive prefix
             match of the object file name. The query `object_name=gold` will match
             an object with the name `goldcolumns.json`. Providing an operator will
-            query over the entire path to and including the file name.
+            query over the file name.
           examples:
           - object.json
-          - eq:path/to/object.json
+          - like:*.json
           title: Object Name
         description: The name of the object to filter on. For backwards compatibility,
           when no operators are supplied, this will perform a case sensitive prefix
           match of the object file name. The query `object_name=gold` will match an
           object with the name `goldcolumns.json`. Providing an operator will query
-          over the entire path to and including the file name.
+          over the file name.
       - name: schema_id
         in: query
         required: false
@@ -3172,6 +3753,29 @@ paths:
                 - $ref: '#/components/schemas/InvalidSortParams'
                 - $ref: '#/components/schemas/EvoRequestValidationError'
                 title: Response 422 Listobjects
+        '410':
+          description: '
+
+            #### /geoscienceobject/objects/gone
+
+
+            The workspace has been deleted. `upstream_type` is set to `https://seequent.com/error-codes/workspace-service/gone`.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: Object Error.
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/ObjectDeletedError'
         '400':
           description: '
 
@@ -3362,6 +3966,29 @@ paths:
                 - $ref: '#/components/schemas/ObjectStoreError'
                 - $ref: '#/components/schemas/BadGateway'
                 title: Response 502 Listobjectversionids
+        '410':
+          description: '
+
+            #### /geoscienceobject/objects/gone
+
+
+            The workspace has been deleted. `upstream_type` is set to `https://seequent.com/error-codes/workspace-service/gone`.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: Object Error.
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/ObjectDeletedError'
         '400':
           description: '
 
@@ -3544,12 +4171,192 @@ paths:
       responses:
         '204':
           description: Successful Response
-        '422':
-          description: Validation Error
+        '404':
+          description: '
+
+            #### /geoscienceobject/objects/not-found
+
+
+            No object exists in the workspace by the requested UUID.
+
+
+            '
           content:
             application/json:
+              examples:
+                /geoscienceobject/objects/not-found:
+                  value:
+                    upstream_type: /workspace/not-found
+                    object_id: 00000000-0000-0000-0000-000000000000
+                    status: 404
+                    title: Object Not Found.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/not-found
+                  summary: /geoscienceobject/objects/not-found
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: '#/components/schemas/ObjectNotFound'
+        '410':
+          description: '
+
+            #### /geoscienceobject/objects/gone
+
+
+            The requested object has been deleted, or the workspace containing it
+            has been deleted. When the workspace has been deleted, `upstream_type`
+            is set to `https://seequent.com/error-codes/workspace-service/gone`; when
+            the object alone has been deleted, `upstream_type` is absent.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/gone (object deleted):
+                  value:
+                    status: 410
+                    title: Object Error.
+                    detail: Object '00000000-0000-0000-0000-000000000000' has been
+                      deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (object deleted)
+                /geoscienceobject/objects/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: Object Error.
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/ObjectDeletedError'
+        '400':
+          description: '
+
+            #### /geoscienceobject/bad-request
+
+
+            Bad request. The server cannot or will not process the request due to
+            a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-request:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 400
+                    title: Bad Request.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-request
+                  summary: /geoscienceobject/bad-request
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: '
+
+            #### /geoscienceobject/auth/missing-token
+
+
+            Unauthorized. The client request has not been completed as the provided
+            credentials  are invalid.
+
+
+
+            #### /geoscienceobject/auth/invalid-token
+
+
+            Forbidden. The client credentials are valid but do not permit access to
+            this resource.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/auth/missing-token:
+                  value:
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
+                  summary: /geoscienceobject/auth/missing-token
+                /geoscienceobject/auth/invalid-token:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 401
+                    title: Access Denied.
+                    type: https://seequent.com/error-codes/geoscienceobject/auth/invalid-token
+                  summary: /geoscienceobject/auth/invalid-token
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/MissingTokenError'
+                - $ref: '#/components/schemas/InvalidTokenError'
+                title: Response 401 Updatemetadata
+        '500':
+          description: '
+
+            #### /geoscienceobject/api-errors
+
+
+            A server error has occurred.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/api-errors:
+                  value:
+                    status: 500
+                    title: An Error Occurred.
+                    type: https://seequent.com/error-codes/geoscienceobject/api-errors
+                  summary: /geoscienceobject/api-errors
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '502':
+          description: '
+
+            #### /geoscienceobject/bad-gateway
+
+
+            Bad gateway. A response required to handle the request is invalid.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/bad-gateway:
+                  value:
+                    upstream_type: /workspace/not-found
+                    status: 502
+                    title: Bad Gateway.
+                    type: https://seequent.com/error-codes/geoscienceobject/bad-gateway
+                  summary: /geoscienceobject/bad-gateway
+              schema:
+                $ref: '#/components/schemas/BadGateway'
+        '422':
+          description: '
+
+            #### /geoscienceobject/validation
+
+
+            The request was invalid and will not be processed due to a client error.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/validation:
+                  value:
+                    status: 422
+                    title: Validation Error.
+                    detail: '[{''type'': ''missing'', ''loc'': , ''msg'': ''Field
+                      required'', ''input'': {}, ''url'': ''https://errors.pydantic.dev/2.4/v/missing''}]'
+                    type: https://seequent.com/error-codes/geoscienceobject/validation
+                  summary: /geoscienceobject/validation
+              schema:
+                $ref: '#/components/schemas/EvoRequestValidationError'
   /geoscience-object/orgs/{org_id}/workspaces/{workspace_id}/objects/{object_id}/versions:
     post:
       tags:
@@ -3655,6 +4462,40 @@ paths:
                 - $ref: '#/components/schemas/ObjectNotFound'
                 - $ref: '#/components/schemas/VersionNotFound'
                 title: Response 404 Listobjectversions
+        '410':
+          description: '
+
+            #### /geoscienceobject/objects/gone
+
+
+            The requested object has been deleted, or the workspace containing it
+            has been deleted. When the workspace has been deleted, `upstream_type`
+            is set to `https://seequent.com/error-codes/workspace-service/gone`; when
+            the object alone has been deleted, `upstream_type` is absent.
+
+
+            '
+          content:
+            application/json:
+              examples:
+                /geoscienceobject/objects/gone (object deleted):
+                  value:
+                    status: 410
+                    title: Object Error.
+                    detail: Object '00000000-0000-0000-0000-000000000000' has been
+                      deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (object deleted)
+                /geoscienceobject/objects/gone (workspace deleted):
+                  value:
+                    upstream_type: https://seequent.com/error-codes/workspace-service/gone
+                    status: 410
+                    title: Object Error.
+                    detail: The workspace has been deleted.
+                    type: https://seequent.com/error-codes/geoscienceobject/objects/gone
+                  summary: /geoscienceobject/objects/gone (workspace deleted)
+              schema:
+                $ref: '#/components/schemas/ObjectDeletedError'
         '400':
           description: '
 
@@ -4123,6 +4964,12 @@ components:
         etag:
           type: string
           title: Etag
+        folder_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Folder Id
         geojson_bounding_box:
           anyOf:
           - $ref: '#/components/schemas/BoundingBox'
@@ -4599,6 +5446,12 @@ components:
         etag:
           type: string
           title: Etag
+        folder_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Folder Id
         geojson_bounding_box:
           anyOf:
           - $ref: '#/components/schemas/BoundingBox'
@@ -4694,6 +5547,130 @@ components:
           default: https://seequent.com/error-codes/geoscienceobject/auth/missing-token
       type: object
       title: MissingTokenError
+    MoveObjectRequest:
+      properties:
+        folder_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Folder Id
+          description: "Optional ID of an existing folder to move this object to.\n\
+            \        The indicated folder must not be deleted and in the same workspace\
+            \ as the object being moved.\n        Can optionally be combined with\
+            \ `folder_path` for extra validation of the target folder.\n        Omit\
+            \ both `folder_id` and `folder_path` to keep the current folder."
+          examples:
+          - 442daf92-4fde-4c0a-986e-cd231db22eb7
+        folder_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Folder Path
+          description: "Optional path to a folder to move this object to. Must start\
+            \ with a '/'.\n        Must not end with a '/' (unless the target is the\
+            \ root folder).\n        Does not contain the name of the object itself.\n\
+            \        Folder names are 1-100 UTF-8 characters with a total max folder_path\
+            \ length of 1520 characters.\n        Will create all intermediate folders\
+            \ if they do not exist.\n        If `folder_id` is also provided then\
+            \ `folder_path` must match the path of the folder specified by `folder_id`.\n\
+            \        Omit both `folder_id` and `folder_path` to keep the current folder."
+          examples:
+          - /my/folder/path
+          - /
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: "Optional new name for the object. Names are 1-256 characters,\
+            \ must end in .json,\n        and cannot contain path separators or double\
+            \ dots, start with a dot, or start/end with whitespace.\n        Omit\
+            \ to keep the current name."
+          examples:
+          - grid_collection.json
+      type: object
+      title: MoveObjectRequest
+      description: Optional destination fields; omitted or null values leave that
+        field unchanged.
+    MoveObjectResponse:
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        created_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        deleted_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deleted At
+        deleted_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        etag:
+          type: string
+          title: Etag
+        folder_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Folder Id
+        geojson_bounding_box:
+          anyOf:
+          - $ref: '#/components/schemas/BoundingBox'
+          - type: 'null'
+        geojson_bounding_box_from_workspace_crs:
+          type: boolean
+          title: Geojson Bounding Box From Workspace Crs
+          description: True if the bounding box was calculated using the workspace
+            CRS, else False.
+        links:
+          $ref: '#/components/schemas/ObjectResponseLinks'
+        modified_at:
+          type: string
+          format: date-time
+          title: Modified At
+        modified_by:
+          anyOf:
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+        object:
+          $ref: '#/components/schemas/GeoscienceObject'
+        object_id:
+          type: string
+          format: uuid
+          title: Object Id
+        object_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Object Path
+        stage:
+          anyOf:
+          - $ref: '#/components/schemas/StageResponse'
+          - type: 'null'
+        version_id:
+          type: string
+          title: Version Id
+      additionalProperties: false
+      type: object
+      required:
+      - created_at
+      - etag
+      - geojson_bounding_box_from_workspace_crs
+      - links
+      - modified_at
+      - object
+      - object_id
+      - version_id
+      title: MoveObjectResponse
     ObjectAlreadyExistsError:
       properties:
         detail:
@@ -4802,6 +5779,31 @@ components:
           default: https://seequent.com/error-codes/geoscienceobject/objects/data-key-not-found
       type: object
       title: ObjectDataRefNotMovedError
+    ObjectDeletedError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 410
+        title:
+          type: string
+          title: Title
+          default: Object Error.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/objects/gone
+        upstream_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Type
+      type: object
+      title: ObjectDeletedError
     ObjectModified:
       properties:
         detail:
@@ -4918,6 +5920,12 @@ components:
           anyOf:
           - $ref: '#/components/schemas/User'
           - type: 'null'
+        folder_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Folder Id
         geojson_bounding_box:
           anyOf:
           - $ref: '#/components/schemas/BoundingBox'
@@ -4942,6 +5950,9 @@ components:
           type: string
           format: uuid
           title: Object Id
+        path:
+          type: string
+          title: Path
         schema:
           type: string
           title: Schema
@@ -4970,6 +5981,7 @@ components:
       - modified_at
       - name
       - object_id
+      - path
       - schema
       - workspace_id
       title: OrgListedObject
@@ -4996,6 +6008,12 @@ components:
         etag:
           type: string
           title: Etag
+        folder_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Folder Id
         geojson_bounding_box:
           anyOf:
           - $ref: '#/components/schemas/BoundingBox'
@@ -5046,6 +6064,26 @@ components:
       - object
       - version_id
       title: PostObjectResponse
+    ReferenceObjectError:
+      properties:
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+        status:
+          $ref: '#/components/schemas/HTTPStatus'
+          default: 403
+        title:
+          type: string
+          title: Title
+          default: Access Denied.
+        type:
+          type: string
+          title: Type
+          default: https://seequent.com/error-codes/geoscienceobject/auth/reference-object
+      type: object
+      title: ReferenceObjectError
     RoleEnum:
       type: string
       enum:
@@ -5154,6 +6192,11 @@ components:
       description: User details.
     ValidationError:
       properties:
+        ctx:
+          type: object
+          title: Context
+        input:
+          title: Input
         loc:
           items:
             anyOf:
