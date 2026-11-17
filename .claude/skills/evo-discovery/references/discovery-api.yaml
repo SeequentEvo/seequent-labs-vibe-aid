@@ -46,18 +46,14 @@ paths:
           in: header
           required: true
           schema:
+            title: Authorization
             type: string
-          description: Bearer token. Format: `Bearer <access_token>`.
-        - name: user-agent
-          in: header
-          required: false
-          schema:
-            type: string
-            nullable: true
+          description: 'Bearer token. Format: `Bearer <access_token>`.'
         - name: origin
           in: header
           required: false
           schema:
+            title: Origin
             type: string
             nullable: true
         - name: service
@@ -68,61 +64,61 @@ paths:
             services, or specify individual codes. Repeat the parameter to
             request multiple services (e.g. `?service=file&service=blockmodel`).
           schema:
+            title: Service
             type: array
             items:
               type: string
             default: []
-          style: form
-          explode: true
-          examples:
-            all:
-              summary: All services (catch-all)
-              value: [evo]
-            specific:
-              summary: Multiple specific services
-              value: [file, blockmodel]
+        - name: user-agent
+          in: header
+          required: false
+          schema:
+            title: User-Agent
+            type: string
+            nullable: true
       responses:
-        "200":
-          description: Successful Response
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DiscoveryResponse"
-              example:
-                discovery:
-                  organizations:
-                    - id: "d0ea331e-814e-4e24-a1b8-cd563c5b1d31"
-                      display_name: "Test organisation"
-                  hubs:
-                    - code: "au"
-                      display_name: "Australia East"
-                      url: "https://au.api.seequent.com"
-                  services:
-                    - code: "blockmodel"
-                      display_name: "Block Model"
-                    - code: "file"
-                      display_name: "File"
-                    - code: "geoscienceobject"
-                      display_name: "Geoscience Object"
-                  service_access:
-                    - hub_code: "au"
-                      org_id: "d0ea331e-814e-4e24-a1b8-cd563c5b1d31"
-                      services:
-                        - "blockmodel"
-                        - "file"
-                        - "geoscienceobject"
-        "401":
-          description: Unauthorized — missing or invalid access token.
-        "403":
-          description: Forbidden.
-        "404":
-          description: Not found.
-        "405":
-          description: Method not allowed.
-        "422":
-          description: Unprocessable entity.
-        "5XX":
-          description: Server error.
+                $ref: '#/components/schemas/DiscoveryResponse'
+          description: Successful Response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: No permission -- see authorization schemes
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Request forbidden -- authorization will not help
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Resource not found or user lacks access
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Specified method is invalid for this resource
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unprocessable Content
+        5XX:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unexpected error
 
 components:
   securitySchemes:
@@ -173,6 +169,49 @@ components:
           items:
             $ref: "#/components/schemas/ServiceAccess"
 
+    ErrorInvalidParam:
+      title: ErrorInvalidParam
+      type: object
+      properties:
+        name:
+          title: Name
+          type: string
+        reason:
+          title: Reason
+          type: string
+      required:
+        - name
+        - reason
+    
+    ErrorResponse:
+      title: ErrorResponse
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: string
+          nullable: true
+        invalid-params:
+          title: Invalid-Params
+          items:
+            $ref: '#/components/schemas/ErrorInvalidParam'
+            type: array
+            nullable: true
+        status:
+          title: Status
+          type: integer
+        title:
+          title: Title
+          type: string
+        type:
+          title: Type
+          type: string
+      required:
+        - status
+        - title
+        - detail
+        - type
+    
     Organization:
       type: object
       properties:
