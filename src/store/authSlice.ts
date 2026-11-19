@@ -20,6 +20,8 @@ interface AuthState {
 const SESSION_KEY = "auth_state";
 
 function loadPersistedState(): AuthState | null {
+  if (typeof sessionStorage === "undefined") return null;
+
   try {
     const raw = sessionStorage.getItem(SESSION_KEY);
     if (!raw) return null;
@@ -30,12 +32,18 @@ function loadPersistedState(): AuthState | null {
     }
     return persisted;
   } catch {
-    sessionStorage.removeItem(SESSION_KEY);
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch {
+      // Storage unavailable; continue with the default state
+    }
     return null;
   }
 }
 
 function persistState(state: AuthState): void {
+  if (typeof sessionStorage === "undefined") return;
+
   try {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify({
       status: state.status,
@@ -81,7 +89,13 @@ const authSlice = createSlice({
       state.user = null;
       state.error = null;
       state.expiresAt = null;
-      sessionStorage.removeItem(SESSION_KEY);
+      if (typeof sessionStorage !== "undefined") {
+        try {
+          sessionStorage.removeItem(SESSION_KEY);
+        } catch {
+          // Storage unavailable; the in-memory logout still succeeds
+        }
+      }
     },
     clearError(state) {
       state.error = null;
