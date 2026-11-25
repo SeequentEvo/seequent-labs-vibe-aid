@@ -197,3 +197,13 @@ These cannot be set via meta tags — configure them on your hosting platform:
 | `X-Content-Type-Options` | `nosniff` | Prevent MIME type sniffing |
 | `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Enforce HTTPS |
 | `X-Frame-Options` | `DENY` | Clickjacking protection (or use CSP `frame-ancestors` header) |
+
+## Security guardrails
+
+- Start OAuth configuration with `evo.discovery evo.workspace`. Add `evo.object`, `evo.file`, or `evo.blocksync` only for features that use that API. Remove scopes when features are removed.
+- Never send bearer tokens to origins outside discovered Evo instances or the configured Discovery API. Never attach bearer credentials to user-provided or pre-signed URLs.
+- Do not use `dangerouslySetInnerHTML`, `innerHTML`, `document.write`, `eval`, `new Function`, or implied eval.
+- Do not loosen CSP with `connect-src https:` or wildcard `https://*`. Add only the exact host pattern required by a documented integration.
+- Add a new CSP origin only when a verified integration needs it, using the exact host pattern. Do not add arbitrary blob or CDN origins.
+- Every `VITE_*` variable is public browser JavaScript. Never place private API keys, client secrets, OAuth secrets, or privileged tokens in it.
+- Preserve the existing strict CSP and explicit host allowlists unless the user approves a reviewed, feature-specific exception.

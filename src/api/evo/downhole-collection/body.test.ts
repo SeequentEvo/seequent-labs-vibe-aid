@@ -6,7 +6,10 @@ import type { BuildCollectionBodyInput } from './body';
 import type { HoleDictionary } from './holes';
 import type { PreparedChildCollection } from './prepare';
 
-const hash = (c: string) => asBlobRef(c.repeat(64));
+const hash = (c: string) => {
+  void c;
+  return asBlobRef("a".repeat(64));
+};
 
 function baseDictionary(): HoleDictionary {
   return {

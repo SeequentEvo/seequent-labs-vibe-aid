@@ -191,7 +191,7 @@ const scope = (
   kind: "geoscience-object" | "file" = "geoscience-object",
 ): CacheScope => ({ orgId, workspaceId, kind });
 
-const ref = (s: string) => asBlobRef(s);
+const ref = (s: string) => asBlobRef(`00000000-0000-4000-8000-${s.charCodeAt(0).toString(16).padStart(12, "0")}`);
 const bytes = (s: string) => new TextEncoder().encode(s);
 
 const flush = () => new Promise((r) => setTimeout(r, 80));
@@ -328,7 +328,7 @@ describe("OpfsBlobStore", () => {
       events.push({ ref: String(e.ref), reason: e.reason, sizeBytes: e.sizeBytes });
     });
     await store.delete(s, r);
-    expect(events).toEqual([{ ref: "victim", reason: "manual", sizeBytes: 4 }]);
+    expect(events).toEqual([{ ref: String(r), reason: "manual", sizeBytes: 4 }]);
   });
 
   it("openWrite stream commits size on close", async () => {

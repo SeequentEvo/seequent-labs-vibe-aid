@@ -3,9 +3,8 @@
  *
  * Conventions:
  * - `BlobRef` is **opaque**: it may be a SHA-256 hex digest *or* a UUID.
- *   The cache never assumes the bytes hash back to the ref (per the
- *   prior-art doc: downloaded SHA-256s are not trusted; only client-side
- *   uploads compute their own correct SHA-256 for de-duplication).
+ *   SHA-256 refs are verified against cached or downloaded bytes; UUID refs
+ *   cannot be content-hashed and remain opaque identifiers.
  * - Cache keys are scoped by `OrgId / WorkspaceId / BlobKind / BlobRef`.
  *   `kind` separates references that are unique only within an API
  *   (a File API id is not a Geoscience Object data-blob ref).
@@ -18,9 +17,16 @@ declare const blobBrand: unique symbol;
 /** Opaque blob reference — SHA-256 digest or UUID. */
 export type BlobRef = string & { readonly [blobBrand]: "BlobRef" };
 
-/** Treat any non-empty string as a `BlobRef`. */
+/** True only for a 64-character hexadecimal SHA-256 digest. */
+export const isSha256BlobRef = (v: string): boolean => /^[0-9a-f]{64}$/i.test(v);
+
+/** Accept only a 64-character SHA-256 digest or UUID. */
 export const asBlobRef = (v: string): BlobRef => {
-  if (v.length === 0) throw new Error("BlobRef must be non-empty");
+  const sha256 = isSha256BlobRef(v);
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+  if (!sha256 && !uuid) {
+    throw new Error("BlobRef must be a SHA-256 hex digest or UUID");
+  }
   return v as BlobRef;
 };
 

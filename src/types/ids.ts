@@ -91,8 +91,12 @@ export const colormapIdSchema = uuidBase.transform((v) => v as ColormapId);
 export const stageIdSchema = uuidBase.transform((v) => v as StageId);
 
 export const versionIdSchema = opaqueBase.transform((v) => v as VersionId);
-export const objectPathSchema = opaqueBase.transform((v) => v as ObjectPath);
-export const filePathSchema = opaqueBase.transform((v) => v as FilePath);
+const resourcePathSchema = opaqueBase.refine(
+  (value) => value.split('/').every((segment) => segment.length > 0 && segment !== '.' && segment !== '..'),
+  { message: 'Resource path must not contain empty or dot segments' },
+);
+export const objectPathSchema = resourcePathSchema.transform((v) => v as ObjectPath);
+export const filePathSchema = resourcePathSchema.transform((v) => v as FilePath);
 export const userIdSchema = opaqueBase.transform((v) => v as UserId);
 export const hubCodeSchema = opaqueBase.transform((v) => v as HubCode);
 

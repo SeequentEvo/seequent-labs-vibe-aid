@@ -57,6 +57,23 @@ export default defineConfig([
       },
     },
     rules: {
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
+      'no-new-func': 'error',
+      'no-restricted-syntax': ['error',
+        {
+          selector: 'MemberExpression[property.name="innerHTML"]',
+          message: 'Do not use innerHTML; render untrusted content through React text nodes.',
+        },
+        {
+          selector: 'JSXAttribute[name.name="dangerouslySetInnerHTML"]',
+          message: 'dangerouslySetInnerHTML is prohibited by the template security policy.',
+        },
+        {
+          selector: 'MemberExpression[property.name="write"] > CallExpression.callee',
+          message: 'document.write is prohibited.',
+        },
+      ],
       'no-restricted-imports': ['error', {
         patterns: [{
           group: ['../*'],

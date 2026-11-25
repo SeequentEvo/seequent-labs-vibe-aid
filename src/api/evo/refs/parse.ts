@@ -22,6 +22,9 @@ export function parseEvoUrl(url: string): AnyEvoRef {
   } catch {
     throw new Error(`Malformed URL: ${url}`);
   }
+  if (parsed.protocol !== 'https:') throw new Error(`Evo URL must use HTTPS: ${url}`);
+  if (parsed.username || parsed.password) throw new Error(`Evo URL must not contain credentials: ${url}`);
+  if (parsed.hash) throw new Error(`Evo URL must not contain a fragment: ${url}`);
 
   const segment = parsed.pathname.split('/').filter(Boolean)[0];
 

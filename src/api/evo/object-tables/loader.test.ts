@@ -87,14 +87,14 @@ describe("describeObject", () => {
             width: 3,
             data_type: "float64",
             length: 3,
-            data: "coord-hash",
+            data: "00000000-0000-4000-8000-000000000001",
           },
           attributes: [
             {
               key: "grade",
               name: "Grade",
               attribute_type: "scalar",
-              values: { data_type: "float64", length: 3, data: "grade-hash" },
+              values: { data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" },
               nan_description: { values: [] },
             },
             {
@@ -104,13 +104,13 @@ describe("describeObject", () => {
               values: {
                 data_type: "int32",
                 length: 3,
-                data: "rock-values-hash",
+                data: "00000000-0000-4000-8000-000000000001",
               },
               table: {
                 keys_data_type: "int32",
                 values_data_type: "string",
                 length: 2,
-                data: "rock-lookup-hash",
+                data: "00000000-0000-4000-8000-000000000001",
               },
             },
           ],
@@ -151,14 +151,14 @@ describe("describeObject", () => {
             width: 3,
             data_type: "float64",
             length: 2,
-            data: "coord-hash",
+            data: "00000000-0000-4000-8000-000000000001",
           },
           attributes: [
             {
               key: "ensemble",
               name: "Ensemble",
               attribute_type: "continuous-ensemble",
-              values: { data_type: "float64", length: 2, data: "ensemble-hash" },
+              values: { data_type: "float64", length: 2, data: "00000000-0000-4000-8000-000000000001" },
             },
           ],
         },
@@ -174,7 +174,7 @@ describe("describeObject", () => {
     expect(attr.kind).toEqual({ decoded: false, type: "continuous-ensemble" });
     expect(attr.columns).toEqual([]);
     expect(attr.nanDescription).toBeNull();
-    expect(attr.attributeData).toEqual({ kind: "blob", blobs: ["ensemble-hash"] });
+    expect(attr.attributeData).toEqual({ kind: "blob", blobs: ["00000000-0000-4000-8000-000000000001"] });
   });
 
   it("returns unsupported for unknown schemas", () => {
@@ -971,7 +971,7 @@ describe("describeObject — propertiesView", () => {
       "/objects/pointset/1.3.0/pointset.schema.json",
       {
         locations: {
-          coordinates: { data_type: "float64", length: 0, data: "abc" },
+          coordinates: { data_type: "float64", length: 0, data: "00000000-0000-4000-8000-000000000001" },
           attributes: [],
         },
       },
@@ -1041,8 +1041,8 @@ describe("describeObject — schemaColumns", () => {
       ],
       {
         locations: {
-          coordinates: { width: 3, data_type: "float64", length: 4, data: "coord-hash" },
-          lineation_data: { width: 2, data_type: "float64", length: 4, data: "lin-hash" },
+          coordinates: { width: 3, data_type: "float64", length: 4, data: "00000000-0000-4000-8000-000000000001" },
+          lineation_data: { width: 2, data_type: "float64", length: 4, data: "00000000-0000-4000-8000-000000000001" },
           attributes: [],
         },
       },
@@ -1054,7 +1054,7 @@ describe("describeObject — schemaColumns", () => {
         expect(group.label).toBe("Lineations");
         expect(group.columns).toEqual(["trend", "plunge"]);
         if (group.kind !== "blob") throw new Error("expected blob descriptor");
-        expect(group.blobRef).toBe("lin-hash");
+        expect(group.blobRef).toBe("00000000-0000-4000-8000-000000000001");
         expect(group.rowCount).toBe(4);
         expect(group.elementSchema).toEqual({ dataType: "float64", width: 2 });
       },
@@ -1066,7 +1066,7 @@ describe("describeObject — schemaColumns", () => {
       [],
       {
         locations: {
-          coordinates: { width: 3, data_type: "float64", length: 2, data: "coord-hash" },
+          coordinates: { width: 3, data_type: "float64", length: 2, data: "00000000-0000-4000-8000-000000000001" },
           attributes: [],
         },
       },
@@ -1088,7 +1088,7 @@ describe("describeObject — schemaColumns", () => {
       ],
       {
         locations: {
-          coordinates: { width: 3, data_type: "float64", length: 2, data: "coord-hash" },
+          coordinates: { width: 3, data_type: "float64", length: 2, data: "00000000-0000-4000-8000-000000000001" },
           // lineation_data is absent
           attributes: [],
         },
@@ -1762,7 +1762,7 @@ describe("Line Segments descriptor", () => {
             attributes: [],
           },
           indices: {
-            data: "b".repeat(64),
+            data: "a".repeat(64),
             length: 5,
             width: 2,
             data_type: "uint64",
@@ -1812,14 +1812,14 @@ describe("Triangle Mesh descriptor", () => {
       {
         triangles: {
           vertices: {
-            data: "c".repeat(64),
+            data: "a".repeat(64),
             length: 12,
             width: 3,
             data_type: "float64",
             attributes: [],
           },
           indices: {
-            data: "d".repeat(64),
+            data: "a".repeat(64),
             length: 8,
             width: 3,
             data_type: "uint64",
@@ -1868,7 +1868,7 @@ describe("Triangle Mesh v2 descriptor", () => {
           attributes: [],
         },
         indices: {
-          data: "b".repeat(64),
+          data: "a".repeat(64),
           length: 2,
           width: 3,
           data_type: "int32",
@@ -1899,13 +1899,13 @@ describe("Triangle Mesh v2 descriptor", () => {
       ...makeTrianglesObject(),
       parts: {
         chunks: {
-          data: "c".repeat(64),
+          data: "a".repeat(64),
           length: 3,
           width: 2,
           data_type: "int32",
         },
         triangle_indices: {
-          data: "d".repeat(64),
+          data: "a".repeat(64),
           length: 5,
           width: 1,
           data_type: "int32",
@@ -1914,7 +1914,7 @@ describe("Triangle Mesh v2 descriptor", () => {
       },
       edges: {
         indices: {
-          data: "e".repeat(64),
+          data: "a".repeat(64),
           length: 6,
           width: 2,
           data_type: "int32",
@@ -1922,7 +1922,7 @@ describe("Triangle Mesh v2 descriptor", () => {
         attributes: [],
         parts: {
           chunks: {
-            data: "f".repeat(64),
+            data: "a".repeat(64),
             length: 2,
             width: 2,
             data_type: "int32",
@@ -1963,7 +1963,7 @@ describe("Triangle Mesh v2 descriptor", () => {
       ...makeTrianglesObject(),
       parts: {
         chunks: {
-          data: "c".repeat(64),
+          data: "a".repeat(64),
           length: 3,
           width: 2,
           data_type: "int32",
@@ -1988,7 +1988,7 @@ describe("Triangle Mesh v2 descriptor", () => {
       ...makeTrianglesObject(),
       edges: {
         indices: {
-          data: "e".repeat(64),
+          data: "a".repeat(64),
           length: 6,
           width: 2,
           data_type: "int32",
@@ -1996,7 +1996,7 @@ describe("Triangle Mesh v2 descriptor", () => {
         attributes: [],
         parts: {
           chunks: {
-            data: "f".repeat(64),
+            data: "a".repeat(64),
             length: 2,
             width: 2,
             data_type: "int32",
@@ -2192,7 +2192,7 @@ function makeGmmV2Body(opts?: {
           attributes: [],
         },
         indices: {
-          data: "b".repeat(64),
+          data: "a".repeat(64),
           length: 6,
           width: 3,
           data_type: "int32",
@@ -2201,13 +2201,13 @@ function makeGmmV2Body(opts?: {
       },
       parts: {
         chunks: {
-          data: "c".repeat(64),
+          data: "a".repeat(64),
           length: 2,
           width: 2,
           data_type: "int32",
         },
         triangle_indices: {
-          data: "f".repeat(64),
+          data: "a".repeat(64),
           length: 6,
           width: 1,
           data_type: "int32",
@@ -2243,7 +2243,7 @@ function makeGmmV2Body(opts?: {
           values: {
             data_type: "float64",
             length: 1,
-            data: "d".repeat(64),
+            data: "a".repeat(64),
           },
           nan_description: { values: [] },
         },
@@ -2261,7 +2261,7 @@ function makeGmmV2Body(opts?: {
           values: {
             data_type: "float64",
             length: 1,
-            data: "e".repeat(64),
+            data: "a".repeat(64),
           },
           nan_description: { values: [] },
         },
@@ -2363,31 +2363,42 @@ describe("Geological Model Meshes v2 descriptor", () => {
     expect(supported.propertiesData).toHaveProperty("folders");
   });
 
-  it("load round-trip for triangle_geometry.parts", async () => {
+    it("load round-trip for triangle_geometry.parts", async () => {
     const chunksBlob = await makeBlob({
       col0: Int32Array.from([0, 3]),
       col1: Int32Array.from([3, 5]),
     });
 
+    const triIdxBlob = await makeBlob({
+      col0: Int32Array.from([0, 1]),
+    });
+
     const store = new InMemoryBlobStore();
     await store.put(scope, chunksBlob.ref, chunksBlob.bytes);
+    await store.put(scope, triIdxBlob.ref, triIdxBlob.bytes);
 
     const body = makeGmmV2Body();
-    // Replace the chunks data hash with the real blob ref
-    (
-      (body.triangle_geometry as Record<string, unknown>)
-        .parts as Record<string, unknown>
-    ).chunks = {
+    const parts = (body.triangle_geometry as Record<string, unknown>).parts as Record<string, unknown>;
+    parts.chunks = {
       data: chunksBlob.ref,
       length: 2,
       width: 2,
+      data_type: "int32",
+    };
+    parts.triangle_indices = {
+      data: triIdxBlob.ref,
+      length: 2,
+      width: 1,
       data_type: "int32",
     };
 
     const envelope = makeEnvelope(
       GMM_V2_SCHEMA,
       body,
-      [{ name: chunksBlob.ref, downloadUrl: `https://test.blob.core.windows.net/${chunksBlob.ref}` }],
+      [chunksBlob, triIdxBlob].map((b) => ({
+        name: b.ref,
+        downloadUrl: `https://test.blob.core.windows.net/${b.ref}`,
+      })),
     );
 
     const desc = describeObject(envelope);
@@ -2398,25 +2409,27 @@ describe("Geological Model Meshes v2 descriptor", () => {
       (a) => a.id === "triangle_geometry.parts",
     )!;
     expect(partsAtt).toBeDefined();
+    expect(partsAtt.identity!.columns).toEqual(["offset", "count"]);
+    expect(partsAtt.schemaColumns).toHaveLength(1);
+    expect(partsAtt.schemaColumns[0]!.id).toBe("triangle_indices");
 
     const deps: LoadDeps = { store, scope };
     const result = await loadAttachment(partsAtt, envelope, deps, {
       attributes: { kind: "none" },
+      schemaColumns: { kind: "all" },
     });
 
     expect(result.errors).toEqual([]);
+    expect(result.schemaColumnErrors).toEqual([]);
     expect(result.table.numRows).toBe(2);
 
     const colNames = result.table.schema.fields.map((f) => f.name);
-    expect(colNames).toEqual(["offset", "count"]);
+    expect(colNames).toEqual(["offset", "count", "index"]);
 
-    expect(result.table.getChildAt(0)?.toArray()).toEqual(
-      Int32Array.from([0, 3]),
-    );
-    expect(result.table.getChildAt(1)?.toArray()).toEqual(
-      Int32Array.from([3, 5]),
-    );
-  });
+    expect(result.table.getChildAt(0)?.toArray()).toEqual(Int32Array.from([0, 3]));
+    expect(result.table.getChildAt(1)?.toArray()).toEqual(Int32Array.from([3, 5]));
+    expect(result.table.getChildAt(2)?.toArray()).toEqual(Int32Array.from([0, 1]));
+    });
 });
 
 // ---------------------------------------------------------------------------
@@ -2437,7 +2450,7 @@ describe("Design Geometry descriptor", () => {
       "/objects/design-geometry/1.1.0/design-geometry.schema.json",
       {
         parts: [],
-        brep_data: { format: "step", data: "blob-hash" },
+        brep_data: { format: "step", data: "00000000-0000-4000-8000-000000000001" },
       },
       [],
     );
@@ -2490,7 +2503,7 @@ describe("Line Segments v2 descriptor", () => {
             attributes: [],
           },
           indices: {
-            data: "b".repeat(64),
+            data: "a".repeat(64),
             length: 5,
             width: 2,
             data_type: "int32",
@@ -2499,7 +2512,7 @@ describe("Line Segments v2 descriptor", () => {
         },
         parts: {
           chunks: {
-            data: "c".repeat(64),
+            data: "a".repeat(64),
             length: 3,
             width: 2,
             data_type: "int32",
@@ -2519,11 +2532,13 @@ describe("Line Segments v2 descriptor", () => {
     const vertices = supported.attachments[0]!;
     expect(vertices.id).toBe("segments.vertices");
     expect(vertices.rowCount).toBe(10);
+    expect(vertices.identity).not.toBeNull();
     expect(vertices.identity!.columns).toEqual(["x", "y", "z"]);
 
     const indices = supported.attachments[1]!;
     expect(indices.id).toBe("segments.indices");
     expect(indices.rowCount).toBe(5);
+    expect(indices.identity).not.toBeNull();
     expect(indices.identity!.columns).toEqual(["n0", "n1"]);
 
     const parts = supported.attachments[2]!;
@@ -2545,7 +2560,7 @@ describe("Line Segments v2 descriptor", () => {
             attributes: [],
           },
           indices: {
-            data: "b".repeat(64),
+            data: "a".repeat(64),
             length: 5,
             width: 2,
             data_type: "int32",
@@ -2587,7 +2602,7 @@ describe("Line Segments v2 descriptor", () => {
             attributes: [],
           },
           indices: {
-            data: "b".repeat(64),
+            data: "a".repeat(64),
             length: 5,
             width: 2,
             data_type: "int32",

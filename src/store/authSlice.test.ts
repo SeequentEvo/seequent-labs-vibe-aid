@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { selectEvoUser } from "@/store/authSlice";
+import { selectEvoUser, persistedAuthSchema } from "@/store/authSlice";
 import type { UserInfo } from "@/api/auth/ims";
 
 /**
@@ -116,5 +116,43 @@ describe("selectEvoUser", () => {
       given_name: "John",
     });
     expect(() => selectEvoUser(state)).toThrow();
+  });
+});
+
+describe("persistedAuthSchema", () => {
+  it("rejects authenticated state without an access token", () => {
+    expect(
+      persistedAuthSchema.safeParse({
+        status: "authenticated",
+        accessToken: null,
+        idToken: null,
+        user: { sub: "user-123" },
+        expiresAt: Date.now() + 60_000,
+      }).success
+    ).toBe(false);
+  });
+
+  it("rejects authenticated state without an expiry", () => {
+    expect(
+      persistedAuthSchema.safeParse({
+        status: "authenticated",
+        accessToken: "token",
+        idToken: null,
+        user: { sub: "user-123" },
+        expiresAt: null,
+      }).success
+    ).toBe(false);
+  });
+
+  it("accepts valid authenticated state", () => {
+    expect(
+      persistedAuthSchema.safeParse({
+        status: "authenticated",
+        accessToken: "token",
+        idToken: "id-token",
+        user: { sub: "user-123", given_name: "John" },
+        expiresAt: Date.now() + 60_000,
+      }).success
+    ).toBe(true);
   });
 });

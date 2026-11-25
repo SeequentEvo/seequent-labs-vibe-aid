@@ -16,13 +16,16 @@
 import type { BlobStore } from "./store";
 import {
   BlobTransferError,
+  isSha256BlobRef,
   type BlobRef,
   type CacheScope,
   type ProgressEvent,
 } from "./types";
+import { sha256Hex } from "./parquetCodec";
 import {
   HttpError,
   RetryableHttpError,
+  assertHttpsBlobUrl,
   createProgressEmitter,
   isAbortError,
   isRetryableStatus,
@@ -94,12 +97,21 @@ export const uploadFromStore = async (opts: UploadOptions): Promise<void> => {
     fetchImpl = fetch.bind(globalThis),
   } = opts;
 
+  assertHttpsBlobUrl(uploadUrl);
   if (chunkSize <= 0) throw new Error("chunkSize must be > 0");
   if (parallelism <= 0) throw new Error("parallelism must be > 0");
 
   if (signal?.aborted) throw toAbortError();
 
   const blob = await store.openRead(scope, ref);
+  if (isSha256BlobRef(ref)) {
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    const actual = await sha256Hex(bytes.buffer);
+    if (actual !== ref.toLowerCase()) {
+      await store.delete(scope, ref);
+      throw new Error(`Blob SHA-256 mismatch: expected ${ref}, got ${actual}`);
+    }
+  }
   const totalBytes = blob.size;
   const totalChunks = totalBytes === 0 ? 0 : Math.ceil(totalBytes / chunkSize);
 

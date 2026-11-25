@@ -17,7 +17,7 @@ const scope: CacheScope = {
   workspaceId: wsA,
   kind: "geoscience-object",
 };
-const ref: BlobRef = asBlobRef("test-ref");
+const ref: BlobRef = asBlobRef("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
 
 const SAS_URL =
   "https://acct.blob.core.windows.net/container/blob.dat" +
@@ -516,5 +516,32 @@ describe("uploadFromStore", () => {
     }
     const last = events[events.length - 1];
     expect(last?.transferred).toBe(data.byteLength);
+  });
+
+  it("rejects non-HTTPS upload URLs before cache access or fetch", async () => {
+    await expect(uploadFromStore({
+      store,
+      scope,
+      ref,
+      uploadUrl: "http://acct.blob.core.windows.net/container/blob.dat?sig=abc",
+      fetchImpl: vi.fn(),
+    })).rejects.toThrow(/HTTPS/);
+  });
+
+  it("rejects SHA-256 mismatches and evicts the corrupt cache entry", async () => {
+    const shaRef = asBlobRef("a".repeat(64));
+    await store.put(scope, shaRef, makeBytes(32));
+    const fx = setupMockFetch();
+
+    await expect(uploadFromStore({
+      store,
+      scope,
+      ref: shaRef,
+      uploadUrl: SAS_URL,
+      fetchImpl: fx.mock,
+    })).rejects.toThrow(/SHA-256 mismatch/);
+
+    expect(await store.has(scope, shaRef)).toBe(false);
+    expect(fx.callLog).toHaveLength(0);
   });
 });

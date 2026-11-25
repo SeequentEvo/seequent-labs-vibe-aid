@@ -45,7 +45,7 @@ const categoryBlueprint: AttachmentBlueprint = {
 
 describe("resolveIdentity", () => {
   it("returns a blob ref for a normal element", () => {
-    const node = { coordinates: { data: "hash123", length: 5, width: 3, data_type: "float64" } };
+    const node = { coordinates: { data: "00000000-0000-4000-8000-000000000001", length: 5, width: 3, data_type: "float64" } };
     const errors: PerEnvelopeError[] = [];
 
     const result = resolveIdentity(node, identityBlueprint, errors);
@@ -53,7 +53,7 @@ describe("resolveIdentity", () => {
     expect(errors).toHaveLength(0);
     expect(result).toEqual({
       kind: "blob",
-      blobRef: "hash123",
+      blobRef: "00000000-0000-4000-8000-000000000001",
       rowCount: 5,
       columns: ["x", "y", "z"],
       elementSchema: { dataType: "float64", width: 3 },
@@ -136,7 +136,7 @@ describe("resolveIdentity", () => {
 
 describe("resolveSchemaColumns", () => {
   it("returns a blob descriptor for a normal element", () => {
-    const node = { normals: { data: "hash456", length: 10, width: 2, data_type: "float64" } };
+    const node = { normals: { data: "00000000-0000-4000-8000-000000000001", length: 10, width: 2, data_type: "float64" } };
     const errors: PerEnvelopeError[] = [];
 
     const result = resolveSchemaColumns(node, schemaColumnBlueprint, errors);
@@ -148,7 +148,7 @@ describe("resolveSchemaColumns", () => {
       id: "normals",
       label: "Normals",
       columns: ["nx", "ny", "nz"],
-      blobRef: "hash456",
+      blobRef: "00000000-0000-4000-8000-000000000001",
       rowCount: 10,
       elementSchema: { dataType: "float64", width: 2 },
     });
@@ -203,8 +203,8 @@ describe("resolveCategoryColumns", () => {
   it("returns a blob descriptor when both values and table have data", () => {
     const node = {
       hole_id: {
-        values: { data: "v-hash", length: 5 },
-        table: { data: "t-hash" },
+        values: { data: "00000000-0000-4000-8000-000000000001", length: 5 },
+        table: { data: "00000000-0000-4000-8000-000000000001" },
       },
     };
     const errors: PerEnvelopeError[] = [];
@@ -217,8 +217,8 @@ describe("resolveCategoryColumns", () => {
       kind: "blob",
       id: "hole_id",
       label: "Hole ID",
-      codesBlobRef: "v-hash",
-      lookupBlobRef: "t-hash",
+      codesBlobRef: "00000000-0000-4000-8000-000000000001",
+      lookupBlobRef: "00000000-0000-4000-8000-000000000001",
       rowCount: 5,
     });
   });
@@ -248,7 +248,7 @@ describe("resolveCategoryColumns", () => {
     const node = {
       hole_id: {
         values: { data: null, length: 0 },
-        table: { data: "t-hash" },
+        table: { data: "00000000-0000-4000-8000-000000000001" },
       },
     };
     const errors: PerEnvelopeError[] = [];
@@ -264,7 +264,7 @@ describe("resolveCategoryColumns", () => {
   it("pushes an error when values has data but table is null", () => {
     const node = {
       hole_id: {
-        values: { data: "v-hash", length: 5 },
+        values: { data: "00000000-0000-4000-8000-000000000001", length: 5 },
         table: { data: null },
       },
     };

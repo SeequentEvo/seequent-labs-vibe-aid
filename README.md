@@ -118,8 +118,8 @@ src/
 - [AGENTS.md](AGENTS.md) — instructions and skills for AI coding agents
 - [Seequent Evo](https://evo.seequent.com/) — Seequent Evo data platform
 - [Seequent Evo Developer Docs](https://developer.seequent.com/) — API reference and guides
+- [SECURITY.md](SECURITY.md) — coordinated vulnerability disclosure policy
 
 ## License
 
 [Apache 2.0](LICENSE.md) © 2026 Bentley Systems, Incorporated.
-

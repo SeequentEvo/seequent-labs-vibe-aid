@@ -1,14 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
-import { handleCallback, selectAuthStatus, selectAuthError } from "@/store/authSlice";
+import { handleCallback, selectAuthStatus } from "@/store/authSlice";
 
 export default function Callback() {
   const [searchParams] = useSearchParams();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const status = useAppSelector(selectAuthStatus);
-  const error = useAppSelector(selectAuthError);
   const hasStarted = useRef(false);
 
   useEffect(() => {
@@ -20,13 +19,12 @@ export default function Callback() {
     const oauthError = searchParams.get("error");
 
     if (oauthError) {
-      const description = searchParams.get("error_description") ?? oauthError;
-      navigate(`/error?message=${encodeURIComponent(description)}`, { replace: true });
+      navigate("/error", { replace: true, state: { code: "auth_provider_rejected" } });
       return;
     }
 
     if (!code || !state) {
-      navigate("/error?message=Missing+authorization+code+or+state", { replace: true });
+      navigate("/error", { replace: true, state: { code: "invalid_callback" } });
       return;
     }
 
@@ -46,7 +44,7 @@ export default function Callback() {
           <h1 className="text-2xl font-bold text-red-600 mb-4">
             Authentication Failed
           </h1>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <p className="text-gray-600 mb-6">Authentication could not be completed.</p>
           <a
             href="/login"
             className="text-blue-600 hover:text-blue-700 font-medium"

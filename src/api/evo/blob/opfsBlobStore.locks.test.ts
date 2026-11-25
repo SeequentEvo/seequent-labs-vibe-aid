@@ -278,7 +278,7 @@ const scope = (): CacheScope => ({
   workspaceId: WS,
   kind: "geoscience-object",
 });
-const ref = (s: string) => asBlobRef(s);
+const ref = (s: string) => asBlobRef(`00000000-0000-4000-8000-${s.charCodeAt(0).toString(16).padStart(12, "0")}`);
 const bytes = (s: string) => new TextEncoder().encode(s);
 const flush = () => new Promise((r) => setTimeout(r, 80));
 
@@ -317,12 +317,12 @@ describe("OpfsBlobStore — multi-tab safety", () => {
     ]);
 
     // Per-ref write lock name is content-keyed.
-    const writeLockName = `evo-blob-cache:write:${ORG}/${WS}/geoscience-object/dup`;
+    const writeLockName = `evo-blob-cache:write:${ORG}/${WS}/geoscience-object/${String(ref("dup"))}`;
     locks.assertSerialisedFor(writeLockName);
 
     // Only one blob write to the data file (the second put short-circuited
     // because `has` returned true after the first finished).
-    const blobWrites = writes.byName.get("dup") ?? 0;
+    const blobWrites = writes.byName.get(String(ref("dup"))) ?? 0;
     expect(blobWrites).toBe(1);
     // Index file may have been written more than once but the data file
     // for `dup` was only written once, proving the second put short-circuited.
@@ -339,8 +339,8 @@ describe("OpfsBlobStore — multi-tab safety", () => {
 
     // Both per-ref write locks exist, distinct names, never serialised
     // against each other (different lock names, by construction).
-    const aName = `evo-blob-cache:write:${ORG}/${WS}/geoscience-object/a`;
-    const bName = `evo-blob-cache:write:${ORG}/${WS}/geoscience-object/b`;
+    const aName = `evo-blob-cache:write:${ORG}/${WS}/geoscience-object/${String(ref("a"))}`;
+    const bName = `evo-blob-cache:write:${ORG}/${WS}/geoscience-object/${String(ref("b"))}`;
     const aEvts = locks.events.filter((e) => e.name === aName);
     const bEvts = locks.events.filter((e) => e.name === bName);
     expect(aEvts.length).toBe(1);
@@ -354,8 +354,8 @@ describe("OpfsBlobStore — multi-tab safety", () => {
     expect(indexSpans.length).toBeGreaterThanOrEqual(2);
     locks.assertSerialisedFor("evo-blob-cache:index");
 
-    expect(writes.byName.get("a")).toBe(1);
-    expect(writes.byName.get("b")).toBe(1);
+    expect(writes.byName.get(String(ref("a")))).toBe(1);
+    expect(writes.byName.get(String(ref("b")))).toBe(1);
   });
 
   it("reloads index from disk when another tab bumped its mtime", async () => {
@@ -383,7 +383,7 @@ describe("OpfsBlobStore — multi-tab safety", () => {
           orgId: ORG,
           workspaceId: WS,
           kind: "geoscience-object",
-          ref: "a",
+          ref: String(ref("a")),
           sizeBytes: 6,
           lastAccessMs: Date.now(),
         },
@@ -391,7 +391,7 @@ describe("OpfsBlobStore — multi-tab safety", () => {
           orgId: ORG,
           workspaceId: WS,
           kind: "geoscience-object",
-          ref: "from-other-tab",
+          ref: String(ref("from-other-tab")),
           sizeBytes: 3,
           lastAccessMs: Date.now(),
         },

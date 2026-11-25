@@ -146,7 +146,7 @@ describe("blob layer — end-to-end integration", () => {
     const store = new InMemoryBlobStore();
     const built = await buildTable([1, 2], ["a", "b"]);
     const encoded = await encodeParquet(built.table);
-    const ref = asBlobRef("cached-ref-shortcircuit");
+    const ref = asBlobRef("00000000-0000-4000-8000-000000000001");
 
     const fixture = newUploadFixture(ref);
     fixture.server.preload(fixture.path, encoded);
@@ -195,7 +195,7 @@ describe("blob layer — end-to-end integration", () => {
       for (let i = 0; i < 10; i += 1) {
         // Use distinct refs so each blob occupies its own cache slot. The
         // bytes-on-the-wire are identical so we can re-use `encoded`.
-        const ref = asBlobRef(`load-batch-ref-${String(i).padStart(2, "0")}`);
+        const ref = asBlobRef(`00000000-0000-4000-8000-${String(i).padStart(12, "0")}`);
         refs.push(ref);
         const path = `/container/${ref}`;
         server.preload(path, encoded);
@@ -247,7 +247,7 @@ describe("blob layer — end-to-end integration", () => {
     const store = new InMemoryBlobStore();
     const built = await buildTable();
     const encoded = await encodeParquet(built.table);
-    const ref = asBlobRef("concurrent-read-ref");
+    const ref = asBlobRef("00000000-0000-4000-8000-000000000005");
 
     const server = new MockAzureServer({ delayMs: 20 });
     const path = `/container/${ref}`;
@@ -292,7 +292,7 @@ describe("blob layer — end-to-end integration", () => {
     const payload = new Uint8Array(totalSize);
     for (let i = 0; i < totalSize; i += 1) payload[i] = i & 0xff;
 
-    const ref = asBlobRef("abort-mid-download-ref");
+    const ref = asBlobRef("00000000-0000-4000-8000-000000000003");
     const server = new MockAzureServer({ delayMs: 25 });
     const path = `/container/${ref}`;
     server.preload(path, payload);
@@ -332,7 +332,7 @@ describe("blob layer — end-to-end integration", () => {
     const encoded = await encodeParquet(built.table);
     const totalSize = encoded.byteLength;
 
-    const ref = asBlobRef("progress-multichunk-ref");
+    const ref = asBlobRef("00000000-0000-4000-8000-000000000004");
     // Per-chunk delay > download.ts PROGRESS_THROTTLE_MS (50) so each chunk
     // produces its own progress event rather than being coalesced.
     const server = new MockAzureServer({ delayMs: 60 });

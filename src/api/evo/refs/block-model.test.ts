@@ -178,4 +178,11 @@ describe('EvoBlockModelRef — opaque versionId round-trip', () => {
     expect(roundTripped.versionId).toBe(OPAQUE_VERSION);
     expect(roundTripped.equals(ref)).toBe(true);
   });
+
+  it('encodes and round-trips special characters in opaque versionId', () => {
+    const opaqueVersion = 'release/one #2';
+    const ref = EvoBlockModelRef.fromIds({ hubUrl: HUB, orgId: ORG_ID, workspaceId: WS_ID, bmId: BM_ID, versionId: opaqueVersion });
+    expect(ref.toUrl()).toContain('/versions/release%2Fone%20%232');
+    expect(EvoBlockModelRef.fromUrl(ref.toUrl()).equals(ref)).toBe(true);
+  });
 });

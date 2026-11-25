@@ -147,6 +147,13 @@ Key details:
 - Azure returns `206 Partial Content` with a `Content-Range` response header.
 - Failed chunks can be retried individually.
 
+## CSP and domain pinning
+
+If a browser CSP violation blocks a pre-signed URL, add only the exact host that the Evo API
+response returned. Do not replace the CSP with `https:` or `https://*` to silence browser
+errors. Do not send the Evo bearer token to a pre-signed Blob URL; pre-signed URLs carry their
+own SAS authorization. Validate the URL scheme and obtain it only from an Evo API response.
+
 ## Choosing a strategy
 
 | Factor | Simple | Chunked |

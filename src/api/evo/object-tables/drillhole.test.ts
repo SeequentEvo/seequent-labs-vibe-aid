@@ -108,17 +108,17 @@ describe("describeObject — downhole-intervals", () => {
   function makeIntervalsObject(holeIdCodes: string, holeIdTable: string) {
     return {
       start: {
-        coordinates: { width: 3, data_type: "float64", length: 5, data: "start-hash" },
+        coordinates: { width: 3, data_type: "float64", length: 5, data: "00000000-0000-4000-8000-000000000001" },
       },
       end: {
-        coordinates: { width: 3, data_type: "float64", length: 5, data: "end-hash" },
+        coordinates: { width: 3, data_type: "float64", length: 5, data: "00000000-0000-4000-8000-000000000001" },
       },
       mid_points: {
-        coordinates: { width: 3, data_type: "float64", length: 5, data: "mid-hash" },
+        coordinates: { width: 3, data_type: "float64", length: 5, data: "00000000-0000-4000-8000-000000000001" },
       },
       from_to: {
         intervals: {
-          start_and_end: { width: 2, data_type: "float64", length: 5, data: "ft-hash" },
+          start_and_end: { width: 2, data_type: "float64", length: 5, data: "00000000-0000-4000-8000-000000000001" },
         },
       },
       hole_id: {
@@ -131,7 +131,7 @@ describe("describeObject — downhole-intervals", () => {
   }
 
   it("produces a single attachment with identity, schema columns, and category columns", () => {
-    const obj = makeIntervalsObject("codes-hash", "lookup-hash");
+    const obj = makeIntervalsObject("00000000-0000-4000-8000-000000000002", "00000000-0000-4000-8000-000000000003");
     const envelope = makeEnvelope(SCHEMA, obj, []);
     const desc = describeObject(envelope);
 
@@ -160,7 +160,7 @@ describe("describeObject — downhole-intervals", () => {
   it("matches multiple v1 versions", () => {
     for (const v of ["1.0.1", "1.1.0", "1.2.0", "1.3.0"]) {
       const schema = `/objects/downhole-intervals/${v}/downhole-intervals.schema.json`;
-      const obj = makeIntervalsObject("c", "l");
+      const obj = makeIntervalsObject("00000000-0000-4000-8000-000000000002", "00000000-0000-4000-8000-000000000003");
       const envelope = makeEnvelope(schema, obj, []);
       expect(describeObject(envelope).kind).toBe("supported");
     }
@@ -168,7 +168,7 @@ describe("describeObject — downhole-intervals", () => {
 
   it("rejects major version 2", () => {
     const schema = "/objects/downhole-intervals/2.0.0/downhole-intervals.schema.json";
-    const obj = makeIntervalsObject("c", "l");
+    const obj = makeIntervalsObject("00000000-0000-4000-8000-000000000002", "00000000-0000-4000-8000-000000000003");
     const envelope = makeEnvelope(schema, obj, []);
     expect(describeObject(envelope).kind).toBe("unsupported");
   });
@@ -199,14 +199,14 @@ describe("loadAttachment — downhole-intervals category columns", () => {
         coordinates: { width: 3, data_type: "float64", length: N, data: startBlob.ref },
       },
       end: {
-        coordinates: { width: 3, data_type: "float64", length: N, data: "end-h" },
+        coordinates: { width: 3, data_type: "float64", length: N, data: "00000000-0000-4000-8000-000000000001" },
       },
       mid_points: {
-        coordinates: { width: 3, data_type: "float64", length: N, data: "mid-h" },
+        coordinates: { width: 3, data_type: "float64", length: N, data: "00000000-0000-4000-8000-000000000001" },
       },
       from_to: {
         intervals: {
-          start_and_end: { width: 2, data_type: "float64", length: N, data: "ft-h" },
+          start_and_end: { width: 2, data_type: "float64", length: N, data: "00000000-0000-4000-8000-000000000001" },
         },
       },
       hole_id: {
@@ -268,18 +268,18 @@ describe("describeObject — downhole-collection", () => {
   ) {
     return {
       location: {
-        coordinates: { width: 3, data_type: "float64", length: 10, data: "coord-hash" },
-        distances: { width: 3, data_type: "float64", length: 10, data: "dist-hash" },
-        holes: { width: 3, data_type: "int32/uint64/uint64", length: 10, data: "holes-hash" },
+        coordinates: { width: 3, data_type: "float64", length: 10, data: "00000000-0000-4000-8000-000000000001" },
+        distances: { width: 3, data_type: "float64", length: 10, data: "00000000-0000-4000-8000-000000000001" },
+        holes: { width: 3, data_type: "int32/uint64/uint64", length: 10, data: "00000000-0000-4000-8000-000000000001" },
         hole_id: {
-          values: { data_type: "int32", length: 10, data: "codes-hash" },
-          table: { keys_data_type: "int32", values_data_type: "string", length: 3, data: "lookup-hash" },
+          values: { data_type: "int32", length: 10, data: "00000000-0000-4000-8000-000000000001" },
+          table: { keys_data_type: "int32", values_data_type: "string", length: 3, data: "00000000-0000-4000-8000-000000000001" },
         },
         path: {
           width: 3,
           data_type: "float64",
           length: 10,
-          data: "path-hash",
+          data: "00000000-0000-4000-8000-000000000001",
           attributes: [],
         },
         attributes: [],
@@ -318,10 +318,10 @@ describe("describeObject — downhole-collection", () => {
       {
         name: "assays",
         collection_type: "interval",
-        holes: { width: 3, data_type: "int32", length: 5, data: "h1" },
+        holes: { width: 3, data_type: "int32", length: 5, data: "00000000-0000-4000-8000-000000000001" },
         from_to: {
           intervals: {
-            start_and_end: { width: 2, data_type: "float64", length: 5, data: "ft1" },
+            start_and_end: { width: 2, data_type: "float64", length: 5, data: "00000000-0000-4000-8000-000000000001" },
           },
           attributes: [],
         },
@@ -329,9 +329,9 @@ describe("describeObject — downhole-collection", () => {
       {
         name: "survey",
         collection_type: "distance",
-        holes: { width: 3, data_type: "int32", length: 8, data: "h2" },
+        holes: { width: 3, data_type: "int32", length: 8, data: "00000000-0000-4000-8000-000000000001" },
         distance: {
-          values: { width: 1, data_type: "float64", length: 8, data: "d1" },
+          values: { width: 1, data_type: "float64", length: 8, data: "00000000-0000-4000-8000-000000000001" },
           attributes: [],
         },
       },
@@ -367,45 +367,45 @@ describe("describeObject — downhole-collection", () => {
     const obj = makeCollectionObject([
       {
         name: "t1", collection_type: "data",
-        holes: { width: 3, data_type: "int32", length: 3, data: "h" },
+        holes: { width: 3, data_type: "int32", length: 3, data: "00000000-0000-4000-8000-000000000001" },
         attributes: [],
       },
       {
         name: "t2", collection_type: "distance",
-        holes: { width: 3, data_type: "int32", length: 3, data: "h" },
+        holes: { width: 3, data_type: "int32", length: 3, data: "00000000-0000-4000-8000-000000000001" },
         distance: {
-          values: { width: 1, data_type: "float64", length: 3, data: "d" },
+          values: { width: 1, data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" },
           attributes: [],
         },
       },
       {
         name: "t3", collection_type: "interval",
-        holes: { width: 3, data_type: "int32", length: 3, data: "h" },
+        holes: { width: 3, data_type: "int32", length: 3, data: "00000000-0000-4000-8000-000000000001" },
         from_to: {
           intervals: {
-            start_and_end: { width: 2, data_type: "float64", length: 3, data: "ft" },
+            start_and_end: { width: 2, data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" },
           },
           attributes: [],
         },
       },
       {
         name: "t4", collection_type: "planar",
-        holes: { width: 3, data_type: "int32", length: 3, data: "h" },
+        holes: { width: 3, data_type: "int32", length: 3, data: "00000000-0000-4000-8000-000000000001" },
         distance: {
-          values: { width: 1, data_type: "float64", length: 3, data: "d" },
+          values: { width: 1, data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" },
           attributes: [],
         },
-        relative_plane_angles: { width: 2, data_type: "float64", length: 3, data: "pa" },
-        plane_polarity: { width: 1, data_type: "bool", length: 3, data: "pp" },
+        relative_plane_angles: { width: 2, data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" },
+        plane_polarity: { width: 1, data_type: "bool", length: 3, data: "00000000-0000-4000-8000-000000000001" },
       },
       {
         name: "t5", collection_type: "lineation",
-        holes: { width: 3, data_type: "int32", length: 3, data: "h" },
+        holes: { width: 3, data_type: "int32", length: 3, data: "00000000-0000-4000-8000-000000000001" },
         distance: {
-          values: { width: 1, data_type: "float64", length: 3, data: "d" },
+          values: { width: 1, data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" },
           attributes: [],
         },
-        relative_lineation_angles: { width: 3, data_type: "float64", length: 3, data: "la" },
+        relative_lineation_angles: { width: 3, data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" },
       },
     ]);
 
@@ -469,7 +469,7 @@ describe("describeObject — drilling-campaign", () => {
             width: 6,
             data_type: "float64",
             length: 4,
-            data: "nat-path-hash",
+            data: "00000000-0000-4000-8000-000000000001",
             attributes: [],
           }
         : {
@@ -478,27 +478,27 @@ describe("describeObject — drilling-campaign", () => {
               width: 8,
               data_type: "float64",
               length: 4,
-              data: "mixed-seg-hash",
+              data: "00000000-0000-4000-8000-000000000001",
             },
             segment_type: {
               width: 1,
               data_type: "string",
               length: 4,
-              data: "seg-type-hash",
+              data: "00000000-0000-4000-8000-000000000001",
             },
             attributes: [],
           };
 
     const obj: Record<string, unknown> = {
       hole_id: {
-        values: { data_type: "int32", length: 4, data: "hid-codes" },
-        table: { keys_data_type: "int32", values_data_type: "string", length: 2, data: "hid-lookup" },
+        values: { data_type: "int32", length: 4, data: "00000000-0000-4000-8000-000000000001" },
+        table: { keys_data_type: "int32", values_data_type: "string", length: 2, data: "00000000-0000-4000-8000-000000000001" },
       },
       planned: {
         collar: {
-          coordinates: { width: 3, data_type: "float64", length: 4, data: "pc-coord" },
-          distances: { width: 3, data_type: "float64", length: 4, data: "pc-dist" },
-          holes: { width: 3, data_type: "int32", length: 4, data: "pc-holes" },
+          coordinates: { width: 3, data_type: "float64", length: 4, data: "00000000-0000-4000-8000-000000000001" },
+          distances: { width: 3, data_type: "float64", length: 4, data: "00000000-0000-4000-8000-000000000001" },
+          holes: { width: 3, data_type: "int32", length: 4, data: "00000000-0000-4000-8000-000000000001" },
           attributes: [],
         },
         path: pathNode,
@@ -511,16 +511,16 @@ describe("describeObject — drilling-campaign", () => {
     if (options.withInterim) {
       obj["interim"] = {
         collar: {
-          coordinates: { width: 3, data_type: "float64", length: 2, data: "ic-coord" },
-          distances: { width: 3, data_type: "float64", length: 2, data: "ic-dist" },
-          holes: { width: 3, data_type: "int32", length: 2, data: "ic-holes" },
+          coordinates: { width: 3, data_type: "float64", length: 2, data: "00000000-0000-4000-8000-000000000001" },
+          distances: { width: 3, data_type: "float64", length: 2, data: "00000000-0000-4000-8000-000000000001" },
+          holes: { width: 3, data_type: "int32", length: 2, data: "00000000-0000-4000-8000-000000000001" },
           attributes: [],
         },
         path: {
           width: 3,
           data_type: "float64",
           length: 2,
-          data: "ip-hash",
+          data: "00000000-0000-4000-8000-000000000001",
           attributes: [],
         },
         collections: [],
@@ -614,10 +614,10 @@ describe("describeObject — drilling-campaign", () => {
         {
           name: "lithology",
           collection_type: "interval",
-          holes: { width: 3, data_type: "int32", length: 3, data: "h" },
+          holes: { width: 3, data_type: "int32", length: 3, data: "00000000-0000-4000-8000-000000000001" },
           from_to: {
             intervals: {
-              start_and_end: { width: 2, data_type: "float64", length: 3, data: "ft" },
+              start_and_end: { width: 2, data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" },
             },
             attributes: [],
           },
@@ -678,14 +678,14 @@ describe("composite dtype — downhole-collection holes", () => {
   it("resolves holes schema column with composite dtype", () => {
     const obj = {
       location: {
-        coordinates: { width: 3, data_type: "float64", length: 5, data: "coord" },
-        distances: { width: 3, data_type: "float64", length: 5, data: "dist" },
-        holes: { width: 3, data_type: "int32/uint64/uint64", length: 5, data: "holes" },
+        coordinates: { width: 3, data_type: "float64", length: 5, data: "00000000-0000-4000-8000-000000000001" },
+        distances: { width: 3, data_type: "float64", length: 5, data: "00000000-0000-4000-8000-000000000001" },
+        holes: { width: 3, data_type: "int32/uint64/uint64", length: 5, data: "00000000-0000-4000-8000-000000000001" },
         hole_id: {
-          values: { data_type: "int32", length: 5, data: "c" },
-          table: { keys_data_type: "int32", values_data_type: "string", length: 2, data: "l" },
+          values: { data_type: "int32", length: 5, data: "00000000-0000-4000-8000-000000000001" },
+          table: { keys_data_type: "int32", values_data_type: "string", length: 2, data: "00000000-0000-4000-8000-000000000001" },
         },
-        path: { width: 3, data_type: "float64", length: 5, data: "p", attributes: [] },
+        path: { width: 3, data_type: "float64", length: 5, data: "00000000-0000-4000-8000-000000000001", attributes: [] },
         attributes: [],
       },
       collections: [],
@@ -716,14 +716,14 @@ describe("buildCollectionAttachments — edge cases", () => {
   it("returns no dynamic attachments for empty collections array", () => {
     const obj = {
       location: {
-        coordinates: { width: 3, data_type: "float64", length: 1, data: "c" },
-        distances: { width: 3, data_type: "float64", length: 1, data: "d" },
-        holes: { width: 3, data_type: "int32", length: 1, data: "h" },
+        coordinates: { width: 3, data_type: "float64", length: 1, data: "00000000-0000-4000-8000-000000000001" },
+        distances: { width: 3, data_type: "float64", length: 1, data: "00000000-0000-4000-8000-000000000001" },
+        holes: { width: 3, data_type: "int32", length: 1, data: "00000000-0000-4000-8000-000000000001" },
         hole_id: {
-          values: { data_type: "int32", length: 1, data: "cv" },
-          table: { keys_data_type: "int32", values_data_type: "string", length: 1, data: "cl" },
+          values: { data_type: "int32", length: 1, data: "00000000-0000-4000-8000-000000000001" },
+          table: { keys_data_type: "int32", values_data_type: "string", length: 1, data: "00000000-0000-4000-8000-000000000001" },
         },
-        path: { width: 3, data_type: "float64", length: 1, data: "p", attributes: [] },
+        path: { width: 3, data_type: "float64", length: 1, data: "00000000-0000-4000-8000-000000000001", attributes: [] },
         attributes: [],
       },
       collections: [],
@@ -747,20 +747,20 @@ describe("buildCollectionAttachments — edge cases", () => {
   it("uses index-based fallback name when collection has no name", () => {
     const obj = {
       location: {
-        coordinates: { width: 3, data_type: "float64", length: 1, data: "c" },
-        distances: { width: 3, data_type: "float64", length: 1, data: "d" },
-        holes: { width: 3, data_type: "int32", length: 1, data: "h" },
+        coordinates: { width: 3, data_type: "float64", length: 1, data: "00000000-0000-4000-8000-000000000001" },
+        distances: { width: 3, data_type: "float64", length: 1, data: "00000000-0000-4000-8000-000000000001" },
+        holes: { width: 3, data_type: "int32", length: 1, data: "00000000-0000-4000-8000-000000000001" },
         hole_id: {
-          values: { data_type: "int32", length: 1, data: "cv" },
-          table: { keys_data_type: "int32", values_data_type: "string", length: 1, data: "cl" },
+          values: { data_type: "int32", length: 1, data: "00000000-0000-4000-8000-000000000001" },
+          table: { keys_data_type: "int32", values_data_type: "string", length: 1, data: "00000000-0000-4000-8000-000000000001" },
         },
-        path: { width: 3, data_type: "float64", length: 1, data: "p", attributes: [] },
+        path: { width: 3, data_type: "float64", length: 1, data: "00000000-0000-4000-8000-000000000001", attributes: [] },
         attributes: [],
       },
       collections: [
         {
           collection_type: "data",
-          holes: { width: 3, data_type: "int32", length: 3, data: "h" },
+          holes: { width: 3, data_type: "int32", length: 3, data: "00000000-0000-4000-8000-000000000001" },
           attributes: [],
         },
       ],

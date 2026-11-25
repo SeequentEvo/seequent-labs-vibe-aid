@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { z } from "zod";
 import { assertOk, evoFetch } from "./fetch";
 import { EvoApiError, EvoNetworkError, EvoSchemaError } from "./errors";
+import { clearEvoOrigins, registerEvoOrigins } from "./allowlist";
 
 type FetchMock = ReturnType<typeof vi.fn<typeof fetch>>;
 
@@ -34,6 +35,9 @@ function emptyResponse(status: number): Response {
 let fetchMock: FetchMock;
 
 beforeEach(() => {
+  clearEvoOrigins();
+  registerEvoOrigins(["https://hub.example.com", "https://discover.api.seequent.com"]);
+
   fetchMock = vi.fn<typeof fetch>();
   vi.stubGlobal("fetch", fetchMock);
 });
@@ -339,5 +343,34 @@ describe("assertOk", () => {
     expect(api.method).toBe("PATCH");
     expect(api.body).toEqual(error);
     expect(api.rawBody).toBe(JSON.stringify(error));
+  });
+});
+
+describe("evoFetch — events", () => {
+  it("401 emits the unauthorized session event", async () => {
+    const dispatchEvent = vi.fn();
+    vi.stubGlobal("window", { dispatchEvent });
+    fetchMock.mockResolvedValueOnce(jsonResponse(401, {
+      title: "Unauthorized",
+      status: 401,
+    }));
+
+    const result = await evoFetch({ url: URL_, accessToken: TOKEN });
+
+    expect(result.ok).toBe(false);
+    expect(result.status).toBe(401);
+    expect(dispatchEvent).toHaveBeenCalledOnce();
+    expect(dispatchEvent.mock.calls[0]?.[0]).toBeInstanceOf(CustomEvent);
+    expect((dispatchEvent.mock.calls[0]?.[0] as CustomEvent).type).toBe("evo:unauthorized");
+  });
+});
+
+describe("evoFetch — trusted origins", () => {
+  it("rejects bearer requests to an unregistered origin", async () => {
+    await expect(evoFetch({
+      url: "https://attacker.example/api",
+      accessToken: TOKEN,
+    })).rejects.toThrow(/untrusted origin/i);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
