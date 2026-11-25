@@ -56,7 +56,12 @@ const discoveryResponseSchema = z.object({
 const DISCOVERY_PATH = "/evo/identity/v2/discovery";
 
 function getDiscoveryBaseUrl(): string {
-  return import.meta.env.VITE_EVO_DISCOVERY_BASE_URL.replace(/\/+$/, "");
+  const configured = import.meta.env.VITE_EVO_DISCOVERY_BASE_URL;
+  const baseUrl =
+    typeof configured === "string" && configured.length > 0
+      ? configured
+      : "https://discover.api.seequent.com";
+  return baseUrl.replace(/\/+$/, "");
 }
 
 /** Fetch the discovery response for all Evo services. */
