@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import type { Workspace } from "@/types/evo";
 import type { OrgId } from "@/types/ids";
 import { getWorkspaceThumbnailUrl } from "@/api/evo";
+import { assertEvoBearerUrl } from "@/api/evo/allowlist";
 
 // Tracks workspace thumbnails that returned 404/error to avoid repeated requests on re-mount.
 const failedThumbnails = new Set<string>();
@@ -34,6 +35,13 @@ export default function WorkspaceCard({
     const url = getWorkspaceThumbnailUrl(hubUrl, orgId, workspace.id);
     let revoked = false;
     let objectUrl: string | null = null;
+
+    try {
+      assertEvoBearerUrl(url);
+    } catch {
+      failedThumbnails.add(cacheKey);
+      return;
+    }
 
     fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } })
       .then((res) => {

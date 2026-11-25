@@ -76,7 +76,7 @@ export class EvoBlockModelRef extends WorkspaceScopedRef {
           `URL has 'versions' segment but no versionId, got: ${JSON.stringify(url)}`,
         );
       }
-      resolvedVersionId = versionId;
+      resolvedVersionId = decodeURIComponent(versionId);
     }
 
     const hubUrl = `${parsed.protocol}//${parsed.host}`;
@@ -86,7 +86,7 @@ export class EvoBlockModelRef extends WorkspaceScopedRef {
   toUrl(): string {
     const base = `${this.hubUrl}/blockmodel/orgs/${this.orgId}/workspaces/${this.workspaceId}/block-models/${this.bmId}`;
     if (this.versionId !== null) {
-      return `${base}/versions/${this.versionId}`;
+      return `${base}/versions/${encodeURIComponent(this.versionId)}`;
     }
     return base;
   }

@@ -5,6 +5,7 @@ import { clearInstance } from "@/store/instanceSlice";
 import { clearWorkspaces } from "@/store/workspacesSlice";
 import { buildLogoutUrl } from "@/api/auth";
 import { getBlobStore } from "@/api/evo/blob";
+import { clearEvoOrigins } from "@/api/evo/allowlist";
 
 export default function Logout() {
   const dispatch = useAppDispatch();
@@ -30,6 +31,8 @@ export default function Logout() {
       dispatch(clearWorkspaces());
       dispatch(clearInstance());
       dispatch(logout());
+      clearEvoOrigins();
+
       window.location.href = logoutUrl;
     })();
   }, [dispatch, idToken]);

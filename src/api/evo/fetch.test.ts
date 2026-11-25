@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { z } from "zod";
 import { assertOk, evoFetch } from "./fetch";
 import { EvoApiError, EvoNetworkError, EvoSchemaError } from "./errors";
+import { clearEvoOrigins, registerEvoOrigins } from "./allowlist";
 
 type FetchMock = ReturnType<typeof vi.fn<typeof fetch>>;
 
@@ -34,6 +35,9 @@ function emptyResponse(status: number): Response {
 let fetchMock: FetchMock;
 
 beforeEach(() => {
+  clearEvoOrigins();
+  registerEvoOrigins(["https://hub.example.com", "https://discover.api.seequent.com"]);
+
   fetchMock = vi.fn<typeof fetch>();
   vi.stubGlobal("fetch", fetchMock);
 });
@@ -358,5 +362,15 @@ describe("evoFetch — events", () => {
     expect(dispatchEvent).toHaveBeenCalledOnce();
     expect(dispatchEvent.mock.calls[0]?.[0]).toBeInstanceOf(CustomEvent);
     expect((dispatchEvent.mock.calls[0]?.[0] as CustomEvent).type).toBe("evo:unauthorized");
+  });
+});
+
+describe("evoFetch — trusted origins", () => {
+  it("rejects bearer requests to an unregistered origin", async () => {
+    await expect(evoFetch({
+      url: "https://attacker.example/api",
+      accessToken: TOKEN,
+    })).rejects.toThrow(/untrusted origin/i);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

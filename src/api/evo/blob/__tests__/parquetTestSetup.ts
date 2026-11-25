@@ -13,3 +13,11 @@ const mod = await import("parquet-wasm/esm");
 const wasmUrl = import.meta.resolve("parquet-wasm/esm/parquet_wasm_bg.wasm");
 const bytes = await readFile(new URL(wasmUrl));
 await mod.default({ module_or_path: bytes });
+
+const { registerEvoOrigins } = await import("@/api/evo/allowlist");
+registerEvoOrigins([
+  "https://au1.evo.seequent.com",
+  "https://hub.example.com",
+  "https://us.example.com",
+  "https://discover.api.seequent.com",
+]);

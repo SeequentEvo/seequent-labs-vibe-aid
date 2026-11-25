@@ -11,6 +11,8 @@ import { z } from "zod";
 import type { DiscoveryResponse, EvoInstance } from "@/types/evo";
 import { orgIdSchema, parseHubCode } from "@/types/ids";
 import { assertOk, evoFetch } from "./fetch";
+import { registerEvoOrigins } from "./allowlist";
+import { normaliseHubUrl } from "./refs/base";
 
 // ---------------------------------------------------------------------------
 // Zod schema — validates shape + brands UUID/opaque IDs
@@ -62,6 +64,7 @@ export async function fetchDiscovery(
   accessToken: string,
 ): Promise<DiscoveryResponse> {
   const url = `${getDiscoveryBaseUrl()}${DISCOVERY_PATH}?service=evo`;
+  registerEvoOrigins([getDiscoveryBaseUrl()]);
   const result = await evoFetch({
     url,
     accessToken,
@@ -80,7 +83,7 @@ export function resolveInstances(
 ): EvoInstance[] {
   const { organizations, service_access, hubs } = response.discovery;
 
-  return organizations
+  const instances = organizations
     .map((org) => {
       const access = service_access.find((sa) => sa.org_id === org.id);
       const hub = access
@@ -92,10 +95,13 @@ export function resolveInstances(
       return {
         id: org.id,
         displayName: org.display_name,
-        hubUrl: hub.url,
+        hubUrl: normaliseHubUrl(hub.url),
         hubCode: parseHubCode(hub.code),
         hubDisplayName: hub.display_name,
       } satisfies EvoInstance;
     })
     .filter((instance): instance is EvoInstance => instance !== null);
+
+  registerEvoOrigins(instances.map((instance) => instance.hubUrl));
+  return instances;
 }

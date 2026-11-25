@@ -54,7 +54,7 @@ function summaryFixture(objectId: string, name = "topography.json") {
   return {
     object_id: objectId,
     name,
-    path: `/surfaces/`,
+    path: "surfaces",
     schema: "/objects/pointset/2.0.0/pointset.schema.json",
     version_id: VERSION_ID,
     etag: "etag-123",

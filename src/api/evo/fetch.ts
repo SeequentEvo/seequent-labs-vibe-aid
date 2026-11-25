@@ -27,6 +27,7 @@ import {
   evoStructuredErrorSchema,
 } from "./errors";
 import type { EvoStructuredError } from "./errors";
+import { assertEvoBearerUrl } from "./allowlist";
 
 export type EvoMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -116,6 +117,8 @@ function tryParseStructuredError(
 export async function evoFetch<T = unknown>(
   opts: EvoFetchOptions<T>,
 ): Promise<EvoResult<T>> {
+  assertEvoBearerUrl(opts.url);
+
   const method: EvoMethod = opts.method ?? "GET";
   const headers: Record<string, string> = {
     Authorization: `Bearer ${opts.accessToken}`,

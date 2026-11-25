@@ -1,17 +1,37 @@
 import type { OrgId, WorkspaceId } from '@/types/ids';
 import { parseOrgId, parseWorkspaceId } from '@/types/ids';
 
-/** Normalise a hub URL: must be https://, strip trailing slash. Throws on invalid. */
+/** Normalise a hub URL: must be HTTPS with origin-only semantics. */
 export function normaliseHubUrl(value: string): string {
   if (!value.startsWith('https://')) {
     throw new Error(`Hub URL must use https://, got: ${JSON.stringify(value)}`);
   }
-  return value.replace(/\/+$/, '');
+  let url: URL;
+  try {
+    url = new URL(value.replace(/\/+$/, ''));
+  } catch {
+    throw new Error(`Invalid hub URL: ${JSON.stringify(value)}`);
+  }
+  if (url.username || url.password) {
+    throw new Error(`Hub URL must not contain credentials`);
+  }
+  if (url.search || url.hash) {
+    throw new Error(`Hub URL must not contain a query or fragment`);
+  }
+  if (url.pathname !== '/') {
+    throw new Error(`Hub URL must not contain a path`);
+  }
+  return url.origin;
 }
 
-/** Encode a resource path for use in a URL: encode each segment, preserve '/' separators. */
+/** Encode a resource path; unsafe dot or empty segments are rejected. */
 export function encodeResourcePath(path: string): string {
-  return path.split('/').map(encodeURIComponent).join('/');
+  if (!path) throw new Error(`Resource path must not be empty`);
+  const segments = path.split('/');
+  if (segments.some((segment) => !segment || segment === '.' || segment === '..')) {
+    throw new Error(`Resource path contains an unsafe segment: ${JSON.stringify(path)}`);
+  }
+  return segments.map(encodeURIComponent).join('/');
 }
 
 /** Decode a percent-encoded resource path (decode once; do not re-split on '/'). */

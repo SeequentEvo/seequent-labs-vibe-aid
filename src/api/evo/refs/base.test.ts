@@ -23,6 +23,19 @@ describe('normaliseHubUrl', () => {
   it('rejects a bare domain without scheme', () => {
     expect(() => normaliseHubUrl('au1.evo.seequent.com')).toThrow(/https/);
   });
+
+  it('rejects URLs with credentials', () => {
+    expect(() => normaliseHubUrl('https://user@au1.evo.seequent.com')).toThrow(/credentials/i);
+  });
+
+  it('rejects URLs with queries or fragments', () => {
+    expect(() => normaliseHubUrl('https://au1.evo.seequent.com?x=1')).toThrow(/query|fragment/i);
+    expect(() => normaliseHubUrl('https://au1.evo.seequent.com#x')).toThrow(/query|fragment/i);
+  });
+
+  it('rejects URLs with non-root paths', () => {
+    expect(() => normaliseHubUrl('https://au1.evo.seequent.com/api')).toThrow(/path/i);
+  });
 });
 
 describe('encodeResourcePath', () => {
@@ -41,6 +54,15 @@ describe('encodeResourcePath', () => {
   it('preserves / separators between segments', () => {
     const result = encodeResourcePath('a/b/c');
     expect(result.split('/').length).toBe(3);
+  });
+
+  it('rejects dot segments', () => {
+    expect(() => encodeResourcePath('folder/../secret')).toThrow(/unsafe segment/i);
+    expect(() => encodeResourcePath('folder/./secret')).toThrow(/unsafe segment/i);
+  });
+
+  it('rejects empty segments', () => {
+    expect(() => encodeResourcePath('folder//secret')).toThrow(/unsafe segment/i);
   });
 });
 

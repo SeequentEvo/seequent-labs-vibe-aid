@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "@/hooks/useStore";
 import { getBlobStore } from "@/api/evo/blob";
+import { clearEvoOrigins } from "@/api/evo/allowlist";
 import {
   discoverInstances,
   selectInstanceStatus,
@@ -32,6 +33,7 @@ export default function AuthGuard() {
         try {
           const blobStore = await getBlobStore();
           await blobStore.clearAll();
+          await clearEvoOrigins();
         } catch {
           // Authentication cleanup must not be blocked by restricted storage.
         }
@@ -62,6 +64,7 @@ export default function AuthGuard() {
         try {
           const blobStore = await getBlobStore();
           await blobStore.clearAll();
+          await clearEvoOrigins();
         } catch {
           // Authentication cleanup must not be blocked by restricted storage.
         }

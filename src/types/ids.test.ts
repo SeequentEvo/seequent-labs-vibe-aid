@@ -3,6 +3,8 @@ import type { OrgId, WorkspaceId, VersionId, UUID } from "./ids";
 import {
   parseOrgId,
   parseVersionId,
+  parseObjectPath,
+  parseFilePath,
   tryParseOrgId,
   tryParseVersionId,
 } from "./ids";
@@ -78,5 +80,22 @@ describe("Type safety", () => {
     // @ts-expect-error VersionId should not be assignable to UUID
     const _uuid: UUID = ver;
     expect(_uuid).toBe("v1");
+  });
+});
+
+describe("resource path brands", () => {
+  it("accepts safe slash-delimited object and file paths", () => {
+    expect(parseObjectPath("folder/object name")).toBe("folder/object name");
+    expect(parseFilePath("folder/file name.txt")).toBe("folder/file name.txt");
+  });
+
+  it("rejects dot segments", () => {
+    expect(() => parseObjectPath("folder/../secret")).toThrow();
+    expect(() => parseFilePath("folder/./secret")).toThrow();
+  });
+
+  it("rejects empty path segments", () => {
+    expect(() => parseObjectPath("folder//secret")).toThrow();
+    expect(() => parseFilePath("folder//secret")).toThrow();
   });
 });

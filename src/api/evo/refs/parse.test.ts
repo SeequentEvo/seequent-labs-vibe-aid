@@ -98,6 +98,21 @@ describe('parseEvoUrl — errors', () => {
   it('throws on completely malformed URL', () => {
     expect(() => parseEvoUrl('not a url')).toThrow(/malformed url/i);
   });
+
+  it('throws on URL credentials', () => {
+    expect(() => parseEvoUrl(`https://user@au1.evo.seequent.com/workspace/orgs/${ORG}/workspaces/${WS}`)).toThrow(/credentials/i);
+  });
+
+  it('allows legitimate object version query parameters', () => {
+    const url = `${HUB}/geoscience-object/orgs/${ORG}/workspaces/${WS}/objects/${OBJ_ID}?version=${BM_VER}`;
+    const ref = parseEvoUrl(url);
+    expect(ref).toBeInstanceOf(EvoObjectRef);
+    expect((ref as EvoObjectRef).versionId).toBe(BM_VER);
+  });
+
+  it('rejects URL fragments', () => {
+    expect(() => parseEvoUrl(`${HUB}/workspace/orgs/${ORG}/workspaces/${WS}#secret`)).toThrow(/fragment/i);
+  });
 });
 
 describe('tryParseEvoUrl', () => {
