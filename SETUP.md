@@ -65,6 +65,15 @@ The default scopes provide discovery and workspace access only. Add `evo.object`
 
 All `VITE_*` values are embedded in public browser JavaScript. Never use `VITE_*` for private API keys or client secrets.
 
+## Production security headers
+
+This repository includes deployable examples for:
+
+- **Netlify:** `public/_headers` is copied to the Vite build and applies headers to all routes.
+- **Vercel:** `vercel.json` adds headers and SPA fallback routing.
+
+The examples provide CSP, `frame-ancestors 'none'`, HSTS, `X-Content-Type-Options: nosniff`, `Cross-Origin-Opener-Policy`, and `Permissions-Policy`. When deploying to another platform, configure equivalent HTTP response headers on the hosting server; HTML meta tags cannot provide all of these protections.
+
 See [`.env.example`](.env.example) for all available variables.
 
 ## Scripts

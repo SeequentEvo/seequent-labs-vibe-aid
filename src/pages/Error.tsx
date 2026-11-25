@@ -1,8 +1,17 @@
-import { useSearchParams, Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import {
+  applicationErrorMessages,
+  isApplicationErrorCode,
+  type ApplicationErrorCode,
+} from "./errorCodes";
 
 export default function ErrorPage() {
-  const [searchParams] = useSearchParams();
-  const message = searchParams.get("message") ?? "An unexpected error occurred.";
+  const location = useLocation();
+  const stateCode = (location.state as { code?: unknown } | null)?.code;
+  const code: ApplicationErrorCode = isApplicationErrorCode(stateCode)
+    ? stateCode
+    : "unexpected";
+  const message = applicationErrorMessages[code] ?? "An unexpected error occurred.";
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
