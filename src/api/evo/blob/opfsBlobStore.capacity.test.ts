@@ -153,7 +153,7 @@ const ORG = "org-a" as unknown as OrgId;
 const WS = "ws-1" as unknown as WorkspaceId;
 
 const scope: CacheScope = { orgId: ORG, workspaceId: WS, kind: "file" };
-const ref = (s: string) => asBlobRef(s);
+const ref = (s: string) => asBlobRef(`00000000-0000-4000-8000-${s.charCodeAt(0).toString(16).padStart(12, "0")}`);
 const bytes = (n: number, fill = 0x61) => {
   const a = new Uint8Array(n);
   a.fill(fill);
@@ -230,7 +230,7 @@ describe("OpfsBlobStore — capacity management", () => {
     expect(await store.has(scope, ref("a"))).toBe(false);
     expect(await store.has(scope, ref("b"))).toBe(true);
     expect(await store.has(scope, ref("c"))).toBe(true);
-    expect(evicted).toContain("a:lru-budget");
+    expect(evicted).toContain(`${String(ref("a"))}:lru-budget`);
   });
 
   it("auto-evicts when openWrite reservation exceeds budget", async () => {

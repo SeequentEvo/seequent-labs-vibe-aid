@@ -80,7 +80,7 @@ describe("describeObject — duplicate attribute keys", () => {
   function pointsetWithAttrs(attrs: unknown[]) {
     return {
       locations: {
-        coordinates: { width: 3, data_type: "float64", length: 3, data: "coord-h" },
+        coordinates: { width: 3, data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" },
         attributes: attrs,
       },
     };
@@ -94,21 +94,21 @@ describe("describeObject — duplicate attribute keys", () => {
         key: "grade",
         name: "Grade A",
         attribute_type: "scalar",
-        values: { data_type: "float64", length: 3, data: "g1" },
+        values: { data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" },
         nan_description: { values: [] },
       },
       {
         key: "grade",
         name: "Grade B",
         attribute_type: "scalar",
-        values: { data_type: "float64", length: 3, data: "g2" },
+        values: { data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" },
         nan_description: { values: [] },
       },
       {
         key: "rock_type",
         name: "Rock Type",
         attribute_type: "scalar",
-        values: { data_type: "float64", length: 3, data: "r1" },
+        values: { data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" },
         nan_description: { values: [] },
       },
     ]);
@@ -141,14 +141,14 @@ describe("describeObject — duplicate attribute keys", () => {
         key: "grade",
         name: "Grade",
         attribute_type: "scalar",
-        values: { data_type: "float64", length: 3, data: "g1" },
+        values: { data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" },
         nan_description: { values: [] },
       },
       {
         key: "rock_type",
         name: "Rock Type",
         attribute_type: "scalar",
-        values: { data_type: "float64", length: 3, data: "r1" },
+        values: { data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" },
         nan_description: { values: [] },
       },
     ]);
@@ -170,15 +170,15 @@ describe("describeObject — duplicate attribute keys", () => {
 
     const obj = pointsetWithAttrs([
       { key: "z_dup", name: "z1", attribute_type: "scalar",
-        values: { data_type: "float64", length: 3, data: "v1" }, nan_description: { values: [] } },
+        values: { data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" }, nan_description: { values: [] } },
       { key: "a_dup", name: "a1", attribute_type: "scalar",
-        values: { data_type: "float64", length: 3, data: "v2" }, nan_description: { values: [] } },
+        values: { data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" }, nan_description: { values: [] } },
       { key: "z_dup", name: "z2", attribute_type: "scalar",
-        values: { data_type: "float64", length: 3, data: "v3" }, nan_description: { values: [] } },
+        values: { data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" }, nan_description: { values: [] } },
       { key: "a_dup", name: "a2", attribute_type: "scalar",
-        values: { data_type: "float64", length: 3, data: "v4" }, nan_description: { values: [] } },
+        values: { data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" }, nan_description: { values: [] } },
       { key: "unique", name: "u", attribute_type: "scalar",
-        values: { data_type: "float64", length: 3, data: "v5" }, nan_description: { values: [] } },
+        values: { data_type: "float64", length: 3, data: "00000000-0000-4000-8000-000000000001" }, nan_description: { values: [] } },
     ]);
 
     const desc = describeObject(makeEnvelope(POINTSET, obj, []));

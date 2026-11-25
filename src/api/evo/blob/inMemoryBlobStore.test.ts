@@ -31,7 +31,8 @@ const scopeBObj: CacheScope = {
   kind: "geoscience-object",
 };
 
-const ref = (id: string): BlobRef => asBlobRef(id);
+const ref = (id: string): BlobRef =>
+  asBlobRef(`00000000-0000-4000-8000-${id.charCodeAt(0).toString(16).padStart(12, "0")}`);
 const buf = (size: number, fill = 0): Uint8Array<ArrayBuffer> => {
   const out = new Uint8Array(new ArrayBuffer(size));
   out.fill(fill);
@@ -184,7 +185,7 @@ describe("InMemoryBlobStore", () => {
     await stream.abort();
     expect(await store.has(scopeAObj, ref("abandon"))).toBe(false);
     expect(await store.getUsage()).toEqual({ bytes: 0, entries: 0 });
-    expect(cacheKeyPath(scopeAObj, ref("abandon"))).toContain("abandon");
+    expect(cacheKeyPath(scopeAObj, ref("abandon"))).toContain(String(ref("abandon")));
   });
 
   it("on() returns a working unsubscribe function", async () => {

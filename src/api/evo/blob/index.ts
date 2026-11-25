@@ -17,7 +17,7 @@ export type {
   PressureTrigger,
   Unsubscribe,
 } from "./types";
-export { asBlobRef, BlobStoreQuotaError, BlobTransferError } from "./types";
+export { asBlobRef, isSha256BlobRef, BlobStoreQuotaError, BlobTransferError } from "./types";
 
 // Store interface + factories
 export type { BlobStore, UsageReport } from "./store";

@@ -9,8 +9,11 @@
  */
 
 import type { BlobStore } from "./store";
+import { assertHttpsBlobUrl } from "./transferHelpers";
+import { sha256Hex } from "./parquetCodec";
 import {
   BlobTransferError,
+  isSha256BlobRef,
   type BlobRef,
   type CacheScope,
   type ProgressEvent,
@@ -99,11 +102,11 @@ async function fetchChunk(
     maxRetries: number;
     retryBaseMs: number;
     fetchImpl: typeof fetch;
+    totalSize: number;
   },
 ): Promise<ArrayBuffer> {
   let attempt = 0;
   let lastError: unknown;
-  // Total tries = maxRetries + 1 (initial attempt + retries).
   while (attempt <= opts.maxRetries) {
     if (opts.signal?.aborted) throw abortError();
     try {
@@ -111,17 +114,53 @@ async function fetchChunk(
         headers: { Range: `bytes=${String(chunk.from)}-${String(chunk.to)}` },
         signal: opts.signal,
       });
-      // Azure returns 206 for Range; 200 acceptable when the range covers
-      // the whole blob. Anything else is an error.
-      if (res.status === 206 || res.status === 200) {
-        return await res.arrayBuffer();
+      const expected = chunk.to - chunk.from + 1;
+
+      if (res.status === 206) {
+        const buf = await res.arrayBuffer();
+        if (buf.byteLength !== expected) {
+          throw new BlobTransferError({
+            ref: opts.ref,
+            chunkIndex: chunk.index,
+            message: `Chunk ${String(chunk.index)} returned ${String(buf.byteLength)} bytes; expected ${String(expected)}`,
+          });
+        }
+        const contentRange = res.headers.get("Content-Range");
+        const match = /^bytes (\d+)-(\d+)\/(\d+|\*)$/i.exec(contentRange ?? "");
+        if (!match) {
+          throw new BlobTransferError({
+            ref: opts.ref,
+            chunkIndex: chunk.index,
+            message: `Chunk ${String(chunk.index)} returned 206 without a valid Content-Range header`,
+          });
+        }
+        if (Number(match[1]) !== chunk.from || Number(match[2]) !== chunk.to || (match[3] !== "*" && Number(match[3]) !== opts.totalSize)) {
+          throw new BlobTransferError({
+            ref: opts.ref,
+            chunkIndex: chunk.index,
+            message: `Chunk ${String(chunk.index)} returned mismatched Content-Range`,
+          });
+        }
+        return buf;
       }
-      // Non-retriable 4xx: fail fast (likely permission/URL-expired).
+
+      if (res.status === 200 && chunk.from === 0 && chunk.to === opts.totalSize - 1) {
+        const buf = await res.arrayBuffer();
+        if (buf.byteLength !== expected) {
+          throw new BlobTransferError({
+            ref: opts.ref,
+            chunkIndex: chunk.index,
+            message: `Full download returned ${String(buf.byteLength)} bytes; expected ${String(expected)}`,
+          });
+        }
+        return buf;
+      }
+
       if (!isRetriableStatus(res.status)) {
         throw new BlobTransferError({
           ref: opts.ref,
           chunkIndex: chunk.index,
-          message: `Chunk ${String(chunk.index)} failed with HTTP ${String(res.status)}`,
+          message: `Chunk ${String(chunk.index)} failed with HTTP ${String(res.status)}; expected 206 or a complete 200 response`,
         });
       }
       lastError = new Error(`HTTP ${String(res.status)}`);
@@ -167,6 +206,7 @@ export async function downloadToStore(opts: DownloadOptions): Promise<void> {
     fetchImpl = fetch.bind(globalThis),
   } = opts;
 
+  assertHttpsBlobUrl(url);
   if (totalSize < 0) throw new Error("totalSize must be >= 0");
   if (chunkSize <= 0) throw new Error("chunkSize must be > 0");
   if (parallelism <= 0) throw new Error("parallelism must be > 0");
@@ -176,8 +216,19 @@ export async function downloadToStore(opts: DownloadOptions): Promise<void> {
   // Cache-first short-circuit. Still surface a final progress event so
   // callers binding UI state see a terminal value.
   if (await store.has(scope, ref)) {
-    onProgress?.({ transferred: totalSize, total: totalSize });
-    return;
+    if (isSha256BlobRef(ref)) {
+      const cached = await store.openRead(scope, ref);
+      const bytes = new Uint8Array(await cached.arrayBuffer());
+      if (await sha256Hex(bytes.buffer) !== ref.toLowerCase()) {
+        await store.delete(scope, ref);
+      } else {
+        onProgress?.({ transferred: totalSize, total: totalSize });
+        return;
+      }
+    } else {
+      onProgress?.({ transferred: totalSize, total: totalSize });
+      return;
+    }
   }
 
   // openWrite may throw BlobStoreQuotaError — propagate.
@@ -239,11 +290,18 @@ export async function downloadToStore(opts: DownloadOptions): Promise<void> {
         maxRetries,
         retryBaseMs,
         fetchImpl,
+        totalSize,
       });
-      // Defensive: server might over-deliver; trim to declared chunk length.
+      // fetchChunk already guarantees the exact declared length.
       const expected = chunk.to - chunk.from + 1;
-      const data =
-        buf.byteLength === expected ? buf : buf.slice(0, expected);
+      if (buf.byteLength !== expected) {
+        throw new BlobTransferError({
+          ref,
+          chunkIndex: chunk.index,
+          message: `Chunk ${String(chunk.index)} length mismatch`,
+        });
+      }
+      const data = buf;
       await stream.write({
         type: "write",
         position: chunk.from,
@@ -260,6 +318,14 @@ export async function downloadToStore(opts: DownloadOptions): Promise<void> {
     for (let i = 0; i < workerCount; i += 1) workers.push(worker());
     await Promise.all(workers);
     await stream.close();
+    if (isSha256BlobRef(ref)) {
+      const blob = await store.openRead(scope, ref);
+      const bytes = new Uint8Array(await blob.arrayBuffer());
+      const actual = await sha256Hex(bytes.buffer);
+      if (actual !== ref.toLowerCase()) {
+        throw new Error(`Blob SHA-256 mismatch: expected ${ref}, got ${actual}`);
+      }
+    }
     fireProgress(true);
   } catch (err) {
     await cleanup();

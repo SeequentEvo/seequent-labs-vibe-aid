@@ -13,6 +13,22 @@
 
 import type { ProgressEvent } from "./types";
 
+export const assertHttpsBlobUrl = (value: string): URL => {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`Invalid blob transfer URL: ${JSON.stringify(value)}`);
+  }
+  if (url.protocol !== "https:") {
+    throw new Error(`Blob transfer URL must use HTTPS: ${JSON.stringify(value)}`);
+  }
+  if (url.username || url.password) {
+    throw new Error("Blob transfer URL must not contain credentials");
+  }
+  return url;
+};
+
 /** HTTP status codes worth retrying on for Azure Blob operations. */
 export const isRetryableStatus = (status: number): boolean =>
   status === 408 || status === 429 || (status >= 500 && status < 600);

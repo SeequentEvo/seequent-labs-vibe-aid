@@ -13,7 +13,8 @@ import {
 const orgId = parseOrgId("11111111-1111-4111-8111-111111111111");
 const workspaceId = parseWorkspaceId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
 const scope: CacheScope = { orgId, workspaceId, kind: "geoscience-object" };
-const ref = (id: string): BlobRef => asBlobRef(id);
+const ref = (id: string): BlobRef =>
+  asBlobRef(`00000000-0000-4000-8000-${id.charCodeAt(0).toString(16).padStart(12, "0")}`);
 
 const URL_OK = "https://example.test/blob?sig=abc";
 
@@ -344,5 +345,123 @@ describe("downloadToStore", () => {
       expect(seen[i] ?? 0).toBeGreaterThanOrEqual(seen[i - 1] ?? 0);
     }
     expect(seen.at(-1)).toBe(body.byteLength);
+  });
+
+  it("rejects non-HTTPS transfer URLs before fetch", async () => {
+    await expect(
+      downloadToStore({
+        store,
+        scope,
+        ref: ref("http"),
+        url: "http://example.test/blob",
+        totalSize: 10,
+        fetchImpl: vi.fn(),
+      }),
+    ).rejects.toThrow(/HTTPS/);
+  });
+
+  it("rejects an ignored Range header returning 200 for a chunked request", async () => {
+    const r = ref("range200");
+    const body = makeBytes(2_000);
+    const fx: typeof fetch = async () => new Response(body, { status: 200 });
+
+    await expect(
+      downloadToStore({
+        store,
+        scope,
+        ref: r,
+        url: URL_OK,
+        totalSize: body.byteLength,
+        chunkSize: 1024,
+        parallelism: 1,
+        maxRetries: 0,
+        fetchImpl: fx,
+      }),
+    ).rejects.toBeInstanceOf(BlobTransferError);
+
+    expect(await store.has(scope, r)).toBe(false);
+  });
+
+  it("allows 200 only for a complete one-chunk download", async () => {
+    const r = ref("full200");
+    const body = makeBytes(123);
+    const fx: typeof fetch = async () => new Response(body, { status: 200 });
+
+    await downloadToStore({
+      store,
+      scope,
+      ref: r,
+      url: URL_OK,
+      totalSize: body.byteLength,
+      fetchImpl: fx,
+    });
+
+    expect(await readCachedBytes(store, scope, r)).toEqual(body);
+  });
+
+  it("rejects short and over-delivered 206 chunks", async () => {
+    for (const delivered of [31, 33]) {
+      const r = ref(delivered === 31 ? "short" : "over");
+      const fx: typeof fetch = async () => new Response(makeBytes(delivered), {
+        status: 206,
+        headers: { "Content-Range": "bytes 0-31/32" },
+      });
+
+      await expect(
+        downloadToStore({
+          store,
+          scope,
+          ref: r,
+          url: URL_OK,
+          totalSize: 32,
+          chunkSize: 32,
+          fetchImpl: fx,
+        }),
+      ).rejects.toBeInstanceOf(BlobTransferError);
+      expect(await store.has(scope, r)).toBe(false);
+    }
+  });
+
+  it("rejects mismatched 206 Content-Range metadata", async () => {
+    const r = ref("crange");
+    const fx: typeof fetch = async () => new Response(makeBytes(32), {
+      status: 206,
+      headers: { "Content-Range": "bytes 100-131/32" },
+    });
+
+    await expect(
+      downloadToStore({
+        store,
+        scope,
+        ref: r,
+        url: URL_OK,
+        totalSize: 32,
+        chunkSize: 32,
+        fetchImpl: fx,
+      }),
+    ).rejects.toBeInstanceOf(BlobTransferError);
+    expect(await store.has(scope, r)).toBe(false);
+  });
+
+  it("rejects invalid BlobRefs and SHA-256 mismatches", async () => {
+    expect(() => asBlobRef("not-a-blob-ref")).toThrow(/SHA-256|UUID/);
+
+    const r = asBlobRef("a".repeat(64));
+    await store.put(scope, r, makeBytes(16));
+    const fx: typeof fetch = async () => new Response(makeBytes(16), {
+      status: 206,
+      headers: { "Content-Range": "bytes 0-15/16" },
+    });
+    await expect(
+      downloadToStore({
+        store,
+        scope,
+        ref: r,
+        url: URL_OK,
+        totalSize: 16,
+        fetchImpl: fx,
+      }),
+    ).rejects.toThrow(/SHA-256 mismatch/);
+    expect(await store.has(scope, r)).toBe(false);
   });
 });

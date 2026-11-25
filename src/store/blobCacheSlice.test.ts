@@ -90,8 +90,8 @@ describe("blobCacheSlice", () => {
         usagePollMs: 0,
       });
 
-      await blobStore.put(scope, asBlobRef("a"), buf(6));
-      await blobStore.put(scope, asBlobRef("b"), buf(6)); // evicts "a"
+      await blobStore.put(scope, asBlobRef("a".repeat(64)), buf(6));
+      await blobStore.put(scope, asBlobRef("b".repeat(64)), buf(6)); // evicts "a"
       await flush();
 
       const s = selectBlobCache(reduxStore.getState());
@@ -110,7 +110,7 @@ describe("blobCacheSlice", () => {
       });
 
       await expect(
-        blobStore.put(scope, asBlobRef("big"), buf(8)),
+        blobStore.put(scope, asBlobRef("c".repeat(64)), buf(8)),
       ).rejects.toThrow();
       await flush();
 
@@ -128,8 +128,8 @@ describe("blobCacheSlice", () => {
       unsub();
 
       const before = selectBlobCache(reduxStore.getState());
-      await blobStore.put(scope, asBlobRef("a"), buf(6));
-      await blobStore.put(scope, asBlobRef("b"), buf(6)); // evicts
+      await blobStore.put(scope, asBlobRef("a".repeat(64)), buf(6));
+      await blobStore.put(scope, asBlobRef("b".repeat(64)), buf(6)); // evicts
       await flush();
 
       const after = selectBlobCache(reduxStore.getState());
@@ -150,7 +150,7 @@ describe("blobCacheSlice", () => {
 
       // Drop bytes into the store *without* triggering eviction so the
       // only path to refresh state is the poll.
-      await blobStore.put(scope, asBlobRef("a"), buf(16));
+      await blobStore.put(scope, asBlobRef("a".repeat(64)), buf(16));
 
       await vi.advanceTimersByTimeAsync(1000);
       await vi.advanceTimersByTimeAsync(0);

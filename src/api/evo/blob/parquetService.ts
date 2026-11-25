@@ -104,6 +104,13 @@ export async function readParquetFromCache(
 
   const blob = await store.openRead(scope, ref);
   const bytes = new Uint8Array(await blob.arrayBuffer());
+  if (/^[0-9a-f]{64}$/i.test(ref)) {
+    const actual = await sha256Hex(bytes.buffer);
+    if (actual !== ref.toLowerCase()) {
+      await store.delete(scope, ref);
+      throw new Error(`Blob SHA-256 mismatch: expected ${ref}, got ${actual}`);
+    }
+  }
   return decodeParquet(bytes);
 }
 
