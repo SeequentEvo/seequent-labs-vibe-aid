@@ -10,9 +10,8 @@ describe("security configuration", () => {
     expect(env).not.toContain("evo.object evo.file evo.blocksync");
   });
 
-  it("pins CSP blob transfers without broad HTTPS wildcards", () => {
+  it("keeps CSP free of broad HTTPS wildcards", () => {
     const html = read("index.html");
-    expect(html).toContain("https://*.blob.core.windows.net");
     expect(html).not.toMatch(/connect-src[^;]*\shttps:\s/i);
     expect(html).not.toContain("connect-src 'self' https://*;");
   });

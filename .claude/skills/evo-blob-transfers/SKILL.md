@@ -149,16 +149,10 @@ Key details:
 
 ## CSP and domain pinning
 
-Pre-signed Evo Blob URLs may use Azure Blob Storage hosts. Keep `connect-src` pinned to the
-explicit host pattern already used by the template:
-
-```text
-https://*.blob.core.windows.net
-```
-
-Do not replace the CSP with `https:` or `https://*` to silence browser errors. Do not send the
-Evo bearer token to a pre-signed Blob URL; pre-signed URLs carry their own SAS authorization.
-Validate the URL scheme and obtain it only from an Evo API response.
+If a browser CSP violation blocks a pre-signed URL, add only the exact host that the Evo API
+response returned. Do not replace the CSP with `https:` or `https://*` to silence browser
+errors. Do not send the Evo bearer token to a pre-signed Blob URL; pre-signed URLs carry their
+own SAS authorization. Validate the URL scheme and obtain it only from an Evo API response.
 
 ## Choosing a strategy
 

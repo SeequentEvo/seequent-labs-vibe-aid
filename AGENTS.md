@@ -204,6 +204,6 @@ These cannot be set via meta tags — configure them on your hosting platform:
 - Never send bearer tokens to origins outside discovered Evo instances or the configured Discovery API. Never attach bearer credentials to user-provided or pre-signed URLs.
 - Do not use `dangerouslySetInnerHTML`, `innerHTML`, `document.write`, `eval`, `new Function`, or implied eval.
 - Do not loosen CSP with `connect-src https:` or wildcard `https://*`. Add only the exact host pattern required by a documented integration.
-- Azure Blob Storage transfers may use the explicit `https://*.blob.core.windows.net` CSP pattern. Do not add arbitrary blob or CDN origins.
+- Add a new CSP origin only when a verified integration needs it, using the exact host pattern. Do not add arbitrary blob or CDN origins.
 - Every `VITE_*` variable is public browser JavaScript. Never place private API keys, client secrets, OAuth secrets, or privileged tokens in it.
 - Preserve the existing strict CSP and explicit host allowlists unless the user approves a reviewed, feature-specific exception.
