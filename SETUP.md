@@ -58,10 +58,12 @@ Open [http://localhost:5173](http://localhost:5173). Sign in, pick an Evo instan
 |----------|-------------|---------|
 | `VITE_IMS_BASE_URL` | Bentley IMS base URL | `https://ims.bentley.com` |
 | `VITE_IMS_CLIENT_ID` | OAuth client ID | *(required)* |
-| `VITE_IMS_SCOPES` | OAuth scopes (space-separated) | `evo.discovery evo.workspace evo.object evo.file evo.blocksync` |
+| `VITE_IMS_SCOPES` | OAuth scopes (space-separated) | `evo.discovery evo.workspace` (minimum) |
 | `VITE_EVO_DISCOVERY_BASE_URL` | Evo Discovery API base URL | `https://discover.api.seequent.com` |
 
-The default scopes allow the starter app and any AI-added features to access Evo discovery, workspaces, geoscience objects, files, and block model data. If login fails with an `invalid_scope` error, re-register using the Evo-specific link above.
+The default scopes provide discovery and workspace access only. Add `evo.object`, `evo.file`, or `evo.blocksync` only for features that need those APIs. Remove optional scopes when features are removed.
+
+All `VITE_*` values are embedded in public browser JavaScript. Never use `VITE_*` for private API keys or client secrets.
 
 See [`.env.example`](.env.example) for all available variables.
 
