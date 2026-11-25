@@ -107,15 +107,23 @@ export interface UserInfo {
   preferred_username?: string;
 }
 
-/** Decode the unverified payload of any JWT (access token, ID token, etc.). */
+/** Decode the unverified payload of any JWT (access token, ID token, etc.) as UTF-8. */
 export function decodeJwtClaims(token: string): UserInfo {
   const parts = token.split(".");
   const payload = parts[1];
   if (!payload) {
     throw new Error("Invalid JWT — missing payload");
   }
-  const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
-  return JSON.parse(json) as UserInfo;
+
+  const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+  const bytes = Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
+  const json = new TextDecoder().decode(bytes);
+  const parsed: unknown = JSON.parse(json);
+  if (!parsed || typeof parsed !== "object") {
+    throw new Error("Invalid JWT — payload is not an object");
+  }
+  return parsed as UserInfo;
 }
 
 /** Build the IMS end-session (logout) URL. */

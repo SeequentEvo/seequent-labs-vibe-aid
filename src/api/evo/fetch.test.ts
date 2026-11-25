@@ -341,3 +341,22 @@ describe("assertOk", () => {
     expect(api.rawBody).toBe(JSON.stringify(error));
   });
 });
+
+describe("evoFetch — events", () => {
+  it("401 emits the unauthorized session event", async () => {
+    const dispatchEvent = vi.fn();
+    vi.stubGlobal("window", { dispatchEvent });
+    fetchMock.mockResolvedValueOnce(jsonResponse(401, {
+      title: "Unauthorized",
+      status: 401,
+    }));
+
+    const result = await evoFetch({ url: URL_, accessToken: TOKEN });
+
+    expect(result.ok).toBe(false);
+    expect(result.status).toBe(401);
+    expect(dispatchEvent).toHaveBeenCalledOnce();
+    expect(dispatchEvent.mock.calls[0]?.[0]).toBeInstanceOf(CustomEvent);
+    expect((dispatchEvent.mock.calls[0]?.[0] as CustomEvent).type).toBe("evo:unauthorized");
+  });
+});

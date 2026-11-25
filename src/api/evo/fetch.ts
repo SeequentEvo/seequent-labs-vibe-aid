@@ -152,6 +152,10 @@ export async function evoFetch<T = unknown>(
 
   const text = await response.text();
 
+  if (response.status === 401 && typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("evo:unauthorized"));
+  }
+
   if (response.ok) {
     if (isBodyEmpty(response, text)) {
       return {

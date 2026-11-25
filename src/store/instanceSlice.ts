@@ -48,8 +48,12 @@ const instanceSlice = createSlice({
     /** User explicitly selects an instance — writes to both stores. */
     selectInstance(state, action: PayloadAction<EvoInstance>) {
       state.selected = action.payload;
-      sessionStorage.setItem(INSTANCE_SESSION_KEY, action.payload.id);
-      localStorage.setItem(INSTANCE_LOCAL_KEY, action.payload.id);
+      try {
+        sessionStorage.setItem(INSTANCE_SESSION_KEY, action.payload.id);
+        localStorage.setItem(INSTANCE_LOCAL_KEY, action.payload.id);
+      } catch {
+        // Storage restrictions must not prevent in-memory instance selection.
+      }
     },
     /** Clear current instance selection. localStorage is intentionally preserved — see storage-key JSDoc. */
     clearInstance(state) {
@@ -57,7 +61,11 @@ const instanceSlice = createSlice({
       state.instances = [];
       state.status = "idle";
       state.error = null;
-      sessionStorage.removeItem(INSTANCE_SESSION_KEY);
+      try {
+        sessionStorage.removeItem(INSTANCE_SESSION_KEY);
+      } catch {
+        // Storage may be unavailable; Redux state is still cleared.
+      }
     },
   },
   extraReducers: (builder) => {

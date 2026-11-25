@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { createSlice, createAsyncThunk, createSelector } from "@reduxjs/toolkit";
 import {
   exchangeCode,
@@ -19,23 +20,63 @@ interface AuthState {
 
 const SESSION_KEY = "auth_state";
 
+const userInfoSchema = z.looseObject({
+  sub: z.string(),
+  name: z.string().optional(),
+  given_name: z.string().optional(),
+  family_name: z.string().optional(),
+  email: z.string().optional(),
+  preferred_username: z.string().optional(),
+});
+
+export const persistedAuthSchema = z.object({
+  status: z.enum(["idle", "loading", "authenticated", "error"]),
+  accessToken: z.string().nullable(),
+  idToken: z.string().nullable(),
+  user: userInfoSchema.nullable(),
+  expiresAt: z.number().positive().nullable(),
+}).superRefine((value, context) => {
+  if (value.status === "authenticated") {
+    if (!value.accessToken) {
+      context.addIssue({ code: "custom", message: "Authenticated state requires an access token", path: ["accessToken"] });
+    }
+    if (!value.expiresAt) {
+      context.addIssue({ code: "custom", message: "Authenticated state requires an expiry", path: ["expiresAt"] });
+    }
+  }
+});
+
 function loadPersistedState(): AuthState | null {
+  if (typeof sessionStorage === "undefined") return null;
   try {
     const raw = sessionStorage.getItem(SESSION_KEY);
     if (!raw) return null;
-    const persisted = JSON.parse(raw) as AuthState;
+    const parsed = persistedAuthSchema.safeParse(JSON.parse(raw));
+    if (!parsed.success) {
+      sessionStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    const persisted = parsed.data;
     if (persisted.expiresAt && persisted.expiresAt < Date.now()) {
       sessionStorage.removeItem(SESSION_KEY);
       return null;
     }
-    return persisted;
+    return {
+      ...persisted,
+      error: null,
+    };
   } catch {
-    sessionStorage.removeItem(SESSION_KEY);
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch {
+      // Storage unavailable; continue with in-memory auth state.
+    }
     return null;
   }
 }
 
 function persistState(state: AuthState): void {
+  if (typeof sessionStorage === "undefined") return;
   try {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify({
       status: state.status,
@@ -81,7 +122,13 @@ const authSlice = createSlice({
       state.user = null;
       state.error = null;
       state.expiresAt = null;
-      sessionStorage.removeItem(SESSION_KEY);
+      if (typeof sessionStorage !== "undefined") {
+        try {
+          sessionStorage.removeItem(SESSION_KEY);
+        } catch {
+          // Storage may be unavailable in privacy-restricted environments.
+        }
+      }
     },
     clearError(state) {
       state.error = null;
@@ -98,6 +145,14 @@ const authSlice = createSlice({
       })
       .addCase(handleCallback.fulfilled, (state, action) => {
         const { tokens, user } = action.payload;
+        if (state.user?.sub && state.user.sub !== user.sub) {
+          try {
+            sessionStorage.removeItem("evo_instance_id");
+            localStorage.removeItem("evo_instance_id");
+          } catch {
+            // Identity cleanup must not prevent login from completing.
+          }
+        }
         state.status = "authenticated";
         state.accessToken = tokens.access_token;
         state.idToken = tokens.id_token ?? null;
@@ -122,6 +177,7 @@ export const selectAccessToken = (state: { auth: AuthState }) => state.auth.acce
 export const selectUser = (state: { auth: AuthState }) => state.auth.user;
 export const selectIdToken = (state: { auth: AuthState }) => state.auth.idToken;
 export const selectAuthError = (state: { auth: AuthState }) => state.auth.error;
+export const selectAuthExpiresAt = (state: { auth: AuthState }) => state.auth.expiresAt;
 
 export const selectEvoUser = createSelector(
   [selectUser],

@@ -46,3 +46,4 @@ export type {
   WriteParquetResult,
   DownloadFn,
 } from "./parquetService";
+export { getBlobStore } from "./singleton";
